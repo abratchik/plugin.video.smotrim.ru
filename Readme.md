@@ -1,7 +1,6 @@
 # KODI plugin for Smotrim.ru
 
-Мы собрали для вас на одном сайте и в мобильном приложении все самое важное, интересное и любимое с 
-телеканалов и радиостанций ВГТРК. "Смотрим" — это новости в реальном времени, ток-шоу, художественные 
-и документальные фильмы, премьеры сериалов и детские передачи.
+This is Kodi video addon for viewing video from the site
+Smotrim.ru. 
 
 License: [GPL v.3](http://www.gnu.org/copyleft/gpl.html)
