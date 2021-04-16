@@ -9,7 +9,6 @@ Video plugin for Smotrim.ru portal
 import os
 import sys
 import re
-import json
 import requests
 from urllib import urlencode
 from urlparse import parse_qsl
@@ -87,12 +86,8 @@ class Smotrim():
                 self.get_categories()
                 self.mainMenu()
             elif self.params['action'] == 'play':
-                # Play a video from a provided URL.
                 self.play_video(self.params['video'])
             else:
-                # If the provided paramstring does not contain a supported action
-                # we raise an exception. This helps to catch coding errors,
-                # e.g. typos in action names.
                 raise ValueError('Invalid paramstring: {}!'.format(params_))
         else:
             # default context is home
@@ -100,15 +95,9 @@ class Smotrim():
             self.mainMenu()
 
     def mainMenu(self):
-        """
-        Create the list of video categories in the Kodi interface.
-        """
-        # Set plugin category. It is displayed in some skins as the name
-        # of the current section.
 
         xbmcplugin.setPluginCategory(self.handle, self.context_dict[self.context]['label'])
-        # Set plugin content. It allows Kodi to select appropriate views
-        # for this type of content.
+
         xbmcplugin.setContent(self.handle, 'videos')
 
         # Iterate through categories
@@ -207,7 +196,7 @@ class Smotrim():
 
         if self.context == 'home':
             self.add_search()
-            # self.add_history()
+            self.add_history()
 
         offset = self.brands['pagination']['offset'] if 'pagination' in self.brands else 0
         limit = self.brands['pagination']['limit'] if 'pagination' in self.brands else 0

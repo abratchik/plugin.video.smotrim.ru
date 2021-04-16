@@ -27,6 +27,10 @@
         и любимое с телеканалов и радиостанций ВГТРК. "Смотрим" — это новости в реальном времени, ток-шоу,
         художественные и документальные фильмы, премьеры сериалов и детские передачи.
     </description>
+    <disclaimer lang="en_RU">Это некоммерческий плагин для веб-сайта Smotrim.ru, поддерживаемый сообществом.
+       Он создан для просмотра русских программ на экране телевизора, просто для развлечения и не имеет отношения к
+       компании ВГТРК
+    </disclaimer>
     <assets>
         <icon>icon.png</icon>
         <fanart>fanart.jpg</fanart>
@@ -34,5 +38,6 @@
         <screenshot>resources\screenshot-02.jpg</screenshot>
         <screenshot>resources\screenshot-03.jpg</screenshot>
     </assets>
+    <source>https://github.com/abratchik/plugin.video.smotrim.ru</source>
 </extension>
 </addon>
