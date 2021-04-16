@@ -1,4 +1,4 @@
-# KODI plugin for Smotrim.ru
+# KODI addon for Smotrim.ru
 
 This is Kodi video addon for viewing video from the site
 Smotrim.ru. 

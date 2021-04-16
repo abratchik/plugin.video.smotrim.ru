@@ -311,7 +311,7 @@ class Smotrim():
     def get_user_input(self):
         kbd = xbmc.Keyboard()
         kbd.setDefault('')
-        kbd.setHeading(self.context_dict[self.context])
+        kbd.setHeading("Поиск")
         kbd.doModal()
         keyword = None
 
