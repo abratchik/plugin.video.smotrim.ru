@@ -1,0 +1,21 @@
+﻿# Kodi Media Center language file
+# Addon Name: smotrim.ru
+# Addon id: plugin.video.smotrim.ru
+# Addon Provider: Alex Bratchik
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: ru\n"
+
+msgctxt "#70200"
+msgid "SD"
+msgstr "SD"
+
+msgctxt "#70201"
+msgid "780p"
+msgstr "780p"
+
+msgctxt "#70202"
+msgid "1080p"
+msgstr "1080p"
