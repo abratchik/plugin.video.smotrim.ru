@@ -18,7 +18,8 @@ import xbmc
 import xbmcgui
 import xbmcaddon
 import xbmcplugin
-import YDStreamExtractor
+
+import lib.streamextractor as se
 
 Addon = xbmcaddon.Addon(id='plugin.video.smotrim.ru')
 
@@ -196,7 +197,7 @@ class Smotrim():
 
         if self.context == 'home':
             self.add_search()
-            self.add_history()
+            #self.add_history()
 
         offset = self.brands['pagination']['offset'] if 'pagination' in self.brands else 0
         limit = self.brands['pagination']['limit'] if 'pagination' in self.brands else 0
@@ -323,19 +324,26 @@ class Smotrim():
             playcontrol = soup.find_all("div", "program-top__video", limit=1)
             if playcontrol:
                 videoid = playcontrol[0].a['href'].split('/')[2]
-                path = "https://player.vgtrk.com/iframe/video/id/%s/" % videoid
+                path = "https://player.vgtrk.com/iframe/video/id/%s/start_zoom/true/showZoomBtn/false/sid/smotrim" \
+                       "/isPlay/true/mute/false/" % videoid
 
         xbmc.log("Play video %s" % path, xbmc.LOGINFO)
         quality = int(self.addon.getSetting("quality"))
 
         xbmc.log("Quality = %s" % quality, xbmc.LOGINFO)
 
-        vid = YDStreamExtractor.getVideoInfo(path, quality = quality)
+        vid = se.getVideoInfo(path, quality = quality)
 
         if vid is None:
             self.show_error_message("Failed to extract video %s" % href)
             spath = path
         else:
+            if vid.hasMultipleStreams():
+                for stream in vid.streams():
+                    print stream['formatID']
+            else:
+                print "Just one stream found - %s" % vid.streams()[0]['formatID']
+
             spath = vid.streamURL()
 
         # Create a playable item with a path to play.

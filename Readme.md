@@ -7,10 +7,29 @@ This is Kodi video addon for viewing video from the site
 The addon as been tested on Kodi Leia 18.9 under Ubuntu 18.04
 LTS.
 
+The following packages need to be present in your system
+for addon to work properly. Below is th list of packages:
+
+- youtube-dl
+- ffmpeg
+- BeautifulSOUP
+
+Installation of them depends on your host OS. The commands 
+for Ubuntu below:
+
+pip install youtube-dl beautifulsoup4
+
+sudo apt install ffmpeg
+
+
 ## Installation 
 Installation is simple - just download the latest zipped
 release from this repository and install it in Kodi 
 using System settings.
+
+If you encounter any errors when tryig to open plugin, most 
+likely the reason is in missing dependencies. Please check
+kodi.log for details what is missing and install accordingly.
 
 ## Disclaimer
 This is a non-commercial community-supported addon for the Smotrim.ru web site.
