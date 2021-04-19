@@ -4,7 +4,8 @@
         <setting id="phone" type="text" label="Phone Number" default="" />
     </category>
     <category label="Advanced">
-        <setting id="quality" type="enum" label="Video quality" values="SD|720p|1080p|highest" default="2"/>
-        <setting id="itemsperpage" type="enum" label="Items per page" values="10|20|30" default="2" />
+        <setting id="quality" type="enum" label="Video quality" values="SD|720p|1080p|highest" default="3"/>
+        <setting id="itemsperpage" type="enum" label="Items per page" values="10|20|30" default="1" />
+        <setting id="addhistory" type="bool" label="Keep track of viewing history" default="true" />
     </category>
 </settings>

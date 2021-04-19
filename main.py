@@ -8,11 +8,13 @@ Video plugin for Smotrim.ru portal
 """
 import os
 import sys
+import time
+from stat import S_ISREG, ST_CTIME, ST_MODE
 import re
+import json
 import requests
 from urllib import urlencode
 from urlparse import parse_qsl
-from bs4 import BeautifulSoup
 
 import xbmc
 import xbmcgui
@@ -31,10 +33,8 @@ class Smotrim():
         self.id = Addon.getAddonInfo('id')
         self.addon = xbmcaddon.Addon(self.id)
         self.path = self.addon.getAddonInfo('path').decode('utf-8')
-        self.data_path = os.path.join(self.path, 'data')
-
-        if not (os.path.exists(self.data_path) and os.path.isdir(self.data_path)):
-            os.makedirs(self.data_path)
+        self.data_path = self.create_folder(os.path.join(self.path, 'data'))
+        self.history_folder = self.create_folder(os.path.join(self.data_path, 'history'))
 
         self.url = sys.argv[0]
         self.handle = int(sys.argv[1])
@@ -42,7 +42,6 @@ class Smotrim():
 
         self.inext = os.path.join(self.path, 'resources/icons/next.png')
         self.ihistory = os.path.join(self.path, 'resources/icons/history.png')
-        self.homepage = "https://smotrim.ru"
 
         self.api_url = "https://api.smotrim.ru/api/v1"
         self.query_string = ""
@@ -74,8 +73,7 @@ class Smotrim():
 
         if self.params:
             self.context = self.params['context'] if 'context' in self.params else self.context
-            if self.params['action'] == 'listing':
-                # Load list items for current context
+            if self.params['action'] == 'episodes':
                 self.get_episodes()
                 self.get_categories()
                 self.mainMenu()
@@ -84,10 +82,11 @@ class Smotrim():
                 self.get_categories()
                 self.mainMenu()
             elif self.params['action'] == 'history':
+                self.history()
                 self.get_categories()
                 self.mainMenu()
             elif self.params['action'] == 'play':
-                self.play_video(self.params['video'])
+                self.play()
             else:
                 raise ValueError('Invalid paramstring: {}!'.format(params_))
         else:
@@ -111,32 +110,17 @@ class Smotrim():
             url = category['url']
 
             is_folder = category['is_folder']
-
-            if 'mediatype' in category:
-                list_item.setInfo('video', {'mediatype': category['mediatype']})
-            if 'genre' in category:
-                list_item.setInfo('video', {'genre': category['genre']})
-            if 'year' in category:
-                list_item.setInfo('video', {'year': category['year']})
-            if 'plot' in category:
-                list_item.setInfo('video', {'plot': category['plot']})
-            if 'plotoutline' in category:
-                list_item.setInfo('video', {'plotoutline': category['plotoutline']})
-            if 'episode' in category:
-                list_item.setInfo('video', {'episode': category['episode']})
-
-            if 'thumb' in category:
-                list_item.setArt({'thumb': category['thumb']})
-            if 'icon' in category:
-                list_item.setArt({'icon': category['icon']})
-            if 'fanart' in category:
-                list_item.setArt({'fanart': category['fanart']})
-            if 'poster' in category:
-                list_item.setArt({'poster': category['poster']})
-
-
+            list_item.setProperty('IsPlayable', 'false' if is_folder else 'true')
             if not is_folder:
-                list_item.setProperty('IsPlayable', 'true')
+                list_item.addContextMenuItems([('Information', 'XBMC.Action(Info)'), ])
+
+            if 'info' in category:
+                for info in category['info']:
+                    list_item.setInfo('video', {info: category['info'][info]})
+
+            if 'art' in category:
+                for art in category['art']:
+                    list_item.setArt({art: category['art'][art]})
 
             # Add our item to the Kodi virtual folder listing.
             xbmcplugin.addDirectoryItem(self.handle, url, list_item, is_folder)
@@ -156,7 +140,7 @@ class Smotrim():
         brand = self.params['brands']
 
         offset = self.params['offset'] if 'offset' in self.params else 0
-        limit = (int(self.addon.getSetting('itemsperpage')) + 1) * 10
+        limit = self.get_limit_setting()
 
         xbmc.log("items per page: %s" % limit, xbmc.LOGINFO)
 
@@ -164,17 +148,22 @@ class Smotrim():
             xbmc.log("Load episodes for brand [ %s ] " % brand, xbmc.LOGINFO)
 
             resp = requests.get(self.get_url(self.api_url + '/episodes',
-                                                             brands=brand,
-                                                             limit=limit,
-                                                             offset=offset))
+                                             brands=brand,
+                                             limit=limit,
+                                             offset=offset))
             self.episodes = resp.json()
+
+    # TODO: add more options for search
+    def get_brands_by_tag(self):
+        pass
+
 
     # Search by name
     def search(self):
 
         self.query_string = self.params['search'] if 'search' in self.params else self.get_user_input()
         offset = self.params['offset'] if 'offset' in self.params else 0
-        limit = (int(self.addon.getSetting('itemsperpage')) + 1) * 10
+        limit = (self.addon.getSettingInt('itemsperpage') + 1) * 10
 
         xbmc.log("items per page: %s" % limit, xbmc.LOGINFO)
 
@@ -182,13 +171,12 @@ class Smotrim():
             xbmc.log("Load search results for query [ %s ] " % self.query_string, xbmc.LOGINFO)
 
             resp = requests.get(self.get_url(self.api_url + '/brands',
-                                 search=self.query_string,
-                                 limit=limit,
-                                 offset=offset))
+                                             search=self.query_string,
+                                             limit=limit,
+                                             offset=offset))
             self.brands = resp.json()
         else:
             self.context = "home"
-
 
     # Get categories for the current context
     def get_categories(self):
@@ -197,106 +185,133 @@ class Smotrim():
 
         if self.context == 'home':
             self.add_search()
-            #self.add_history()
+            if self.addon.getSettingBool("addhistory"):
+                self.add_history()
 
         offset = self.brands['pagination']['offset'] if 'pagination' in self.brands else 0
         limit = self.brands['pagination']['limit'] if 'pagination' in self.brands else 0
         pages = self.brands['pagination']['pages'] if 'pagination' in self.brands else 0
 
-
         if 'data' in self.brands:
             for brand in self.brands['data']:
-                brand_dict = dict()
-                brand_dict['id'] = brand['id']
+                self.categories.append(self.create_brand_dict(brand))
 
-                brand_dict['href'] = brand['shareURL']
-                brand_dict['is_folder'] = brand['hasManySeries']
-                brand_dict['genre'] = brand['genre']
-                if brand_dict['is_folder']:
-                    brand_dict['label'] = "[B]%s[/B]" % brand['title']
-                    brand_dict['url'] = self.get_url(self.url,
-                                                     action="listing",
-                                                     context="episodes",
-                                                     brands=brand['id'],
-                                                     url=self.url)
-                else:
-                    brand_dict['label'] = brand['title']
-                    brand_dict['url'] = self.get_url(self.url,
-                                                     action='play',
-                                                     context=self.context,
-                                                     video=brand['shareURL'],
-                                                     url=self.url)
-                brand_dict['thumb'] = "%s/pictures/%s/lw/redirect" % (self.api_url, brand['picId'])
-                brand_dict['icon'] = "%s/pictures/%s/lw/redirect" % (self.api_url, brand['picId'])
-                brand_dict['fanart'] = "%s/pictures/%s/hd/redirect" % (self.api_url, brand['picId'])
-                brand_dict['poster'] = "%s/pictures/%s/vhdr/redirect" % (self.api_url, brand['picId'])
-
-                brand_dict['mediatype'] = "tvshow" if brand['hasManySeries'] else "video"
-                brand_dict['year'] = brand['productionYearStart']
-                brand_dict['plot'] = self.cleanhtml(brand['body'])
-                brand_dict['plotoutline'] = brand['anons']
-                self.categories.append(brand_dict)
         elif 'data' in self.episodes:
-
             for ep in self.episodes['data']:
-                ep_dict = dict()
-                ep_dict['id'] = ep['id']
-                ep_dict['label'] = ep['combinedTitle']
-                ep_dict['href'] = ep['shareURL']
-                ep_dict['is_folder'] = False
-
-                ep_dict['url'] = self.get_url(self.url,
-                                              action='play',
-                                              context=self.context,
-                                              video=ep['shareURL'],
-                                              url=self.url)
-                ep_dict['mediatype'] = "episode"
-                ep_dict['plot'] = self.cleanhtml(ep['body'])
-                ep_dict['plotoutline'] = ep['anons']
-                ep_dict['fanart'] = self.get_pic_from_plist(ep['pictures'], 'hd')
-                ep_dict['icon'] = self.get_pic_from_plist(ep['pictures'], 'lw')
-                ep_dict['thumb'] = ep_dict['icon']
-                ep_dict['poster'] = self.get_pic_from_plist(ep['pictures'], 'vhdr')
-                ep_dict['episode'] = ep['series']
-                self.categories.append(ep_dict)
+                self.categories.append(self.create_episode_dict(ep))
                 self.context_dict['episodes']['label'] = ep['brandTitle']
 
-
-        if(offset < pages - 1 and pages > 1):
-            brand_dict = dict()
-            brand_dict['id'] = "forward"
-            brand_dict['label'] = "[B]%s[/B]" % "Вперед"
-            brand_dict['is_folder'] = True
-            brand_dict['icon'] = self.inext
-            brand_dict['plot'] = "Страница %s из %s" % (offset+1, pages)
-            brand_dict['url'] = self.get_url(self.url, action=self.params['action'],
-                                             context=self.params['context'],
-                                             search=self.query_string,
-                                             offset=offset + 1,
-                                             limit=limit,
-                                             url=self.url)
-            self.categories.append(brand_dict)
+        if (offset < pages - 1 and pages > 1):
+            self.categories.append({'id': "forward",
+                                    'label': "[B]%s[/B]" % "Вперед",
+                                    'is_folder': True,
+                                    'url': self.get_url(self.url, action=self.params['action'],
+                                                        context=self.params['context'],
+                                                        search=self.query_string,
+                                                        offset=offset + 1,
+                                                        limit=limit,
+                                                        url=self.url),
+                                    'info': {'plot': "Страница %s из %s" % (offset + 1, pages)},
+                                    'art': {'icon': self.inext}
+                                    })
 
     # Add Search menu to categories
     def add_search(self):
-        search_dict = dict()
-        search_dict['id'] = "search"
-        search_dict['label'] = "[B]%s[/B]" % "Поиск"
-        search_dict['is_folder'] = True
-        search_dict['icon'] = "DefaultAddonsSearch.png"
-        search_dict['url'] = self.get_url(self.url, action='search', context='search', url=self.url)
-        search_dict['plot'] = "Поиск по сайту Smotrim.ru"
-        self.categories.append(search_dict)
+        self.categories.append({'id': "search",
+                                'label': "[B]%s[/B]" % "Поиск",
+                                'is_folder': True,
+                                'url': self.get_url(self.url, action='search', context='search', url=self.url),
+                                'info': {'plot': "Поиск по сайту Smotrim.ru"},
+                                'art': {'icon': "DefaultAddonsSearch.png"}
+                                })
+
+    def history(self):
+        limit = self.get_limit_setting()
+        data = (os.path.join(self.history_folder, fn) for fn in os.listdir(self.history_folder))
+        data = ((os.stat(path), path) for path in data)
+
+        data = ((stat[ST_CTIME], path)
+                for stat, path in data if S_ISREG(stat[ST_MODE]))
+        self.brands = {'data': [], }
+        for cdate, path in sorted(data, reverse=True):
+            with open(path, 'r+') as f:
+                print "history len = %s" % len(self.brands['data'])
+                if len(self.brands['data']) < limit:
+                       self.brands['data'].append(json.load(f))
+                else:
+                    # autocleanup
+                    # TODO: add history pagination
+                    os.remove(path)
+                    
+
+    def save_brand_to_history(self, brand):
+        with open(os.path.join(self.history_folder, "brand_%s.json" % brand['id']), 'w+') as f:
+            json.dump(brand, f)
 
     def add_history(self):
-        hist_dict = dict()
-        hist_dict['id'] = "history"
-        hist_dict['label'] = "[B]%s[/B]" % "История"
-        hist_dict['is_folder'] = True
-        hist_dict['icon'] = self.ihistory
-        hist_dict['url'] = self.get_url(self.url, action='history', context='history', url=self.url)
-        hist_dict['plot'] = "Ваша история просмотров видео Smotrim.ru"
-        self.categories.append(hist_dict)
+        self.categories.append({'id': "history",
+                                'label': "[B]%s[/B]" % "История",
+                                'is_folder': True,
+                                'url': self.get_url(self.url, action='history', context='history', url=self.url),
+                                'info': {'plot': "Ваша история просмотров видео Smotrim.ru"},
+                                'art': {'icon': self.ihistory}
+                                })
+
+    def create_brand_dict(self, brand):
+        return {'id': brand['id'],
+                'is_folder': brand['hasManySeries'],
+                'label': "[B]%s[/B]" % brand['title'] if brand['hasManySeries'] else brand['title'],
+                'url': self.get_url(self.url,
+                                    action="episodes",
+                                    context="episodes",
+                                    search=self.query_string,
+                                    brands=brand['id'],
+                                    url=self.url) if brand['hasManySeries']
+                else self.get_url(self.url,
+                                  action="play",
+                                  context=self.context,
+                                  search=self.query_string,
+                                  brands=brand['id'],
+                                  url=self.url),
+
+                'info': {'genre': brand['genre'],
+                         'mediatype': "tvshow" if brand['hasManySeries'] else "video",
+                         'year': brand['productionYearStart'],
+                         'plot': self.cleanhtml(brand['body']),
+                         'plotoutline': brand['anons'],
+                         'rating': brand['rank'],
+                         'dateadded': brand['dateRec']
+                         },
+                'art': {'thumb': "%s/pictures/%s/lw/redirect" % (self.api_url, brand['picId']),
+                        'icon': "%s/pictures/%s/lw/redirect" % (self.api_url, brand['picId']),
+                        'fanart': "%s/pictures/%s/hd/redirect" % (self.api_url, brand['picId']),
+                        'poster': "%s/pictures/%s/vhdr/redirect" % (self.api_url, brand['picId'])
+                        }
+                }
+
+    def create_episode_dict(self, ep):
+        return {'id': ep['id'],
+                'label': ep['combinedTitle'],
+                'is_folder': False,
+                'url': self.get_url(self.url,
+                                    action="play",
+                                    context=self.context,
+                                    search=self.query_string,
+                                    brands=ep['brandId'],
+                                    episodes=ep['id'],
+                                    url=self.url),
+                'info': {'mediatype': "episode",
+                         'plot': self.cleanhtml(ep['body']),
+                         'plotoutline': ep['anons'],
+                         'episode': ep['series'],
+                         'dateadded': ep['dateRec']
+                         },
+                'art': {'fanart': self.get_pic_from_plist(ep['pictures'], 'hd'),
+                        'icon': self.get_pic_from_plist(ep['pictures'], 'lw'),
+                        'thumb': self.get_pic_from_plist(ep['pictures'], 'lw'),
+                        'poster': self.get_pic_from_plist(ep['pictures'], 'vhdr')
+                        }
+                }
 
     def get_user_input(self):
         kbd = xbmc.Keyboard()
@@ -310,41 +325,37 @@ class Smotrim():
 
         return keyword
 
-    def play_video(self, href):
+    def play(self):
 
-        http_doc = requests.get(href)
-        soup = BeautifulSoup(http_doc.text, 'html.parser')
-        xbmc.log("Now we have SOUP %s, bon appetit!" % soup.name, xbmc.LOGINFO)
-
-        path = ""
-        playcontrol = soup.find_all("iframe", limit=1)
-        if playcontrol:
-            path = playcontrol[0]["src"]
+        if 'episodes' in self.params:
+            videos = requests.get(self.get_url(self.api_url + '/videos', episodes=self.params['episodes'])).json()
         else:
-            playcontrol = soup.find_all("div", "program-top__video", limit=1)
-            if playcontrol:
-                videoid = playcontrol[0].a['href'].split('/')[2]
-                path = "https://player.vgtrk.com/iframe/video/id/%s/start_zoom/true/showZoomBtn/false/sid/smotrim" \
-                       "/isPlay/true/mute/false/" % videoid
+            videos = requests.get(self.get_url(self.api_url + '/videos', brands=self.params['brands'])).json()
 
-        xbmc.log("Play video %s" % path, xbmc.LOGINFO)
-        quality = int(self.addon.getSetting("quality"))
-
-        xbmc.log("Quality = %s" % quality, xbmc.LOGINFO)
-
-        vid = se.getVideoInfo(path, quality = quality)
+        try:
+            player = videos['data'][0]['sources']['player']
+            xbmc.log("Play video %s" % player, xbmc.LOGDEBUG)
+            quality = self.addon.getSettingInt("quality")
+            xbmc.log("Quality = %s" % quality, xbmc.LOGDEBUG)
+            vid = se.getVideoInfo(player, quality=quality)
+        except:
+            vid = None
 
         if vid is None:
-            self.show_error_message("Failed to extract video %s" % href)
-            spath = path
+            self.show_error_message("Не удалось получить информацию о видео")
+            return
         else:
             if vid.hasMultipleStreams():
                 for stream in vid.streams():
-                    print stream['formatID']
+                    xbmc.log("Found stream %s" % stream['formatID'], xbmc.LOGDEBUG)
             else:
-                print "Just one stream found - %s" % vid.streams()[0]['formatID']
+                xbmc.log("Just one stream found - %s" % vid.streams()[0]['formatID'], xbmc.LOGDEBUG)
 
             spath = vid.streamURL()
+
+        if self.addon.getSettingBool("addhistory"):
+            resp = requests.get(self.get_url(self.api_url + '/brands/' + self.params['brands'])).json()
+            self.save_brand_to_history(resp['data'])
 
         # Create a playable item with a path to play.
         play_item = xbmcgui.ListItem(path=spath)
@@ -360,6 +371,12 @@ class Smotrim():
             return raw_html
 
     # *** Add-on helpers
+
+    def create_folder(self, folder):
+        if not (os.path.exists(folder) and os.path.isdir(folder)):
+            os.makedirs(folder)
+        return folder
+
     def error(self, message):
         xbmc.log("%s ERROR: %s" % (self.id, message), xbmc.LOGERROR)
 
@@ -374,6 +391,9 @@ class Smotrim():
             return pic['url']
         except:
             return ""
+
+    def get_limit_setting(self):
+        return (self.addon.getSettingInt('itemsperpage') + 1) * 10
 
 if __name__ == '__main__':
     Smotrim = Smotrim()

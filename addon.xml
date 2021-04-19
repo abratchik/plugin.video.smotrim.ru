@@ -5,7 +5,8 @@
     provider-name="Alex Bratchik">
 <requires>
   <import addon="xbmc.python" version="2.1.0"/>
-  <import addon="script.module.youtube.dl" version="21.303.0"/>
+  <import addon="script.module.requests"/>
+  <import addon="script.module.youtube.dl"/>
 </requires>
 <extension point="xbmc.python.pluginsource" library="main.py">
   <provides>video</provides>

@@ -18,7 +18,6 @@ def getVideoInfo(url, quality=None, resolve_redirects=False):
     Quality is 0=SD, 1=720p, 2=1080p, 3=Highest Available
     and represents a maximum.
     """
-    print "Hold on, we are trying to override here !!!!"
 
     if resolve_redirects:
         try:
@@ -47,7 +46,7 @@ def getVideoInfo(url, quality=None, resolve_redirects=False):
 
 
 def _selectVideoQuality(r, quality=None):
-    print "We are selecting video quality here !!!!!!!!"
+
     if quality is None:
         quality = util.getSetting('video_quality', 1)
 

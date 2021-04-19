@@ -10,17 +10,12 @@ LTS.
 The following packages need to be present in your system
 for addon to work properly. Below is th list of packages:
 
-- youtube-dl
 - ffmpeg
-- BeautifulSOUP
 
 Installation of them depends on your host OS. The commands 
 for Ubuntu below:
 
-pip install youtube-dl beautifulsoup4
-
 sudo apt install ffmpeg
-
 
 ## Installation 
 Installation is simple - just download the latest zipped
