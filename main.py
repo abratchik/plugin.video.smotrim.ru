@@ -8,7 +8,6 @@ Video plugin for Smotrim.ru portal
 """
 import os
 import sys
-import time
 from stat import S_ISREG, ST_CTIME, ST_MODE
 import re
 import json
@@ -157,7 +156,6 @@ class Smotrim():
     def get_brands_by_tag(self):
         pass
 
-
     # Search by name
     def search(self):
 
@@ -218,12 +216,12 @@ class Smotrim():
     # Add Search menu to categories
     def add_search(self):
         self.categories.append({'id': "search",
-                                'label': "[B]%s[/B]" % "Поиск",
-                                'is_folder': True,
-                                'url': self.get_url(self.url, action='search', context='search', url=self.url),
-                                'info': {'plot': "Поиск по сайту Smotrim.ru"},
-                                'art': {'icon': "DefaultAddonsSearch.png"}
-                                })
+                                 'label': "[B]%s[/B]" % "Поиск",
+                                 'is_folder': True,
+                                 'url': self.get_url(self.url, action='search', context='search', url=self.url),
+                                 'info': {'plot': "Поиск по сайту Smotrim.ru"},
+                                 'art': {'icon': "DefaultAddonsSearch.png"}
+                                 })
 
     def history(self):
         limit = self.get_limit_setting()
@@ -237,12 +235,11 @@ class Smotrim():
             with open(path, 'r+') as f:
                 print "history len = %s" % len(self.brands['data'])
                 if len(self.brands['data']) < limit:
-                       self.brands['data'].append(json.load(f))
+                    self.brands['data'].append(json.load(f))
                 else:
                     # autocleanup
                     # TODO: add history pagination
                     os.remove(path)
-                    
 
     def save_brand_to_history(self, brand):
         with open(os.path.join(self.history_folder, "brand_%s.json" % brand['id']), 'w+') as f:
@@ -394,6 +391,7 @@ class Smotrim():
 
     def get_limit_setting(self):
         return (self.addon.getSettingInt('itemsperpage') + 1) * 10
+
 
 if __name__ == '__main__':
     Smotrim = Smotrim()
