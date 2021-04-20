@@ -24,6 +24,26 @@ import lib.streamextractor as se
 
 Addon = xbmcaddon.Addon(id='plugin.video.smotrim.ru')
 
+TAGS = [{'tag': 2994, 'title': "Премьеры"},
+        {'tag': 1083, 'title': "Художественные фильмы"},
+        {'tag': 10000001,
+         'title': "Документальные фильмы",
+         'tags': [{'tag': 231079, 'title': "Сейчас смотрят"},
+                  {'tag': 231099, 'title': "Биографии"},
+                  {'tag': 231100, 'title': "Политика"},
+                  {'tag': 231080, 'title': "Общество"},
+                  {'tag': 231101, 'title': "История"},
+                  {'tag': 231102, 'title': "Спорт"},
+                  {'tag': 231081, 'title': "Культура/Искусство"}]},
+        {'tag': 1045, 'title': "Сериалы"},
+        {'tag': 1080, 'title': "Популярные шоу"},
+        {'tag': 1269, 'title': "Наука"},
+        {'tag': 2463, 'title': "Фильмы о любви"},
+        {'tag': 231939, 'title': "Искусство"},
+        {'tag': 18578, 'title': "Классика"},
+        {'tag': 1120, 'title': "Детям"},
+        {'tag': 223821, 'title': "Самое-самое"}]
+
 
 # Main addon class
 class Smotrim():
@@ -41,16 +61,15 @@ class Smotrim():
 
         self.inext = os.path.join(self.path, 'resources/icons/next.png')
         self.ihistory = os.path.join(self.path, 'resources/icons/history.png')
+        self.ihome = os.path.join(self.path, 'resources/icons/home.png')
 
         self.api_url = "https://api.smotrim.ru/api/v1"
-        self.query_string = ""
 
-        # file and dictionary to save current context
+        self.search_text = ""
+
+        # to save current context
         self.context = "home"
-        self.context_dict = {'home': {'label': 'Home'},
-                             'search': {'label': 'Поиск'},
-                             'episodes': {'label': 'Серии'},
-                             'history': {'label': 'История'}}
+        self.context_title = "Home"
 
         # list to hold current listing
         self.categories = []
@@ -70,32 +89,25 @@ class Smotrim():
 
         self.params = dict(parse_qsl(params_[1:]))
 
+        self.context = self.params['action'] if 'action' in self.params else "home"
+
+        xbmc.log("Action: %s" % self.context, xbmc.LOGINFO)
+
         if self.params:
-            self.context = self.params['context'] if 'context' in self.params else self.context
-            if self.params['action'] == 'episodes':
-                self.get_episodes()
-                self.get_categories()
-                self.mainMenu()
-            elif self.params['action'] == 'search':
-                self.search()
-                self.get_categories()
-                self.mainMenu()
-            elif self.params['action'] == 'history':
-                self.history()
-                self.get_categories()
-                self.mainMenu()
-            elif self.params['action'] == 'play':
+            if self.params['action'] == 'play':
                 self.play()
             else:
-                raise ValueError('Invalid paramstring: {}!'.format(params_))
+                getattr(self, self.context)()
+                self.get_categories()
+                self.menu()
         else:
             # default context is home
             self.get_categories()
-            self.mainMenu()
+            self.menu()
 
-    def mainMenu(self):
+    def menu(self):
 
-        xbmcplugin.setPluginCategory(self.handle, self.context_dict[self.context]['label'])
+        xbmcplugin.setPluginCategory(self.handle, self.context_title)
 
         xbmcplugin.setContent(self.handle, 'videos')
 
@@ -151,30 +163,64 @@ class Smotrim():
                                              limit=limit,
                                              offset=offset))
             self.episodes = resp.json()
+            if 'data' in self.episodes:
+                self.context_title = self.episodes['data'][0]['brandTitle'] if len(self.episodes) > 0 else "Серии"
 
-    # TODO: add more options for search
-    def get_brands_by_tag(self):
-        pass
+    # Search by tag
+    def search_by_tag(self):
 
-    # Search by name
+        tag = int(self.params['tags']) if 'tags' in self.params else None
+        parent = int(self.params['parent']) if 'parent' in self.params else 0
+        limit, offset = self.get_limit_offset()
+
+        if parent != 0:
+            tags = next(T for T in TAGS if T['tag'] == parent)['tags']
+            tag_dict = next(T for T in tags if T['tag'] == tag)
+        else:
+            tag_dict = next(T for T in TAGS if T['tag'] == tag)
+
+
+        self.context_title = tag_dict['title']
+
+        if 'tags' in tag_dict:
+            pass
+        else:
+            self.search_by_url(self.get_url(self.api_url + '/brands',
+                                            tags=tag,
+                                            limit=limit,
+                                            offset=offset) if tag else None)
+
+    # Search by text
     def search(self):
+        self.context_title = "Поиск"
+        self.search_text = self.params['search'] if 'search' in self.params else self.get_user_input()
+        limit, offset = self.get_limit_offset()
+        self.search_by_url(self.get_url(self.api_url + '/brands',
+                                        search=self.search_text,
+                                        limit=limit,
+                                        offset=offset) if self.search_text else None)
 
-        self.query_string = self.params['search'] if 'search' in self.params else self.get_user_input()
-        offset = self.params['offset'] if 'offset' in self.params else 0
-        limit = (self.addon.getSettingInt('itemsperpage') + 1) * 10
-
-        xbmc.log("items per page: %s" % limit, xbmc.LOGINFO)
-
-        if self.query_string:
-            xbmc.log("Load search results for query [ %s ] " % self.query_string, xbmc.LOGINFO)
-
-            resp = requests.get(self.get_url(self.api_url + '/brands',
-                                             search=self.query_string,
-                                             limit=limit,
-                                             offset=offset))
+    def search_by_url(self, url):
+        if url:
+            xbmc.log("Load search results for url [ %s ] " % url, xbmc.LOGDEBUG)
+            resp = requests.get(url)
             self.brands = resp.json()
         else:
             self.context = "home"
+
+    def get_limit_offset(self):
+        offset = self.params['offset'] if 'offset' in self.params else 0
+        limit = (self.addon.getSettingInt('itemsperpage') + 1) * 10
+        return limit, offset
+
+    def get_limit_offset_pages(self, resp_dict):
+        if 'pagination' in resp_dict:
+            offset = resp_dict['pagination']['offset'] if 'pagination' in resp_dict else 0
+            limit = resp_dict['pagination']['limit'] if 'pagination' in resp_dict else 0
+            pages = resp_dict['pagination']['pages'] if 'pagination' in resp_dict else 0
+            return limit, offset, pages
+        else:
+            return 0, 0, 0
 
     # Get categories for the current context
     def get_categories(self):
@@ -183,32 +229,67 @@ class Smotrim():
 
         if self.context == 'home':
             self.add_search()
+            self.add_searches_by_tags(TAGS)
+
             if self.addon.getSettingBool("addhistory"):
                 self.add_history()
 
-        offset = self.brands['pagination']['offset'] if 'pagination' in self.brands else 0
-        limit = self.brands['pagination']['limit'] if 'pagination' in self.brands else 0
-        pages = self.brands['pagination']['pages'] if 'pagination' in self.brands else 0
+        offset = 0
+        pages = 0
+        url = ""
 
-        if 'data' in self.brands:
-            for brand in self.brands['data']:
-                self.categories.append(self.create_brand_dict(brand))
+        if self.context == "search":
+            if 'data' in self.brands:
+                limit, offset, pages = self.get_limit_offset_pages(self.brands)
+                for brand in self.brands['data']:
+                    self.categories.append(self.create_brand_dict(brand))
+                url = self.get_url(self.url, action=self.context,
+                                   search=self.search_text,
+                                   offset=offset + 1,
+                                   limit=limit,
+                                   url=self.url)
+        elif self.context == "search_by_tag":
+            if 'data' in self.brands:
+                limit, offset, pages = self.get_limit_offset_pages(self.brands)
+                for brand in self.brands['data']:
+                    self.categories.append(self.create_brand_dict(brand))
+                url = self.get_url(self.url, action=self.context,
+                                   tags=self.params['tags'],
+                                   offset=offset + 1,
+                                   limit=limit,
+                                   url=self.url)
+            else:
+                tag_dict = next(T for T in TAGS if T['tag'] == int(self.params['tags']))
+                if 'tags' in tag_dict:
+                    self.add_searches_by_tags(tag_dict['tags'], tag_dict['tag'])
 
-        elif 'data' in self.episodes:
-            for ep in self.episodes['data']:
-                self.categories.append(self.create_episode_dict(ep))
-                self.context_dict['episodes']['label'] = ep['brandTitle']
+        elif self.context == "get_episodes":
+            if 'data' in self.episodes:
+                limit, offset, pages = self.get_limit_offset_pages(self.episodes)
+                for ep in self.episodes['data']:
+                    self.categories.append(self.create_episode_dict(ep))
+                url = self.get_url(self.url, action=self.context,
+                                   brands=self.params['brands'],
+                                   offset=offset + 1,
+                                   limit=limit,
+                                   url=self.url)
+        else:
+            if 'data' in self.brands:
+                for brand in self.brands['data']:
+                    self.categories.append(self.create_brand_dict(brand))
 
-        if (offset < pages - 1 and pages > 1):
-            self.categories.append({'id': "forward",
-                                    'label': "[B]%s[/B]" % "Вперед",
+        if offset < pages - 1 and pages > 1:
+            self.categories.append({'id': "home",
+                                    'label': "[COLOR=FF00FF00][B]%s[/B][/COLOR]" % "В начало",
                                     'is_folder': True,
-                                    'url': self.get_url(self.url, action=self.params['action'],
-                                                        context=self.params['context'],
-                                                        search=self.query_string,
-                                                        offset=offset + 1,
-                                                        limit=limit,
-                                                        url=self.url),
+                                    'url': self.url,
+                                    'info': {'plot': "Вернуться на главную страницу" },
+                                    'art': {'icon': self.ihome}
+                                    })
+            self.categories.append({'id': "forward",
+                                    'label': "[COLOR=FF00FF00][B]%s[/B][/COLOR]" % "Вперед",
+                                    'is_folder': True,
+                                    'url': url,
                                     'info': {'plot': "Страница %s из %s" % (offset + 1, pages)},
                                     'art': {'icon': self.inext}
                                     })
@@ -216,14 +297,32 @@ class Smotrim():
     # Add Search menu to categories
     def add_search(self):
         self.categories.append({'id': "search",
-                                 'label': "[B]%s[/B]" % "Поиск",
-                                 'is_folder': True,
-                                 'url': self.get_url(self.url, action='search', context='search', url=self.url),
-                                 'info': {'plot': "Поиск по сайту Smotrim.ru"},
-                                 'art': {'icon': "DefaultAddonsSearch.png"}
-                                 })
+                                'label': "[COLOR=FF00FF00][B]%s[/B][/COLOR]" % "Поиск",
+                                'is_folder': True,
+                                'url': self.get_url(self.url, action='search', url=self.url),
+                                'info': {'plot': "Поиск по сайту Smotrim.ru"},
+                                'art': {'icon': "DefaultAddonsSearch.png"}
+                                })
+
+    def add_search_by_tag(self, tag, tagname, taginfo=None, tagicon="DefaultAddonsSearch.png", parent=0):
+        self.categories.append({'id': "tag%s" % str(tag),
+                                'label': "[B]%s[/B]" % tagname,
+                                'is_folder': True,
+                                'url': self.get_url(self.url,
+                                                    action='search_by_tag',
+                                                    tags=tag,
+                                                    parent=parent,
+                                                    url=self.url),
+                                'info': {'plot': taginfo if taginfo else tagname},
+                                'art': {'icon': tagicon}
+                                })
+
+    def add_searches_by_tags(self, tags, parent=0):
+        for tag in tags:
+            self.add_search_by_tag(tag['tag'], tag['title'], tag['title'], parent=parent)
 
     def history(self):
+        self.context_title = "История"
         limit = self.get_limit_setting()
         data = (os.path.join(self.history_folder, fn) for fn in os.listdir(self.history_folder))
         data = ((os.stat(path), path) for path in data)
@@ -233,12 +332,11 @@ class Smotrim():
         self.brands = {'data': [], }
         for cdate, path in sorted(data, reverse=True):
             with open(path, 'r+') as f:
-                print "history len = %s" % len(self.brands['data'])
+                xbmc.log("history len = %s" % len(self.brands['data']), xbmc.LOGDEBUG)
                 if len(self.brands['data']) < limit:
                     self.brands['data'].append(json.load(f))
                 else:
                     # autocleanup
-                    # TODO: add history pagination
                     os.remove(path)
 
     def save_brand_to_history(self, brand):
@@ -247,9 +345,9 @@ class Smotrim():
 
     def add_history(self):
         self.categories.append({'id': "history",
-                                'label': "[B]%s[/B]" % "История",
+                                'label': "[COLOR=FF00FF00][B]%s[/B][/COLOR]" % "История",
                                 'is_folder': True,
-                                'url': self.get_url(self.url, action='history', context='history', url=self.url),
+                                'url': self.get_url(self.url, action='history', url=self.url),
                                 'info': {'plot': "Ваша история просмотров видео Smotrim.ru"},
                                 'art': {'icon': self.ihistory}
                                 })
@@ -259,15 +357,11 @@ class Smotrim():
                 'is_folder': brand['hasManySeries'],
                 'label': "[B]%s[/B]" % brand['title'] if brand['hasManySeries'] else brand['title'],
                 'url': self.get_url(self.url,
-                                    action="episodes",
-                                    context="episodes",
-                                    search=self.query_string,
+                                    action="get_episodes",
                                     brands=brand['id'],
                                     url=self.url) if brand['hasManySeries']
                 else self.get_url(self.url,
                                   action="play",
-                                  context=self.context,
-                                  search=self.query_string,
                                   brands=brand['id'],
                                   url=self.url),
 
@@ -292,8 +386,6 @@ class Smotrim():
                 'is_folder': False,
                 'url': self.get_url(self.url,
                                     action="play",
-                                    context=self.context,
-                                    search=self.query_string,
                                     brands=ep['brandId'],
                                     episodes=ep['id'],
                                     url=self.url),
