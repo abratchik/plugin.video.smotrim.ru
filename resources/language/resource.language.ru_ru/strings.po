@@ -8,14 +8,158 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Language: ru\n"
 
-msgctxt "#70200"
-msgid "SD"
-msgstr "SD"
+msgctxt "#30000"
+msgid "Сведения"
+msgstr "Сведения"
 
-msgctxt "#70201"
-msgid "780p"
-msgstr "780p"
+msgctxt "#30010"
+msgid "Поиск"
+msgstr "Поиск"
 
-msgctxt "#70202"
-msgid "1080p"
-msgstr "1080p"
+msgctxt "#30011"
+msgid "Поиск по сайту Smotrim.ru"
+msgstr "Поиск по сайту Smotrim.ru"
+
+msgctxt "#30020"
+msgid "В начало"
+msgstr "В начало"
+
+msgctxt "#30021"
+msgid "Вернуться на главную страницу"
+msgstr "Вернуться на главную страницу"
+
+msgctxt "#30030"
+msgid "Вперед"
+msgstr "Вперед"
+
+msgctxt "#30031"
+msgid "Страница %s из %s"
+msgstr "Страница %s из %s"
+
+msgctxt "#30040"
+msgid "Серии"
+msgstr "Серии"
+
+msgctxt "#30050"
+msgid "История"
+msgstr "История"
+
+msgctxt "#30051"
+msgid "Ваша история просмотров видео Smotrim.ru"
+msgstr "Ваша история просмотров видео Smotrim.ru"
+
+msgctxt "#30060"
+msgid "Ошибка воспроизведения видео"
+msgstr "Ошибка воспроизведения видео"
+
+msgctxt "#30100"
+msgid "Профиль"
+msgstr "Профиль"
+
+msgctxt "#30101"
+msgid "Номер телефона"
+msgstr "Номер телефона"
+
+msgctxt "#30110"
+msgid "Интерфейс"
+msgstr "Интерфейс"
+
+msgctxt "#30111"
+msgid "Элементов на странице"
+msgstr "Элементов на странице"
+
+msgctxt "#30112"
+msgid "Вести историю просмотров"
+msgstr "Вести историю просмотров"
+
+msgctxt "#30200"
+msgid "Премьеры"
+msgstr "Премьеры"
+
+msgctxt "#30201"
+msgid "Художественные фильмы"
+msgstr "Художественные фильмы"
+
+msgctxt "#30202"
+msgid "Документальные фильмы"
+msgstr "Документальные фильмы"
+
+msgctxt "#30203"
+msgid "Сейчас смотрят"
+msgstr "Сейчас смотрят"
+
+msgctxt "#30204"
+msgid "Биографии"
+msgstr "Биографии"
+
+msgctxt "#30205"
+msgid "Политика"
+msgstr "Политика"
+
+msgctxt "#30206"
+msgid "Общество"
+msgstr "Общество"
+
+msgctxt "#30207"
+msgid "История"
+msgstr "История"
+
+msgctxt "#30208"
+msgid "Спорт"
+msgstr "Спорт"
+
+msgctxt "#30209"
+msgid "Культура"
+msgstr "Культура"
+
+msgctxt "#30210"
+msgid "Сериалы"
+msgstr "Сериалы"
+
+msgctxt "#30211"
+msgid "Популярные шоу"
+msgstr "Популярные шоу"
+
+msgctxt "#30212"
+msgid "Наука"
+msgstr "Наука"
+
+msgctxt "#30213"
+msgid "Драмы"
+msgstr "Драмы"
+
+msgctxt "#30214"
+msgid "Фильмы о любви"
+msgstr "Фильмы о любви"
+
+msgctxt "#30215"
+msgid "Мелодрамы"
+msgstr "Мелодрамы"
+
+msgctxt "#30216"
+msgid "Детективы"
+msgstr "Детективы"
+
+msgctxt "#30217"
+msgid "Экранизации"
+msgstr "Экранизации"
+
+msgctxt "#30218"
+msgid "Искусство"
+msgstr "Искусство"
+
+msgctxt "#30219"
+msgid "Классика"
+msgstr "Классика"
+
+msgctxt "#30220"
+msgid "Исторические"
+msgstr "Исторические"
+
+msgctxt "#30221"
+msgid "Детям"
+msgstr "Детям"
+
+msgctxt "#30222"
+msgid "Самое-самое"
+msgstr "Самое-самое"

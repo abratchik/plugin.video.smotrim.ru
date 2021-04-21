@@ -20,29 +20,7 @@ import xbmcgui
 import xbmcaddon
 import xbmcplugin
 
-import lib.streamextractor as se
-
 Addon = xbmcaddon.Addon(id='plugin.video.smotrim.ru')
-
-TAGS = [{'tag': 2994, 'title': "Премьеры"},
-        {'tag': 1083, 'title': "Художественные фильмы"},
-        {'tag': 10000001,
-         'title': "Документальные фильмы",
-         'tags': [{'tag': 231079, 'title': "Сейчас смотрят"},
-                  {'tag': 231099, 'title': "Биографии"},
-                  {'tag': 231100, 'title': "Политика"},
-                  {'tag': 231080, 'title': "Общество"},
-                  {'tag': 231101, 'title': "История"},
-                  {'tag': 231102, 'title': "Спорт"},
-                  {'tag': 231081, 'title': "Культура/Искусство"}]},
-        {'tag': 1045, 'title': "Сериалы"},
-        {'tag': 1080, 'title': "Популярные шоу"},
-        {'tag': 1269, 'title': "Наука"},
-        {'tag': 2463, 'title': "Фильмы о любви"},
-        {'tag': 231939, 'title': "Искусство"},
-        {'tag': 18578, 'title': "Классика"},
-        {'tag': 1120, 'title': "Детям"},
-        {'tag': 223821, 'title': "Самое-самое"}]
 
 
 # Main addon class
@@ -67,6 +45,8 @@ class Smotrim():
 
         self.search_text = ""
 
+        self.language = self.addon.getLocalizedString
+
         # to save current context
         self.context = "home"
         self.context_title = "Home"
@@ -78,7 +58,30 @@ class Smotrim():
         self.brands = {}
         self.episodes = {}
 
-        self.debug = True
+        self.TAGS = [{'tag': 2994, 'title': self.language(30200)},
+                     {'tag': 1083, 'title': self.language(30201)},
+                     {'tag': 10000002,
+                      'title': self.language(30202),
+                      'tags': [{'tag': 231079, 'title': self.language(30203) },
+                               {'tag': 231099, 'title': self.language(30204)},
+                               {'tag': 231100, 'title': self.language(30205)},
+                               {'tag': 231080, 'title': self.language(30206)},
+                               {'tag': 231101, 'title': self.language(30207)},
+                               {'tag': 231102, 'title': self.language(30208)},
+                               {'tag': 231081, 'title': self.language(30209)}]},
+                     {'tag': 1045, 'title': self.language(30210)},
+                     {'tag': 1080, 'title': self.language(30211)},
+                     {'tag': 1269, 'title': self.language(30212)},
+                     {'tag': 1048, 'title': self.language(30213)},
+                     {'tag': 2463, 'title': self.language(30214)},
+                     {'tag': 4038, 'title': self.language(30215)},
+                     {'tag': 1108, 'title': self.language(30216)},
+                     {'tag': 1049, 'title': self.language(30217)},
+                     {'tag': 231939, 'title': self.language(30218)},
+                     {'tag': 18578, 'title': self.language(30219)},
+                     {'tag': 3931, 'title': self.language(30220)},
+                     {'tag': 1120, 'title': self.language(30221)},
+                     {'tag': 223821, 'title': self.language(30222)}]
 
     def main(self):
         xbmc.log("Addon: %s" % self.id, xbmc.LOGINFO)
@@ -123,7 +126,7 @@ class Smotrim():
             is_folder = category['is_folder']
             list_item.setProperty('IsPlayable', 'false' if is_folder else 'true')
             if not is_folder:
-                list_item.addContextMenuItems([('Information', 'XBMC.Action(Info)'), ])
+                list_item.addContextMenuItems([(self.language(30000), 'XBMC.Action(Info)'), ])
 
             if 'info' in category:
                 for info in category['info']:
@@ -164,7 +167,8 @@ class Smotrim():
                                              offset=offset))
             self.episodes = resp.json()
             if 'data' in self.episodes:
-                self.context_title = self.episodes['data'][0]['brandTitle'] if len(self.episodes) > 0 else "Серии"
+                self.context_title = self.episodes['data'][0]['brandTitle'] \
+                    if len(self.episodes) > 0 else self.language(30040)
 
     # Search by tag
     def search_by_tag(self):
@@ -174,11 +178,10 @@ class Smotrim():
         limit, offset = self.get_limit_offset()
 
         if parent != 0:
-            tags = next(T for T in TAGS if T['tag'] == parent)['tags']
+            tags = next(T for T in self.TAGS if T['tag'] == parent)['tags']
             tag_dict = next(T for T in tags if T['tag'] == tag)
         else:
-            tag_dict = next(T for T in TAGS if T['tag'] == tag)
-
+            tag_dict = next(T for T in self.TAGS if T['tag'] == tag)
 
         self.context_title = tag_dict['title']
 
@@ -192,7 +195,7 @@ class Smotrim():
 
     # Search by text
     def search(self):
-        self.context_title = "Поиск"
+        self.context_title = self.language(30010)
         self.search_text = self.params['search'] if 'search' in self.params else self.get_user_input()
         limit, offset = self.get_limit_offset()
         self.search_by_url(self.get_url(self.api_url + '/brands',
@@ -229,7 +232,7 @@ class Smotrim():
 
         if self.context == 'home':
             self.add_search()
-            self.add_searches_by_tags(TAGS)
+            self.add_searches_by_tags(self.TAGS)
 
             if self.addon.getSettingBool("addhistory"):
                 self.add_history()
@@ -259,7 +262,7 @@ class Smotrim():
                                    limit=limit,
                                    url=self.url)
             else:
-                tag_dict = next(T for T in TAGS if T['tag'] == int(self.params['tags']))
+                tag_dict = next(T for T in self.TAGS if T['tag'] == int(self.params['tags']))
                 if 'tags' in tag_dict:
                     self.add_searches_by_tags(tag_dict['tags'], tag_dict['tag'])
 
@@ -280,27 +283,27 @@ class Smotrim():
 
         if offset < pages - 1 and pages > 1:
             self.categories.append({'id': "home",
-                                    'label': "[COLOR=FF00FF00][B]%s[/B][/COLOR]" % "В начало",
+                                    'label': "[COLOR=FF00FF00][B]%s[/B][/COLOR]" % self.language(30020),
                                     'is_folder': True,
                                     'url': self.url,
-                                    'info': {'plot': "Вернуться на главную страницу" },
+                                    'info': {'plot': self.language(30021)},
                                     'art': {'icon': self.ihome}
                                     })
             self.categories.append({'id': "forward",
-                                    'label': "[COLOR=FF00FF00][B]%s[/B][/COLOR]" % "Вперед",
+                                    'label': "[COLOR=FF00FF00][B]%s[/B][/COLOR]" % self.language(30030),
                                     'is_folder': True,
                                     'url': url,
-                                    'info': {'plot': "Страница %s из %s" % (offset + 1, pages)},
+                                    'info': {'plot': self.language(30031) % (offset + 1, pages)},
                                     'art': {'icon': self.inext}
                                     })
 
     # Add Search menu to categories
     def add_search(self):
         self.categories.append({'id': "search",
-                                'label': "[COLOR=FF00FF00][B]%s[/B][/COLOR]" % "Поиск",
+                                'label': "[COLOR=FF00FF00][B]%s[/B][/COLOR]" % self.language(30010),
                                 'is_folder': True,
                                 'url': self.get_url(self.url, action='search', url=self.url),
-                                'info': {'plot': "Поиск по сайту Smotrim.ru"},
+                                'info': {'plot': self.language(30011)},
                                 'art': {'icon': "DefaultAddonsSearch.png"}
                                 })
 
@@ -322,7 +325,7 @@ class Smotrim():
             self.add_search_by_tag(tag['tag'], tag['title'], tag['title'], parent=parent)
 
     def history(self):
-        self.context_title = "История"
+        self.context_title = self.language(30050)
         limit = self.get_limit_setting()
         data = (os.path.join(self.history_folder, fn) for fn in os.listdir(self.history_folder))
         data = ((os.stat(path), path) for path in data)
@@ -345,28 +348,31 @@ class Smotrim():
 
     def add_history(self):
         self.categories.append({'id': "history",
-                                'label': "[COLOR=FF00FF00][B]%s[/B][/COLOR]" % "История",
+                                'label': "[COLOR=FF00FF00][B]%s[/B][/COLOR]" % self.language(30050),
                                 'is_folder': True,
                                 'url': self.get_url(self.url, action='history', url=self.url),
-                                'info': {'plot': "Ваша история просмотров видео Smotrim.ru"},
+                                'info': {'plot': self.language(30051)},
                                 'art': {'icon': self.ihistory}
                                 })
 
     def create_brand_dict(self, brand):
+        is_folder = brand['hasManySeries'] or \
+                    brand['countVideos'] > 1 or \
+                    brand['countAudioEpisodes'] > 1
         return {'id': brand['id'],
-                'is_folder': brand['hasManySeries'],
-                'label': "[B]%s[/B]" % brand['title'] if brand['hasManySeries'] else brand['title'],
+                'is_folder': is_folder,
+                'label': "[B]%s[/B]" % brand['title'] if is_folder else brand['title'],
                 'url': self.get_url(self.url,
                                     action="get_episodes",
                                     brands=brand['id'],
-                                    url=self.url) if brand['hasManySeries']
+                                    url=self.url) if is_folder
                 else self.get_url(self.url,
                                   action="play",
                                   brands=brand['id'],
                                   url=self.url),
 
                 'info': {'genre': brand['genre'],
-                         'mediatype': "tvshow" if brand['hasManySeries'] else "video",
+                         'mediatype': "tvshow" if is_folder else "video",
                          'year': brand['productionYearStart'],
                          'plot': self.cleanhtml(brand['body']),
                          'plotoutline': brand['anons'],
@@ -381,6 +387,7 @@ class Smotrim():
                 }
 
     def create_episode_dict(self, ep):
+        is_audio = ep['countAudios'] > 0
         return {'id': ep['id'],
                 'label': ep['combinedTitle'],
                 'is_folder': False,
@@ -388,24 +395,29 @@ class Smotrim():
                                     action="play",
                                     brands=ep['brandId'],
                                     episodes=ep['id'],
+                                    is_audio=is_audio,
                                     url=self.url),
                 'info': {'mediatype': "episode",
                          'plot': self.cleanhtml(ep['body']),
                          'plotoutline': ep['anons'],
                          'episode': ep['series'],
                          'dateadded': ep['dateRec']
-                         },
+                         } if not is_audio else
+                {'mediatype': "music",
+                 'plot': ep['title']},
                 'art': {'fanart': self.get_pic_from_plist(ep['pictures'], 'hd'),
                         'icon': self.get_pic_from_plist(ep['pictures'], 'lw'),
                         'thumb': self.get_pic_from_plist(ep['pictures'], 'lw'),
                         'poster': self.get_pic_from_plist(ep['pictures'], 'vhdr')
-                        }
+                        } if not is_audio else
+                {'icon': "DefaultAudio.png",
+                 'thumb': "DefaultAudio.png"}
                 }
 
     def get_user_input(self):
         kbd = xbmc.Keyboard()
         kbd.setDefault('')
-        kbd.setHeading("Поиск")
+        kbd.setHeading(self.language(30010))
         kbd.doModal()
         keyword = None
 
@@ -416,40 +428,30 @@ class Smotrim():
 
     def play(self):
 
-        if 'episodes' in self.params:
-            videos = requests.get(self.get_url(self.api_url + '/videos', episodes=self.params['episodes'])).json()
-        else:
-            videos = requests.get(self.get_url(self.api_url + '/videos', brands=self.params['brands'])).json()
-
         try:
-            player = videos['data'][0]['sources']['player']
-            xbmc.log("Play video %s" % player, xbmc.LOGDEBUG)
-            quality = self.addon.getSettingInt("quality")
-            xbmc.log("Quality = %s" % quality, xbmc.LOGDEBUG)
-            vid = se.getVideoInfo(player, quality=quality)
-        except:
-            vid = None
-
-        if vid is None:
-            self.show_error_message("Не удалось получить информацию о видео")
-            return
-        else:
-            if vid.hasMultipleStreams():
-                for stream in vid.streams():
-                    xbmc.log("Found stream %s" % stream['formatID'], xbmc.LOGDEBUG)
+            if 'episodes' in self.params:
+                if json.loads(self.params['is_audio'].lower()):
+                    audios = requests.get(
+                        self.get_url(self.api_url + '/audios', episodes=self.params['episodes'])).json()
+                    spath = audios['data'][0]['sources']['mp3']
+                else:
+                    videos = requests.get(
+                        self.get_url(self.api_url + '/videos', episodes=self.params['episodes'])).json()
+                    spath = videos['data'][0]['sources']['m3u8']['auto']
             else:
-                xbmc.log("Just one stream found - %s" % vid.streams()[0]['formatID'], xbmc.LOGDEBUG)
+                videos = requests.get(self.get_url(self.api_url + '/videos', brands=self.params['brands'])).json()
+                spath = videos['data'][0]['sources']['m3u8']['auto']
 
-            spath = vid.streamURL()
-
-        if self.addon.getSettingBool("addhistory"):
-            resp = requests.get(self.get_url(self.api_url + '/brands/' + self.params['brands'])).json()
-            self.save_brand_to_history(resp['data'])
-
-        # Create a playable item with a path to play.
-        play_item = xbmcgui.ListItem(path=spath)
-        # Pass the item to the Kodi player.
-        xbmcplugin.setResolvedUrl(self.handle, True, listitem=play_item)
+            if self.addon.getSettingBool("addhistory"):
+                resp = requests.get(self.get_url(self.api_url + '/brands/' + self.params['brands'])).json()
+                self.save_brand_to_history(resp['data'])
+            play_item = xbmcgui.ListItem(path=spath)
+            if '.m3u8' in spath:
+                play_item.setProperty('inputstreamaddon', 'inputstream.adaptive')
+                play_item.setProperty('inputstream.adaptive.manife st_type', 'hls')
+            xbmcplugin.setResolvedUrl(self.handle, True, listitem=play_item)
+        except:
+            self.show_error_message(self.language(30060))
 
     def cleanhtml(self, raw_html):
         try:
