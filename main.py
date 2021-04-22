@@ -11,7 +11,7 @@ import sys
 from stat import S_ISREG, ST_CTIME, ST_MODE
 import re
 import json
-import requests
+import urllib2
 from urllib import urlencode
 from urlparse import parse_qsl
 
@@ -49,7 +49,7 @@ class Smotrim():
 
         # to save current context
         self.context = "home"
-        self.context_title = "Home"
+        self.context_title = self.language(30300)
 
         # list to hold current listing
         self.categories = []
@@ -113,14 +113,15 @@ class Smotrim():
 
         xbmcplugin.setPluginCategory(self.handle, self.context_title)
 
-        xbmcplugin.setContent(self.handle, 'videos')
+        if self.context == "home":
+            xbmcplugin.setContent(self.handle, 'files')
+        else:
+            xbmcplugin.setContent(self.handle, 'videos')
 
         # Iterate through categories
         for category in self.categories:
             # Create a list item with a text label and a thumbnail image.
             list_item = xbmcgui.ListItem(label=category['label'])
-
-            list_item.setInfo('video', {'title': category['label']})
 
             url = category['url']
 
@@ -137,10 +138,8 @@ class Smotrim():
                 for art in category['art']:
                     list_item.setArt({art: category['art'][art]})
 
-            # Add our item to the Kodi virtual folder listing.
             xbmcplugin.addDirectoryItem(self.handle, url, list_item, is_folder)
-        # Add a sort method for the virtual folder items (alphabetically)
-        # xbmcplugin.addSortMethod(self.handle, xbmcplugin.SORT_METHOD_LABEL)
+
         # Finish creating a virtual folder.
         xbmcplugin.endOfDirectory(self.handle)
 
@@ -162,11 +161,11 @@ class Smotrim():
         if brand:
             xbmc.log("Load episodes for brand [ %s ] " % brand, xbmc.LOGINFO)
 
-            resp = requests.get(self.get_url(self.api_url + '/episodes',
+            self.episodes = self.get(self.get_url(self.api_url + '/episodes',
                                              brands=brand,
                                              limit=limit,
                                              offset=offset))
-            self.episodes = resp.json()
+            
             if 'data' in self.episodes:
                 self.context_title = self.episodes['data'][0]['brandTitle'] \
                     if len(self.episodes) > 0 else self.language(30040)
@@ -207,8 +206,7 @@ class Smotrim():
     def search_by_url(self, url):
         if url:
             xbmc.log("Load search results for url [ %s ] " % url, xbmc.LOGDEBUG)
-            resp = requests.get(url)
-            self.brands = resp.json()
+            self.brands = self.get(url)
         else:
             self.context = "home"
 
@@ -271,7 +269,8 @@ class Smotrim():
             if 'data' in self.episodes:
                 limit, offset, pages = self.get_limit_offset_pages(self.episodes)
                 for ep in self.episodes['data']:
-                    self.categories.append(self.create_episode_dict(ep))
+                    if ep['countVideos'] > 0 or ep['countAudios'] > 0:
+                        self.categories.append(self.create_episode_dict(ep))
                 url = self.get_url(self.url, action=self.context,
                                    brands=self.params['brands'],
                                    offset=offset + 1,
@@ -372,7 +371,8 @@ class Smotrim():
                                   brands=brand['id'],
                                   url=self.url),
 
-                'info': {'genre': brand['genre'],
+                'info': {'title': brand['title'],
+                         'genre': brand['genre'],
                          'mediatype': "tvshow" if is_folder else "video",
                          'year': brand['productionYearStart'],
                          'plot': self.cleanhtml(brand['body']),
@@ -398,7 +398,8 @@ class Smotrim():
                                     episodes=ep['id'],
                                     is_audio=is_audio,
                                     url=self.url),
-                'info': {'mediatype': "episode",
+                'info': {'title': ep['combinedTitle'],
+                         'mediatype': "episode",
                          'plot': self.cleanhtml(ep['body']),
                          'plotoutline': ep['anons'],
                          'episode': ep['series'],
@@ -432,19 +433,19 @@ class Smotrim():
         try:
             if 'episodes' in self.params:
                 if json.loads(self.params['is_audio'].lower()):
-                    audios = requests.get(
-                        self.get_url(self.api_url + '/audios', episodes=self.params['episodes'])).json()
+                    audios = self.get(
+                        self.get_url(self.api_url + '/audios', episodes=self.params['episodes']))
                     spath = audios['data'][0]['sources']['mp3']
                 else:
-                    videos = requests.get(
-                        self.get_url(self.api_url + '/videos', episodes=self.params['episodes'])).json()
+                    videos = self.get(
+                        self.get_url(self.api_url + '/videos', episodes=self.params['episodes']))
                     spath = videos['data'][0]['sources']['m3u8']['auto']
             else:
-                videos = requests.get(self.get_url(self.api_url + '/videos', brands=self.params['brands'])).json()
+                videos = self.get(self.get_url(self.api_url + '/videos', brands=self.params['brands']))
                 spath = videos['data'][0]['sources']['m3u8']['auto']
 
             if self.addon.getSettingBool("addhistory"):
-                resp = requests.get(self.get_url(self.api_url + '/brands/' + self.params['brands'])).json()
+                resp = self.get(self.get_url(self.api_url + '/brands/' + self.params['brands']))
                 self.save_brand_to_history(resp['data'])
             play_item = xbmcgui.ListItem(path=spath)
             if '.m3u8' in spath:
@@ -463,6 +464,10 @@ class Smotrim():
             return raw_html
 
     # *** Add-on helpers
+
+    def get(self, url):
+        response = urllib2.urlopen(url)
+        return json.load(response)
 
     def create_folder(self, folder):
         if not (os.path.exists(folder) and os.path.isdir(folder)):

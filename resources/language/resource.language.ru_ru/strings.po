@@ -167,3 +167,7 @@ msgstr "Самое-самое"
 msgctxt "#30223"
 msgid "Комедии"
 msgstr "Комедии"
+
+msgctxt "#30300"
+msgid "Главная"
+msgstr "Главная"
