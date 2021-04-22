@@ -167,3 +167,7 @@ msgstr "Trending now"
 msgctxt "#30223"
 msgid "Comedies"
 msgstr "Comedies"
+
+msgctxt "#30300"
+msgid "Home"
+msgstr "Home"
