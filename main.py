@@ -81,7 +81,8 @@ class Smotrim():
                      {'tag': 18578, 'title': self.language(30219)},
                      {'tag': 3931, 'title': self.language(30220)},
                      {'tag': 1120, 'title': self.language(30221)},
-                     {'tag': 223821, 'title': self.language(30222)}]
+                     {'tag': 223821, 'title': self.language(30222)},
+                     {'tag': 1072, 'title': self.language(30223)}]
 
     def main(self):
         xbmc.log("Addon: %s" % self.id, xbmc.LOGINFO)
@@ -448,7 +449,7 @@ class Smotrim():
             play_item = xbmcgui.ListItem(path=spath)
             if '.m3u8' in spath:
                 play_item.setProperty('inputstreamaddon', 'inputstream.adaptive')
-                play_item.setProperty('inputstream.adaptive.manife st_type', 'hls')
+                play_item.setProperty('inputstream.adaptive.manifest_type', 'hls')
             xbmcplugin.setResolvedUrl(self.handle, True, listitem=play_item)
         except:
             self.show_error_message(self.language(30060))

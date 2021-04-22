@@ -163,3 +163,7 @@ msgstr "Children"
 msgctxt "#30222"
 msgid "Trending now"
 msgstr "Trending now"
+
+msgctxt "#30223"
+msgid "Comedies"
+msgstr "Comedies"
