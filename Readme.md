@@ -18,17 +18,17 @@ for Ubuntu below:
 sudo apt install ffmpeg
 
 ## Installation 
-Installation is simple - just download the latest zipped
-release from this repository and install it in Kodi 
-using System settings.
-
-If you encounter any errors when tryig to open plugin, most 
-likely the reason is in missing dependencies. Please check
-kodi.log for details what is missing and install accordingly.
+1. Download  [this file](https://abratchik.github.io/kodi.repository/repository.abratchik/repository.abratchik-1.0.1.zip)
+2. Navigate to <b>System/Add-ons/Install from the zip file</b> and 
+   specify the file downloaded on the previous step. 
+3. Navigate to <b>System/Add-ons/Alex Bratchik Kodi repository/
+   Video add-ons</b>, click on "Smotrim.ru" and install it.
+   
+That's all. Enjoy :)
 
 ## Disclaimer
 This is a non-commercial community-supported addon for the Smotrim.ru web site.
 It has been created for watching Russian programs on the TV screen, just for fun and has no relation
-to the VGTRK company
+to the VGTRK company.
 
 License: [GPL v.3](http://www.gnu.org/copyleft/gpl.html)
