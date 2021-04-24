@@ -30,7 +30,8 @@ class Smotrim():
         self.addon = xbmcaddon.Addon(self.id)
         self.path = self.addon.getAddonInfo('path')
         self.iconpath = os.path.join(self.path, "resources/icons")
-        self.data_path = self.create_folder(os.path.join(self.path, 'data'))
+        self.data_path = self.create_folder(os.path.join(xbmc.translatePath(self.addon.getAddonInfo('profile')),
+                                                         'data'))
         self.history_folder = self.create_folder(os.path.join(self.data_path, 'history'))
 
         self.url = sys.argv[0]
