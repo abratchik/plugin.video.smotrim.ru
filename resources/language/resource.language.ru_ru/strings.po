@@ -9,165 +9,165 @@ msgstr ""
 "Language: ru\n"
 
 msgctxt "#30000"
-msgid "Сведения"
+msgid "Information"
 msgstr "Сведения"
 
 msgctxt "#30010"
-msgid "Поиск"
+msgid "Search"
 msgstr "Поиск"
 
 msgctxt "#30011"
-msgid "Поиск по сайту Smotrim.ru"
+msgid "Search Smotrim.ru website"
 msgstr "Поиск по сайту Smotrim.ru"
 
 msgctxt "#30020"
-msgid "В начало"
+msgid "Home"
 msgstr "В начало"
 
 msgctxt "#30021"
-msgid "Вернуться на главную страницу"
+msgid "Return to Home page"
 msgstr "Вернуться на главную страницу"
 
 msgctxt "#30030"
-msgid "Вперед"
+msgid "Next page"
 msgstr "Вперед"
 
 msgctxt "#30031"
-msgid "Страница %s из %s"
+msgid "Page %s of %s"
 msgstr "Страница %s из %s"
 
 msgctxt "#30040"
-msgid "Серии"
+msgid "Episodes"
 msgstr "Серии"
 
 msgctxt "#30050"
-msgid "История"
+msgid "History"
 msgstr "История"
 
 msgctxt "#30051"
-msgid "Ваша история просмотров видео Smotrim.ru"
+msgid "Last watched movies from Smotrim.ru"
 msgstr "Ваша история просмотров видео Smotrim.ru"
 
 msgctxt "#30060"
-msgid "Ошибка воспроизведения видео"
+msgid "Playback error"
 msgstr "Ошибка воспроизведения видео"
 
 msgctxt "#30100"
-msgid "Профиль"
+msgid "Account"
 msgstr "Профиль"
 
 msgctxt "#30101"
-msgid "Номер телефона"
+msgid "Phone number"
 msgstr "Номер телефона"
 
 msgctxt "#30110"
-msgid "Интерфейс"
+msgid "Interface"
 msgstr "Интерфейс"
 
 msgctxt "#30111"
-msgid "Элементов на странице"
+msgid "Items per page"
 msgstr "Элементов на странице"
 
 msgctxt "#30112"
-msgid "Вести историю просмотров"
+msgid "Keep track of viewing history"
 msgstr "Вести историю просмотров"
 
 msgctxt "#30200"
-msgid "Премьеры"
+msgid "Premieres"
 msgstr "Премьеры"
 
 msgctxt "#30201"
-msgid "Художественные фильмы"
+msgid "Cinema"
 msgstr "Художественные фильмы"
 
 msgctxt "#30202"
-msgid "Документальные фильмы"
+msgid "Documentary"
 msgstr "Документальные фильмы"
 
 msgctxt "#30203"
-msgid "Сейчас смотрят"
+msgid "Watching now"
 msgstr "Сейчас смотрят"
 
 msgctxt "#30204"
-msgid "Биографии"
+msgid "Biopicks"
 msgstr "Биографии"
 
 msgctxt "#30205"
-msgid "Политика"
+msgid "Politics"
 msgstr "Политика"
 
 msgctxt "#30206"
-msgid "Общество"
+msgid "Society"
 msgstr "Общество"
 
 msgctxt "#30207"
-msgid "История"
+msgid "Historical"
 msgstr "История"
 
 msgctxt "#30208"
-msgid "Спорт"
+msgid "Sport"
 msgstr "Спорт"
 
 msgctxt "#30209"
-msgid "Культура"
+msgid "Culture"
 msgstr "Культура"
 
 msgctxt "#30210"
-msgid "Сериалы"
+msgid "Series"
 msgstr "Сериалы"
 
 msgctxt "#30211"
-msgid "Популярные шоу"
+msgid "Popular shows"
 msgstr "Популярные шоу"
 
 msgctxt "#30212"
-msgid "Наука"
+msgid "Sience"
 msgstr "Наука"
 
 msgctxt "#30213"
-msgid "Драмы"
+msgid "Dramas"
 msgstr "Драмы"
 
 msgctxt "#30214"
-msgid "Фильмы о любви"
+msgid "Love stories"
 msgstr "Фильмы о любви"
 
 msgctxt "#30215"
-msgid "Мелодрамы"
+msgid "Melodramas"
 msgstr "Мелодрамы"
 
 msgctxt "#30216"
-msgid "Детективы"
+msgid "Crime"
 msgstr "Детективы"
 
 msgctxt "#30217"
-msgid "Экранизации"
+msgid "Screen versions"
 msgstr "Экранизации"
 
 msgctxt "#30218"
-msgid "Искусство"
+msgid "Art"
 msgstr "Искусство"
 
 msgctxt "#30219"
-msgid "Классика"
+msgid "Classics"
 msgstr "Классика"
 
 msgctxt "#30220"
-msgid "Исторические"
+msgid "Historical"
 msgstr "Исторические"
 
 msgctxt "#30221"
-msgid "Детям"
+msgid "Children"
 msgstr "Детям"
 
 msgctxt "#30222"
-msgid "Самое-самое"
+msgid "Our picks"
 msgstr "Самое-самое"
 
 msgctxt "#30223"
-msgid "Комедии"
+msgid "Comedies"
 msgstr "Комедии"
 
 msgctxt "#30300"
-msgid "Главная"
+msgid "Home"
 msgstr "Главная"
