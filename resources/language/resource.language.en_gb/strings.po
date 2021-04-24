@@ -161,8 +161,8 @@ msgid "Children"
 msgstr "Children"
 
 msgctxt "#30222"
-msgid "Trending now"
-msgstr "Trending now"
+msgid "Our picks"
+msgstr "Our picks"
 
 msgctxt "#30223"
 msgid "Comedies"

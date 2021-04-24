@@ -65,4 +65,4 @@ target/
 *.zip
 
 .DS_Store
-.xcf
+*.xcf

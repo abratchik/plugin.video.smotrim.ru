@@ -29,6 +29,7 @@ class Smotrim():
         self.id = Addon.getAddonInfo('id')
         self.addon = xbmcaddon.Addon(self.id)
         self.path = self.addon.getAddonInfo('path')
+        self.iconpath = os.path.join(self.path, "resources/icons")
         self.data_path = self.create_folder(os.path.join(self.path, 'data'))
         self.history_folder = self.create_folder(os.path.join(self.data_path, 'history'))
 
@@ -36,9 +37,9 @@ class Smotrim():
         self.handle = int(sys.argv[1])
         self.params = {}
 
-        self.inext = os.path.join(self.path, 'resources/icons/next.png')
-        self.ihistory = os.path.join(self.path, 'resources/icons/history.png')
-        self.ihome = os.path.join(self.path, 'resources/icons/home.png')
+        self.inext = os.path.join(self.iconpath, 'next.png')
+        self.ihistory = os.path.join(self.iconpath, 'history.png')
+        self.ihome = os.path.join(self.iconpath, 'home.png')
 
         self.api_url = "https://api.smotrim.ru/api/v1"
 
@@ -57,31 +58,32 @@ class Smotrim():
         self.brands = {}
         self.episodes = {}
 
-        self.TAGS = [{'tag': 2994, 'title': self.language(30200)},
-                     {'tag': 1083, 'title': self.language(30201)},
+        self.TAGS = [{'tag': 2994, 'title': self.language(30200), 'icon': "premieres.png"},
+                     {'tag': 1083, 'title': self.language(30201), 'icon': "cinema.png"},
                      {'tag': 10000002,
                       'title': self.language(30202),
-                      'tags': [{'tag': 231079, 'title': self.language(30203) },
+                      'tags': [{'tag': 231079, 'title': self.language(30203)},
                                {'tag': 231099, 'title': self.language(30204)},
                                {'tag': 231100, 'title': self.language(30205)},
                                {'tag': 231080, 'title': self.language(30206)},
                                {'tag': 231101, 'title': self.language(30207)},
                                {'tag': 231102, 'title': self.language(30208)},
-                               {'tag': 231081, 'title': self.language(30209)}]},
-                     {'tag': 1045, 'title': self.language(30210)},
-                     {'tag': 1080, 'title': self.language(30211)},
-                     {'tag': 1269, 'title': self.language(30212)},
-                     {'tag': 1048, 'title': self.language(30213)},
-                     {'tag': 2463, 'title': self.language(30214)},
-                     {'tag': 4038, 'title': self.language(30215)},
-                     {'tag': 1108, 'title': self.language(30216)},
-                     {'tag': 1049, 'title': self.language(30217)},
-                     {'tag': 231939, 'title': self.language(30218)},
-                     {'tag': 18578, 'title': self.language(30219)},
-                     {'tag': 3931, 'title': self.language(30220)},
-                     {'tag': 1120, 'title': self.language(30221)},
-                     {'tag': 223821, 'title': self.language(30222)},
-                     {'tag': 1072, 'title': self.language(30223)}]
+                               {'tag': 231081, 'title': self.language(30209)}],
+                      'icon': "documentary.png"},
+                     {'tag': 1045, 'title': self.language(30210), 'icon': "series.png"},
+                     {'tag': 1080, 'title': self.language(30211), 'icon': "tvshow.png"},
+                     {'tag': 1269, 'title': self.language(30212), 'icon': "sience.png"},
+                     {'tag': 1048, 'title': self.language(30213), 'icon': "drama.png"},
+                     {'tag': 2463, 'title': self.language(30214), 'icon': "lovestories.png"},
+                     {'tag': 4038, 'title': self.language(30215), 'icon': "melodrama.png"},
+                     {'tag': 1108, 'title': self.language(30216), 'icon': "crime.png"},
+                     {'tag': 1049, 'title': self.language(30217), 'icon': "screenversions.png"},
+                     {'tag': 231939, 'title': self.language(30218), 'icon': "art.png"},
+                     {'tag': 18578, 'title': self.language(30219), 'icon': "classics.png"},
+                     {'tag': 3931, 'title': self.language(30220), 'icon': "historical.png"},
+                     {'tag': 1120, 'title': self.language(30221), 'icon': "children.png"},
+                     {'tag': 223821, 'title': self.language(30222), 'icon': "ourpicks.png"},
+                     {'tag': 1072, 'title': self.language(30223), 'icon': "comedy.png"}]
 
     def main(self):
         xbmc.log("Addon: %s" % self.id, xbmc.LOGINFO)
@@ -161,10 +163,10 @@ class Smotrim():
             xbmc.log("Load episodes for brand [ %s ] " % brand, xbmc.LOGINFO)
 
             self.episodes = self.get(self.get_url(self.api_url + '/episodes',
-                                             brands=brand,
-                                             limit=limit,
-                                             offset=offset))
-            
+                                                  brands=brand,
+                                                  limit=limit,
+                                                  offset=offset))
+
             if 'data' in self.episodes:
                 self.context_title = self.episodes['data'][0]['brandTitle'] \
                     if len(self.episodes) > 0 else self.language(30040)
@@ -321,7 +323,12 @@ class Smotrim():
 
     def add_searches_by_tags(self, tags, parent=0):
         for tag in tags:
-            self.add_search_by_tag(tag['tag'], tag['title'], tag['title'], parent=parent)
+            self.add_search_by_tag(tag['tag'],
+                                   tagname=tag['title'],
+                                   taginfo=tag['title'],
+                                   tagicon=os.path.join(self.iconpath, tag['icon']) if 'icon' in tag
+                                   else "DefaultAddonsSearch.png",
+                                   parent=parent)
 
     def history(self):
         self.context_title = self.language(30050)
