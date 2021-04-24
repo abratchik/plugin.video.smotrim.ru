@@ -1,0 +1,173 @@
+﻿# Kodi Media Center language file
+# Addon Name: smotrim.ru
+# Addon id: plugin.video.smotrim.ru
+# Addon Provider: Alex Bratchik
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: ru\n"
+
+msgctxt "#30000"
+msgid "Information"
+msgstr "Сведения"
+
+msgctxt "#30010"
+msgid "Search"
+msgstr "Поиск"
+
+msgctxt "#30011"
+msgid "Search Smotrim.ru website"
+msgstr "Поиск по сайту Smotrim.ru"
+
+msgctxt "#30020"
+msgid "Home"
+msgstr "В начало"
+
+msgctxt "#30021"
+msgid "Return to Home page"
+msgstr "Вернуться на главную страницу"
+
+msgctxt "#30030"
+msgid "Next page"
+msgstr "Вперед"
+
+msgctxt "#30031"
+msgid "Page %s of %s"
+msgstr "Страница %s из %s"
+
+msgctxt "#30040"
+msgid "Episodes"
+msgstr "Серии"
+
+msgctxt "#30050"
+msgid "History"
+msgstr "История"
+
+msgctxt "#30051"
+msgid "Last watched movies from Smotrim.ru"
+msgstr "Ваша история просмотров видео Smotrim.ru"
+
+msgctxt "#30060"
+msgid "Playback error"
+msgstr "Ошибка воспроизведения видео"
+
+msgctxt "#30100"
+msgid "Account"
+msgstr "Профиль"
+
+msgctxt "#30101"
+msgid "Phone number"
+msgstr "Номер телефона"
+
+msgctxt "#30110"
+msgid "Interface"
+msgstr "Интерфейс"
+
+msgctxt "#30111"
+msgid "Items per page"
+msgstr "Элементов на странице"
+
+msgctxt "#30112"
+msgid "Keep track of viewing history"
+msgstr "Вести историю просмотров"
+
+msgctxt "#30200"
+msgid "Premieres"
+msgstr "Премьеры"
+
+msgctxt "#30201"
+msgid "Cinema"
+msgstr "Художественные фильмы"
+
+msgctxt "#30202"
+msgid "Documentary"
+msgstr "Документальные фильмы"
+
+msgctxt "#30203"
+msgid "Watching now"
+msgstr "Сейчас смотрят"
+
+msgctxt "#30204"
+msgid "Biopicks"
+msgstr "Биографии"
+
+msgctxt "#30205"
+msgid "Politics"
+msgstr "Политика"
+
+msgctxt "#30206"
+msgid "Society"
+msgstr "Общество"
+
+msgctxt "#30207"
+msgid "Historical"
+msgstr "История"
+
+msgctxt "#30208"
+msgid "Sport"
+msgstr "Спорт"
+
+msgctxt "#30209"
+msgid "Culture"
+msgstr "Культура"
+
+msgctxt "#30210"
+msgid "Series"
+msgstr "Сериалы"
+
+msgctxt "#30211"
+msgid "Popular shows"
+msgstr "Популярные шоу"
+
+msgctxt "#30212"
+msgid "Sience"
+msgstr "Наука"
+
+msgctxt "#30213"
+msgid "Dramas"
+msgstr "Драмы"
+
+msgctxt "#30214"
+msgid "Love stories"
+msgstr "Фильмы о любви"
+
+msgctxt "#30215"
+msgid "Melodramas"
+msgstr "Мелодрамы"
+
+msgctxt "#30216"
+msgid "Crime"
+msgstr "Детективы"
+
+msgctxt "#30217"
+msgid "Screen versions"
+msgstr "Экранизации"
+
+msgctxt "#30218"
+msgid "Art"
+msgstr "Искусство"
+
+msgctxt "#30219"
+msgid "Classics"
+msgstr "Классика"
+
+msgctxt "#30220"
+msgid "Historical"
+msgstr "Исторические"
+
+msgctxt "#30221"
+msgid "Children"
+msgstr "Детям"
+
+msgctxt "#30222"
+msgid "Our picks"
+msgstr "Самое-самое"
+
+msgctxt "#30223"
+msgid "Comedies"
+msgstr "Комедии"
+
+msgctxt "#30300"
+msgid "Home"
+msgstr "Главная"
