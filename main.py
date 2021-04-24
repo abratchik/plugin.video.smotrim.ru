@@ -11,8 +11,9 @@ import sys
 from stat import S_ISREG, ST_CTIME, ST_MODE
 import re
 import json
-from urllib.request import urlopen
-from urllib.parse import urlencode, parse_qsl
+import urllib2
+from urllib import urlencode
+from urlparse import parse_qsl
 
 import xbmc
 import xbmcgui
@@ -28,7 +29,7 @@ class Smotrim():
     def __init__(self):
         self.id = Addon.getAddonInfo('id')
         self.addon = xbmcaddon.Addon(self.id)
-        self.path = self.addon.getAddonInfo('path')
+        self.path = self.addon.getAddonInfo('path').decode('utf-8')
         self.iconpath = os.path.join(self.path, "resources/icons")
         self.data_path = self.create_folder(os.path.join(xbmc.translatePath(self.addon.getAddonInfo('profile')),
                                                          'data'))
@@ -473,7 +474,7 @@ class Smotrim():
     # *** Add-on helpers
 
     def get(self, url):
-        response = urlopen(url)
+        response = urllib2.urlopen(url)
         return json.load(response)
 
     def create_folder(self, folder):
