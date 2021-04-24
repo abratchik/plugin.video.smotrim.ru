@@ -22,7 +22,7 @@ for Ubuntu below:
 `sudo apt install ffmpeg`
 
 ## Installation 
-1. Download  [this file](https://abratchik.github.io/kodi.repository/leia/repository.abratchik/repository.abratchik-1.0.2.zip)
+1. Download  [this file](https://abratchik.github.io/kodi.repository/matrix/repository.abratchik/repository.abratchik-1.0.2.zip)
 2. Navigate to **System/Add-ons/Install from the zip file** and 
    specify the file downloaded on the previous step. 
 3. Navigate to **System/Add-ons/Alex Bratchik Kodi repository/
