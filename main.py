@@ -30,7 +30,7 @@ class Smotrim():
         self.id = Addon.getAddonInfo('id')
         self.addon = xbmcaddon.Addon(self.id)
         self.path = self.addon.getAddonInfo('path').decode('utf-8')
-        self.iconpath = os.path.join(self.path, "resources/icons")
+        self.mediapath = os.path.join(self.path, "resources/media")
         self.data_path = self.create_folder(os.path.join(xbmc.translatePath(self.addon.getAddonInfo('profile')),
                                                          'data'))
         self.history_folder = self.create_folder(os.path.join(self.data_path, 'history'))
@@ -39,9 +39,10 @@ class Smotrim():
         self.handle = int(sys.argv[1])
         self.params = {}
 
-        self.inext = os.path.join(self.iconpath, 'next.png')
-        self.ihistory = os.path.join(self.iconpath, 'history.png')
-        self.ihome = os.path.join(self.iconpath, 'home.png')
+        self.inext = os.path.join(self.mediapath, 'next.png')
+        self.ihistory = os.path.join(self.mediapath, 'history.png')
+        self.ihome = os.path.join(self.mediapath, 'home.png')
+        self.background = os.path.join(self.mediapath, 'background.jpg')
 
         self.api_url = "https://api.smotrim.ru/api/v1"
 
@@ -58,34 +59,11 @@ class Smotrim():
 
         # list of brands
         self.brands = {}
+        # list of episodes
         self.episodes = {}
 
-        self.TAGS = [{'tag': 2994, 'title': self.language(30200), 'icon': "premieres.png"},
-                     {'tag': 1083, 'title': self.language(30201), 'icon': "cinema.png"},
-                     {'tag': 10000002,
-                      'title': self.language(30202),
-                      'tags': [{'tag': 231079, 'title': self.language(30203)},
-                               {'tag': 231099, 'title': self.language(30204)},
-                               {'tag': 231100, 'title': self.language(30205)},
-                               {'tag': 231080, 'title': self.language(30206)},
-                               {'tag': 231101, 'title': self.language(30207)},
-                               {'tag': 231102, 'title': self.language(30208)},
-                               {'tag': 231081, 'title': self.language(30209)}],
-                      'icon': "documentary.png"},
-                     {'tag': 1045, 'title': self.language(30210), 'icon': "series.png"},
-                     {'tag': 1080, 'title': self.language(30211), 'icon': "tvshow.png"},
-                     {'tag': 1269, 'title': self.language(30212), 'icon': "sience.png"},
-                     {'tag': 1048, 'title': self.language(30213), 'icon': "drama.png"},
-                     {'tag': 2463, 'title': self.language(30214), 'icon': "lovestories.png"},
-                     {'tag': 4038, 'title': self.language(30215), 'icon': "melodrama.png"},
-                     {'tag': 1108, 'title': self.language(30216), 'icon': "crime.png"},
-                     {'tag': 1049, 'title': self.language(30217), 'icon': "screenversions.png"},
-                     {'tag': 231939, 'title': self.language(30218), 'icon': "art.png"},
-                     {'tag': 18578, 'title': self.language(30219), 'icon': "classics.png"},
-                     {'tag': 3931, 'title': self.language(30220), 'icon': "historical.png"},
-                     {'tag': 1120, 'title': self.language(30221), 'icon': "children.png"},
-                     {'tag': 223821, 'title': self.language(30222), 'icon': "ourpicks.png"},
-                     {'tag': 1072, 'title': self.language(30223), 'icon': "comedy.png"}]
+        with open(os.path.join(self.path, "resources/data/tags.json"), "r+") as f:
+            self.TAGS = json.load(f)
 
     def main(self):
         xbmc.log("Addon: %s" % self.id, xbmc.LOGINFO)
@@ -180,13 +158,9 @@ class Smotrim():
         parent = int(self.params['parent']) if 'parent' in self.params else 0
         limit, offset = self.get_limit_offset()
 
-        if parent != 0:
-            tags = next(T for T in self.TAGS if T['tag'] == parent)['tags']
-            tag_dict = next(T for T in tags if T['tag'] == tag)
-        else:
-            tag_dict = next(T for T in self.TAGS if T['tag'] == tag)
+        tag_dict = self.search_tag_by_id(self.TAGS, tag)
 
-        self.context_title = tag_dict['title']
+        self.context_title = self.language(int(tag_dict['titleId']))
 
         if 'tags' in tag_dict:
             pass
@@ -264,7 +238,7 @@ class Smotrim():
                                    limit=limit,
                                    url=self.url)
             else:
-                tag_dict = next(T for T in self.TAGS if T['tag'] == int(self.params['tags']))
+                tag_dict = self.search_tag_by_id(self.TAGS, int(self.params['tags']))
                 if 'tags' in tag_dict:
                     self.add_searches_by_tags(tag_dict['tags'], tag_dict['tag'])
 
@@ -307,7 +281,8 @@ class Smotrim():
                                 'is_folder': True,
                                 'url': self.get_url(self.url, action='search', url=self.url),
                                 'info': {'plot': self.language(30011)},
-                                'art': {'icon': "DefaultAddonsSearch.png"}
+                                'art': {'icon': "DefaultAddonsSearch.png",
+                                        'fanart': self.background}
                                 })
 
     def add_search_by_tag(self, tag, tagname, taginfo=None, tagicon="DefaultAddonsSearch.png", parent=0):
@@ -320,15 +295,16 @@ class Smotrim():
                                                     parent=parent,
                                                     url=self.url),
                                 'info': {'plot': taginfo if taginfo else tagname},
-                                'art': {'icon': tagicon}
+                                'art': {'icon': tagicon,
+                                        'fanart': self.background}
                                 })
 
     def add_searches_by_tags(self, tags, parent=0):
         for tag in tags:
             self.add_search_by_tag(tag['tag'],
-                                   tagname=tag['title'],
-                                   taginfo=tag['title'],
-                                   tagicon=os.path.join(self.iconpath, tag['icon']) if 'icon' in tag
+                                   tagname=self.language(int(tag['titleId'])),
+                                   taginfo=self.language(int(tag['titleId'])),
+                                   tagicon=os.path.join(self.mediapath, tag['icon']) if 'icon' in tag
                                    else "DefaultAddonsSearch.png",
                                    parent=parent)
 
@@ -360,7 +336,8 @@ class Smotrim():
                                 'is_folder': True,
                                 'url': self.get_url(self.url, action='history', url=self.url),
                                 'info': {'plot': self.language(30051)},
-                                'art': {'icon': self.ihistory}
+                                'art': {'icon': self.ihistory,
+                                        'fanart': self.background}
                                 })
 
     def create_brand_dict(self, brand):
@@ -471,6 +448,25 @@ class Smotrim():
         except:
             return raw_html
 
+    def get_pic_from_plist(self, plist, res):
+        try:
+            ep_pics = plist[0]['sizes']
+            pic = next(p for p in ep_pics if p['preset'] == res)
+            return pic['url']
+        except:
+            return ""
+
+    def search_tag_by_id(self, tags, tag):
+        for t in tags:
+            if t['tag'] == tag:
+                return t
+            if 'tags' in t:
+                ct = self.search_tag_by_id(t['tags'], tag)
+                if ct:
+                    return ct
+        return {}
+
+
     # *** Add-on helpers
 
     def get(self, url):
@@ -488,14 +484,6 @@ class Smotrim():
     def show_error_message(self, msg):
         xbmc.log(msg, xbmc.LOGERROR)
         xbmc.executebuiltin("XBMC.Notification(%s,%s, %s)" % ("ERROR", msg, str(3 * 1000)))
-
-    def get_pic_from_plist(self, plist, res):
-        try:
-            ep_pics = plist[0]['sizes']
-            pic = next(p for p in ep_pics if p['preset'] == res)
-            return pic['url']
-        except:
-            return ""
 
     def get_limit_setting(self):
         return (self.addon.getSettingInt('itemsperpage') + 1) * 10
