@@ -280,7 +280,7 @@ class Smotrim():
                                 'is_folder': True,
                                 'url': self.get_url(self.url, action='search', url=self.url),
                                 'info': {'plot': self.language(30011)},
-                                'art': {'icon': "DefaultAddonsSearch.png",
+                                'art': {'icon': os.path.join(self.mediapath, "search.png"),
                                         'fanart': self.background}
                                 })
 
