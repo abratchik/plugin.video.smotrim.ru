@@ -66,16 +66,16 @@ class Smotrim():
             self.TAGS = json.load(f)
 
     def main(self):
-        xbmc.log("Addon: %s" % self.id, xbmc.LOGINFO)
-        xbmc.log("Handle: %d" % self.handle, xbmc.LOGINFO)
+        xbmc.log("Addon: %s" % self.id, xbmc.LOGDEBUG)
+        xbmc.log("Handle: %d" % self.handle, xbmc.LOGDEBUG)
 
         params_ = sys.argv[2]
-        xbmc.log("Params: %s" % params_, xbmc.LOGINFO)
+        xbmc.log("Params: %s" % params_, xbmc.LOGDEBUG)
         self.params = dict(parse_qsl(params_[1:]))
 
         self.context = self.params['action'] if 'action' in self.params else "home"
 
-        xbmc.log("Action: %s" % self.context, xbmc.LOGINFO)
+        xbmc.log("Action: %s" % self.context, xbmc.LOGDEBUG)
 
         if self.params:
             if self.params['action'] == 'play':
@@ -137,10 +137,10 @@ class Smotrim():
         offset = self.params['offset'] if 'offset' in self.params else 0
         limit = self.get_limit_setting()
 
-        xbmc.log("items per page: %s" % limit, xbmc.LOGINFO)
+        xbmc.log("items per page: %s" % limit, xbmc.LOGDEBUG)
 
         if brand:
-            xbmc.log("Load episodes for brand [ %s ] " % brand, xbmc.LOGINFO)
+            xbmc.log("Load episodes for brand [ %s ] " % brand, xbmc.LOGDEBUG)
 
             self.episodes = self.get(self.get_url(self.api_url + '/episodes',
                                                   brands=brand,
@@ -157,7 +157,7 @@ class Smotrim():
         offset = self.params['offset'] if 'offset' in self.params else 0
         limit = self.get_limit_setting()
 
-        xbmc.log("items per page: %s" % limit, xbmc.LOGINFO)
+        xbmc.log("items per page: %s" % limit, xbmc.LOGDEBUG)
 
         self.articles = self.get(self.get_url(self.api_url + '/articles',
                                               limit=limit,
@@ -217,7 +217,7 @@ class Smotrim():
     # Get categories for the current context
     def get_categories(self):
 
-        xbmc.log("self.URL is %s" % self.url, xbmc.LOGINFO)
+        xbmc.log("self.URL is %s" % self.url, xbmc.LOGDEBUG)
 
         if self.context == 'home':
             self.add_search()
@@ -553,10 +553,10 @@ class Smotrim():
         return folder
 
     def error(self, message):
-        xbmc.log("%s ERROR: %s" % (self.id, message), xbmc.LOGERROR)
+        xbmc.log("%s ERROR: %s" % (self.id, message), xbmc.LOGDEBUG)
 
     def show_error_message(self, msg):
-        xbmc.log(msg, xbmc.LOGERROR)
+        xbmc.log(msg, xbmc.LOGDEBUG)
         xbmc.executebuiltin("XBMC.Notification(%s,%s, %s)" % ("ERROR", msg, str(3 * 1000)))
 
     def get_limit_setting(self):
