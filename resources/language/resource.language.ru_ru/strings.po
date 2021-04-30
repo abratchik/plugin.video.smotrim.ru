@@ -171,3 +171,11 @@ msgstr "Комедии"
 msgctxt "#30300"
 msgid "Home"
 msgstr "Главная"
+
+msgctxt "#30301"
+msgid "News"
+msgstr "Вести"
+
+msgctxt "#30302"
+msgid "(Video)"
+msgstr "(Видео)"

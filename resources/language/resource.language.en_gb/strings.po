@@ -171,3 +171,11 @@ msgstr "Comedies"
 msgctxt "#30300"
 msgid "Home"
 msgstr "Home"
+
+msgctxt "#30301"
+msgid "News"
+msgstr "News"
+
+msgctxt "#30302"
+msgid "(Video)"
+msgstr "(Video)"
