@@ -95,9 +95,9 @@ class Smotrim():
         xbmcplugin.setPluginCategory(self.handle, self.context_title)
 
         if self.context == "home":
-            xbmcplugin.setContent(self.handle, 'files')
+            xbmcplugin.setContent(self.handle, "files")
         else:
-            xbmcplugin.setContent(self.handle, 'videos')
+            xbmcplugin.setContent(self.handle, self.params['content'] if "content" in self.params else "videos")
 
         # Iterate through categories
         for category in self.categories:
@@ -155,7 +155,6 @@ class Smotrim():
     def search_by_tag(self):
 
         tag = int(self.params['tags']) if 'tags' in self.params else None
-        parent = int(self.params['parent']) if 'parent' in self.params else 0
         limit, offset = self.get_limit_offset()
 
         tag_dict = self.search_tag_by_id(self.TAGS, tag)
@@ -240,7 +239,7 @@ class Smotrim():
             else:
                 tag_dict = self.search_tag_by_id(self.TAGS, int(self.params['tags']))
                 if 'tags' in tag_dict:
-                    self.add_searches_by_tags(tag_dict['tags'], tag_dict['tag'])
+                    self.add_searches_by_tags(tag_dict['tags'])
 
         elif self.context == "get_episodes":
             if 'data' in self.episodes:
@@ -285,28 +284,28 @@ class Smotrim():
                                         'fanart': self.background}
                                 })
 
-    def add_search_by_tag(self, tag, tagname, taginfo=None, tagicon="DefaultAddonsSearch.png", parent=0):
+    def add_search_by_tag(self, tag, tagname, taginfo=None, tagicon="DefaultAddonsSearch.png", content="videos"):
         self.categories.append({'id': "tag%s" % str(tag),
                                 'label': "[B]%s[/B]" % tagname,
                                 'is_folder': True,
                                 'url': self.get_url(self.url,
                                                     action='search_by_tag',
                                                     tags=tag,
-                                                    parent=parent,
+                                                    content=content,
                                                     url=self.url),
                                 'info': {'plot': taginfo if taginfo else tagname},
                                 'art': {'icon': tagicon,
                                         'fanart': self.background}
                                 })
 
-    def add_searches_by_tags(self, tags, parent=0):
+    def add_searches_by_tags(self, tags):
         for tag in tags:
             self.add_search_by_tag(tag['tag'],
                                    tagname=self.language(int(tag['titleId'])),
                                    taginfo=self.language(int(tag['titleId'])),
                                    tagicon=os.path.join(self.mediapath, tag['icon']) if 'icon' in tag
                                    else "DefaultAddonsSearch.png",
-                                   parent=parent)
+                                   content=tag['content'] if 'content' in tag else "videos")
 
     def history(self):
         self.context_title = self.language(30050)
