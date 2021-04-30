@@ -106,6 +106,7 @@ class Smotrim():
 
             is_folder = category['is_folder']
             list_item.setProperty('IsPlayable', str(category['is_playable']).lower())
+
             if not is_folder:
                 list_item.addContextMenuItems([(self.language(30000), 'XBMC.Action(Info)'), ])
 
@@ -407,12 +408,14 @@ class Smotrim():
         is_folder = brand['hasManySeries'] or \
                     brand['countVideos'] > 1 or \
                     brand['countAudioEpisodes'] > 1
+        is_music_folder = is_folder and brand['countAudioEpisodes'] == brand['countVideos']
         return {'id': brand['id'],
                 'is_folder': is_folder,
                 'is_playable': not is_folder,
                 'label': "[B]%s[/B]" % brand['title'] if is_folder else brand['title'],
                 'url': self.get_url(self.url,
                                     action="get_episodes",
+                                    content="musicvideos" if is_music_folder else "episodes",
                                     brands=brand['id'],
                                     url=self.url) if is_folder
                 else self.get_url(self.url,
@@ -422,7 +425,7 @@ class Smotrim():
 
                 'info': {'title': brand['title'],
                          'genre': brand['genre'],
-                         'mediatype': "tvshow" if is_folder else "video",
+                         'mediatype': "tvshow" if is_folder else "movie",
                          'year': brand['productionYearStart'],
                          'plot': self.cleanhtml(brand['body']),
                          'plotoutline': brand['anons'],
@@ -449,21 +452,22 @@ class Smotrim():
                                     is_audio=is_audio,
                                     url=self.url),
                 'info': {'title': ep['combinedTitle'],
+                         'tvshowtitle':ep['brandTitle'],
                          'mediatype': "episode",
                          'plot': self.cleanhtml(ep['body']),
                          'plotoutline': ep['anons'],
                          'episode': ep['series'],
+                         'sortepisode': ep['series'],
                          'dateadded': ep['dateRec']
                          } if not is_audio else
                 {'mediatype': "music",
-                 'plot': ep['title']},
+                 'title': ep['title'],
+                 'plot': "%s[CR]%s" % (ep['title'], ep['anons'])},
                 'art': {'fanart': self.get_pic_from_plist(ep['pictures'], 'hd'),
                         'icon': self.get_pic_from_plist(ep['pictures'], 'lw'),
                         'thumb': self.get_pic_from_plist(ep['pictures'], 'lw'),
                         'poster': self.get_pic_from_plist(ep['pictures'], 'vhdr')
-                        } if not is_audio else
-                {'icon': "DefaultAudio.png",
-                 'thumb': "DefaultAudio.png"}
+                        }
                 }
 
     def get_user_input(self):
