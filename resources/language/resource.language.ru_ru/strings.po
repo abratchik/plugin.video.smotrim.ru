@@ -174,8 +174,12 @@ msgstr "Главная"
 
 msgctxt "#30301"
 msgid "News"
-msgstr "Вести"
+msgstr "Новости"
 
 msgctxt "#30302"
 msgid "(Video)"
 msgstr "(Видео)"
+
+msgctxt "#30400"
+msgid "Channels"
+msgstr "Каналы"

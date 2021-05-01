@@ -179,3 +179,7 @@ msgstr "News"
 msgctxt "#30302"
 msgid "(Video)"
 msgstr "(Video)"
+
+msgctxt "#30400"
+msgid "Channels"
+msgstr "Channels"
