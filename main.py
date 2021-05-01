@@ -1,4 +1,4 @@
-# coding=utf-8
+# coding: utf-8
 # Module: main
 # Author: Alex Bratchik
 # Created on: 03.04.2021
@@ -37,9 +37,11 @@ class Smotrim():
         self.handle = int(sys.argv[1])
         self.params = {}
 
+        self.isearch = os.path.join(self.mediapath, "search.png")
         self.inext = os.path.join(self.mediapath, 'next.png')
         self.ihistory = os.path.join(self.mediapath, 'history.png')
         self.iarticles = os.path.join(self.mediapath, 'news.png')
+        self.ichannels = os.path.join(self.mediapath, 'channels.png')
         self.ihome = os.path.join(self.mediapath, 'home.png')
         self.background = os.path.join(self.mediapath, 'background.jpg')
 
@@ -62,6 +64,10 @@ class Smotrim():
         self.episodes = {}
         # list of articles
         self.articles = {}
+        # list of channels
+        self.channels = {}
+        # channel menu
+        self.channel_menu = {}
 
         with open(os.path.join(self.path, "resources/data/tags.json"), "r+") as f:
             self.TAGS = json.load(f)
@@ -155,6 +161,25 @@ class Smotrim():
                 self.context_title = self.episodes['data'][0]['brandTitle'] \
                     if len(self.episodes) > 0 else self.language(30040)
 
+    def get_channels(self):
+
+        xbmc.log("Loading channels", xbmc.LOGDEBUG)
+
+        self.channels = self.get(self.get_url(self.api_url + "/channels"))
+        self.context_title = self.language(30400)
+
+    def get_channel_menu(self):
+        offset = self.params['offset'] if 'offset' in self.params else 0
+        limit = self.get_limit_setting()
+
+        xbmc.log("items per page: %s" % limit, xbmc.LOGDEBUG)
+
+        self.channel_menu = self.get(self.get_url(self.api_url + '/menu/channels/' + self.params['channels'],
+                                                  limit=limit,
+                                                  offset=offset))
+
+        self.context_title = self.params['title']
+
     # get artiles
     def get_articles(self):
 
@@ -172,18 +197,17 @@ class Smotrim():
     # Search by tag
     def search_by_tag(self):
 
-        tag = int(self.params['tags']) if 'tags' in self.params else None
+        tag = self.params['tags'] if 'tags' in self.params else None
         limit, offset = self.get_limit_offset()
 
-        tag_dict = self.search_tag_by_id(self.TAGS, tag)
+        self.context_title = self.params['tagname']
 
-        self.context_title = self.language(int(tag_dict['titleId']))
-
-        if 'tags' in tag_dict:
+        if 'has_children' in self.params and self.params['has_children'] == "True":
             pass
         else:
             self.search_by_url(self.get_url(self.api_url + '/brands',
                                             tags=tag,
+                                            tagname=self.context_title,
                                             limit=limit,
                                             offset=offset) if tag else None)
 
@@ -198,8 +222,8 @@ class Smotrim():
                                         offset=offset) if self.search_text else None)
 
     def search_by_url(self, url):
+        xbmc.log("Load search results for url [ %s ] " % url, xbmc.LOGDEBUG)
         if url:
-            xbmc.log("Load search results for url [ %s ] " % url, xbmc.LOGDEBUG)
             self.brands = self.get(url)
         else:
             self.context = "home"
@@ -226,6 +250,7 @@ class Smotrim():
         if self.context == 'home':
             self.add_search()
             self.add_articles()
+            self.add_channels()
             self.add_searches_by_tags(self.TAGS)
 
             if self.addon.getSettingBool("addhistory"):
@@ -280,6 +305,20 @@ class Smotrim():
                                offset=offset + 1,
                                limit=limit,
                                url=self.url)
+        elif self.context == "get_channels":
+            if 'data' in self.channels:
+                for ch in self.channels['data']:
+                    self.categories.append(self.create_channel_dict(ch))
+        elif self.context == "get_channel_menu":
+            if 'data' in self.channel_menu:
+                limit, offset, pages = self.get_limit_offset_pages(self.channel_menu)
+                for cm in self.channel_menu['data']:
+                    if cm['tags']:
+                        self.add_search_by_tag(cm['tags'][0]['id'],
+                                               cm['title'].encode('utf-8', 'ignore'),
+                                               cm['title'].encode('utf-8', 'ignore'),
+                                               tagicon=self.isearch,
+                                               has_children=False)
         else:
             if 'data' in self.brands:
                 for brand in self.brands['data']:
@@ -311,11 +350,12 @@ class Smotrim():
                                 'is_playable': False,
                                 'url': self.get_url(self.url, action='search', url=self.url),
                                 'info': {'plot': self.language(30011)},
-                                'art': {'icon': os.path.join(self.mediapath, "search.png"),
+                                'art': {'icon': self.isearch,
                                         'fanart': self.background}
                                 })
 
-    def add_search_by_tag(self, tag, tagname, taginfo=None, tagicon="DefaultAddonsSearch.png", content="videos"):
+    def add_search_by_tag(self, tag, tagname,
+                          taginfo=None, tagicon="DefaultAddonsSearch.png", content="videos", has_children=False):
         self.categories.append({'id': "tag%s" % str(tag),
                                 'label': "[B]%s[/B]" % tagname,
                                 'is_folder': True,
@@ -323,6 +363,8 @@ class Smotrim():
                                 'url': self.get_url(self.url,
                                                     action='search_by_tag',
                                                     tags=tag,
+                                                    tagname=tagname,
+                                                    has_children=has_children,
                                                     content=content,
                                                     url=self.url),
                                 'info': {'plot': taginfo if taginfo else tagname},
@@ -333,11 +375,12 @@ class Smotrim():
     def add_searches_by_tags(self, tags):
         for tag in tags:
             self.add_search_by_tag(tag['tag'],
-                                   tagname=self.language(int(tag['titleId'])),
-                                   taginfo=self.language(int(tag['titleId'])),
+                                   tagname=self.language(int(tag['titleId'])).encode('utf-8', 'ignore'),
+                                   taginfo=self.language(int(tag['titleId'])).encode('utf-8', 'ignore'),
                                    tagicon=os.path.join(self.mediapath, tag['icon']) if 'icon' in tag
                                    else "DefaultAddonsSearch.png",
-                                   content=tag['content'] if 'content' in tag else "videos")
+                                   content=tag['content'] if 'content' in tag else "videos",
+                                   has_children=True if 'tags' in tag else False)
 
     def history(self):
         self.context_title = self.language(30050)
@@ -360,6 +403,17 @@ class Smotrim():
     def save_brand_to_history(self, brand):
         with open(os.path.join(self.history_folder, "brand_%s.json" % brand['id']), 'w+') as f:
             json.dump(brand, f)
+
+    def add_channels(self):
+        self.categories.append({'id': "channels",
+                                'label': "[COLOR=FF00FF00][B]%s[/B][/COLOR]" % self.language(30400),
+                                'is_folder': True,
+                                'is_playable': False,
+                                'url': self.get_url(self.url, action='get_channels', url=self.url),
+                                'info': {'plot': self.language(30400)},
+                                'art': {'icon': self.ichannels,
+                                        'fanart': self.background}
+                                })
 
     def add_articles(self):
         self.categories.append({'id': "articles",
@@ -444,6 +498,21 @@ class Smotrim():
                         'fanart': "%s/pictures/%s/hd/redirect" % (self.api_url, brand['picId']),
                         'poster': "%s/pictures/%s/vhdr/redirect" % (self.api_url, brand['picId'])
                         }
+                }
+
+    def create_channel_dict(self, ch):
+        return {'id': ch['id'],
+                'label': ch['title'],
+                'is_folder': True,
+                'is_playable': False,
+                'url': self.get_url(self.url,
+                                    action="get_channel_menu",
+                                    channels=ch['id'],
+                                    title=ch['title'].encode('utf-8', 'ignore'),
+                                    url=self.url),
+                'info': {'plot': ch['title']},
+                'art': {'icon': self.get_channel_logo(ch, res="xxl"),
+                        'fanart': self.background}
                 }
 
     def create_episode_dict(self, ep):
@@ -542,6 +611,12 @@ class Smotrim():
             ep_pics = plist[0]['sizes']
             pic = next(p for p in ep_pics if p['preset'] == res)
             return pic['url']
+        except:
+            return ""
+
+    def get_channel_logo(self, ch, res="xxl"):
+        try:
+            return ch['logo'][res]['url']
         except:
             return ""
 
