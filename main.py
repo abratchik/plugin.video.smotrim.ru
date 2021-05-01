@@ -107,12 +107,15 @@ class Smotrim():
             is_folder = category['is_folder']
             list_item.setProperty('IsPlayable', str(category['is_playable']).lower())
 
-            if not is_folder:
-                list_item.addContextMenuItems([(self.language(30000), 'XBMC.Action(Info)'), ])
-
             if 'info' in category:
                 for info in category['info']:
                     list_item.setInfo('video', {info: category['info'][info]})
+                    if info == 'mediatype':
+                        list_item.addContextMenuItems([(self.language(30000),
+                                                        "XBMC.Action(%s)" % ("Play"
+                                                                             if category['info']['mediatype'] == "news"
+                                                                             else "Info")
+                                                        ), ])
 
             if 'art' in category:
                 for art in category['art']:
@@ -386,13 +389,15 @@ class Smotrim():
                 if article['videos'] else article['title'],
                 'url': self.get_url(self.url,
                                     action="play",
+                                    articles=article['id'],
                                     videos=article['videos'][0]['id'],
                                     url=self.url) if article['videos'] else
                 self.get_url(self.url,
                              action="play",
+                             articles=article['id'],
                              url=self.url),
                 'info': {'title': article['title'],
-                         'mediatype': "video",
+                         'mediatype': "video" if article['videos'] else "news",
                          'plot': self.cleanhtml(article['body']),
                          'plotoutline': article['anons'],
                          'dateadded': article['datePub']
@@ -452,7 +457,7 @@ class Smotrim():
                                     is_audio=is_audio,
                                     url=self.url),
                 'info': {'title': ep['combinedTitle'],
-                         'tvshowtitle':ep['brandTitle'],
+                         'tvshowtitle': ep['brandTitle'],
                          'mediatype': "episode",
                          'plot': self.cleanhtml(ep['body']),
                          'plotoutline': ep['anons'],
@@ -497,6 +502,13 @@ class Smotrim():
             elif 'brands' in self.params:
                 videos = self.get(self.get_url(self.api_url + '/videos', brands=self.params['brands']))
                 spath = videos['data'][0]['sources']['m3u8']['auto']
+            elif 'articles' in self.params:
+                articles = self.get(self.get_url(self.api_url + '/articles/' + self.params['articles']))
+                if articles['data']['videos']:
+                    spath = articles['data']['videos'][0]['sources']['m3u8']['auto']
+                else:
+                    xbmcgui.Dialog().textviewer(articles['data']['title'], self.cleanhtml(articles['data']['body']))
+                    return
             elif 'videos' in self.params:
                 videos = self.get(self.api_url + '/videos/' + self.params['videos'])
                 spath = videos['data']['sources']['m3u8']['auto']
@@ -510,8 +522,9 @@ class Smotrim():
             if '.m3u8' in spath:
                 play_item.setProperty('inputstreamaddon', 'inputstream.adaptive')
                 play_item.setProperty('inputstream.adaptive.manifest_type', 'hls')
+                play_item.setProperty('inputstream.adaptive.play_timeshift_buffer', 'true')
             xbmcplugin.setResolvedUrl(self.handle, True, listitem=play_item)
-        except:
+        except ValueError:
             self.show_error_message(self.language(30060))
 
     def cleanhtml(self, raw_html):
