@@ -1,4 +1,4 @@
-# coding: utf-8
+# -*- coding: utf-8 -*-
 # Module: main
 # Author: Alex Bratchik
 # Created on: 03.04.2021
@@ -9,7 +9,6 @@ Video plugin for Smotrim.ru portal
 import os
 import sys
 from stat import S_ISREG, ST_CTIME, ST_MODE
-import re
 import json
 import urllib2
 from urllib import urlencode
@@ -20,18 +19,20 @@ import xbmcgui
 import xbmcaddon
 import xbmcplugin
 
-
 # Main addon class
-class Smotrim():
+from resources.lib.utils import show_error_message, create_folder, clean_html
+
+
+class Smotrim:
 
     def __init__(self):
         self.id = "plugin.video.smotrim.ru"
         self.addon = xbmcaddon.Addon(self.id)
         self.path = self.addon.getAddonInfo('path').decode('utf-8')
         self.mediapath = os.path.join(self.path, "resources/media")
-        self.data_path = self.create_folder(os.path.join(xbmc.translatePath(self.addon.getAddonInfo('profile')),
-                                                         'data'))
-        self.history_folder = self.create_folder(os.path.join(self.data_path, 'history'))
+        self.data_path = create_folder(os.path.join(xbmc.translatePath(self.addon.getAddonInfo('profile')),
+                                                    'data'))
+        self.history_folder = create_folder(os.path.join(self.data_path, 'history'))
 
         self.url = sys.argv[0]
         self.handle = int(sys.argv[1])
@@ -233,7 +234,8 @@ class Smotrim():
         limit = (self.addon.getSettingInt('itemsperpage') + 1) * 10
         return limit, offset
 
-    def get_limit_offset_pages(self, resp_dict):
+    @staticmethod
+    def get_limit_offset_pages(resp_dict):
         if 'pagination' in resp_dict:
             offset = resp_dict['pagination']['offset'] if 'pagination' in resp_dict else 0
             limit = resp_dict['pagination']['limit'] if 'pagination' in resp_dict else 0
@@ -277,6 +279,7 @@ class Smotrim():
                     self.categories.append(self.create_brand_dict(brand))
                 url = self.get_url(self.url, action=self.context,
                                    tags=self.params['tags'],
+                                   tagname=self.params['tagname'],
                                    offset=offset + 1,
                                    limit=limit,
                                    url=self.url)
@@ -301,10 +304,10 @@ class Smotrim():
                 limit, offset, pages = self.get_limit_offset_pages(self.articles)
                 for ar in self.articles['data']:
                     self.categories.append(self.create_article_dict(ar))
-            url = self.get_url(self.url, action=self.context,
-                               offset=offset + 1,
-                               limit=limit,
-                               url=self.url)
+                url = self.get_url(self.url, action=self.context,
+                                   offset=offset + 1,
+                                   limit=limit,
+                                   url=self.url)
         elif self.context == "get_channels":
             if 'data' in self.channels:
                 for ch in self.channels['data']:
@@ -319,6 +322,13 @@ class Smotrim():
                                                cm['title'].encode('utf-8', 'ignore'),
                                                tagicon=self.isearch,
                                                has_children=False)
+                url = self.get_url(self.url,
+                                   action=self.context,
+                                   channels=self.params['channels'],
+                                   title=self.params['title'],
+                                   limit=limit,
+                                   offset=offset + 1,
+                                   url=self.url)
         else:
             if 'data' in self.brands:
                 for brand in self.brands['data']:
@@ -454,7 +464,7 @@ class Smotrim():
                              url=self.url),
                 'info': {'title': article['title'],
                          'mediatype': "video" if article['videos'] else "news",
-                         'plot': self.cleanhtml(article['body']),
+                         'plot': clean_html(article['body']),
                          'plotoutline': article['anons'],
                          'dateadded': article['datePub']
                          },
@@ -488,7 +498,7 @@ class Smotrim():
                          'genre': brand['genre'],
                          'mediatype': "tvshow" if is_folder else "movie",
                          'year': brand['productionYearStart'],
-                         'plot': self.cleanhtml(brand['body']),
+                         'plot': clean_html(brand['body']),
                          'plotoutline': brand['anons'],
                          'rating': brand['rank'],
                          'dateadded': brand['dateRec']
@@ -530,7 +540,7 @@ class Smotrim():
                 'info': {'title': ep['combinedTitle'],
                          'tvshowtitle': ep['brandTitle'],
                          'mediatype': "episode",
-                         'plot': self.cleanhtml(ep['body']),
+                         'plot': clean_html(ep['body']),
                          'plotoutline': ep['anons'],
                          'episode': ep['series'],
                          'sortepisode': ep['series'],
@@ -578,7 +588,7 @@ class Smotrim():
                 if articles['data']['videos']:
                     spath = articles['data']['videos'][0]['sources']['m3u8']['auto']
                 else:
-                    xbmcgui.Dialog().textviewer(articles['data']['title'], self.cleanhtml(articles['data']['body']))
+                    xbmcgui.Dialog().textviewer(articles['data']['title'], clean_html(articles['data']['body']))
                     return
             elif 'videos' in self.params:
                 videos = self.get(self.api_url + '/videos/' + self.params['videos'])
@@ -593,31 +603,27 @@ class Smotrim():
             if '.m3u8' in spath:
                 play_item.setProperty('inputstreamaddon', 'inputstream.adaptive')
                 play_item.setProperty('inputstream.adaptive.manifest_type', 'hls')
-                play_item.setProperty('inputstream.adaptive.play_timeshift_buffer', 'true')
+
             xbmcplugin.setResolvedUrl(self.handle, True, listitem=play_item)
         except ValueError:
-            self.show_error_message(self.language(30060))
+            show_error_message(self.language(30060))
 
-    def cleanhtml(self, raw_html):
-        try:
-            cleanr = re.compile('<.*?>|&([a-z0-9]+|#[0-9]{1,6}|#x[0-9a-f]{1,6});')
-            cleantext = re.sub(cleanr, '', raw_html)
-            return cleantext
-        except:
-            return raw_html
-
-    def get_pic_from_plist(self, plist, res):
+    @staticmethod
+    def get_pic_from_plist(plist, res):
         try:
             ep_pics = plist[0]['sizes']
             pic = next(p for p in ep_pics if p['preset'] == res)
             return pic['url']
-        except:
+        except StopIteration:
+            return ""
+        except IndexError:
             return ""
 
-    def get_channel_logo(self, ch, res="xxl"):
+    @staticmethod
+    def get_channel_logo(ch, res="xxl"):
         try:
             return ch['logo'][res]['url']
-        except:
+        except KeyError:
             return ""
 
     def search_tag_by_id(self, tags, tag):
@@ -636,17 +642,8 @@ class Smotrim():
         response = urllib2.urlopen(url)
         return json.load(response)
 
-    def create_folder(self, folder):
-        if not (os.path.exists(folder) and os.path.isdir(folder)):
-            os.makedirs(folder)
-        return folder
-
     def error(self, message):
         xbmc.log("%s ERROR: %s" % (self.id, message), xbmc.LOGDEBUG)
-
-    def show_error_message(self, msg):
-        xbmc.log(msg, xbmc.LOGDEBUG)
-        xbmc.executebuiltin("XBMC.Notification(%s,%s, %s)" % ("ERROR", msg, str(3 * 1000)))
 
     def get_limit_setting(self):
         return (self.addon.getSettingInt('itemsperpage') + 1) * 10
