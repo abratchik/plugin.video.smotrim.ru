@@ -10,6 +10,7 @@ forum XBMC.ru [here](http://xbmc.ru/forum/showthread.php?t=23431).
 The addon as been tested on 
 - Kodi Leia under Ubuntu 18.04 LTS.
 - Kodi Matrix under Ubuntu 20.04 LTS
+- Kodi Matrix on Android v9 Pie
 
 The following packages need to be present in your system
 for addon to work properly. Below is th list of packages:

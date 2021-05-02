@@ -21,7 +21,7 @@ import xbmcplugin
 
 
 # Main addon class
-class Smotrim():
+class Smotrim:
 
     def __init__(self):
         self.id = "plugin.video.smotrim.ru"
@@ -296,8 +296,8 @@ class Smotrim():
                                    limit=limit,
                                    url=self.url)
         elif self.context == "get_articles":
+            limit, offset, pages = self.get_limit_offset_pages(self.articles)
             if 'data' in self.articles:
-                limit, offset, pages = self.get_limit_offset_pages(self.articles)
                 for ar in self.articles['data']:
                     self.categories.append(self.create_article_dict(ar))
             url = self.get_url(self.url, action=self.context,
