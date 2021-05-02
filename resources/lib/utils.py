@@ -8,14 +8,17 @@ import re
 
 import xbmc
 
+
 def show_error_message(msg):
     xbmc.log(msg, xbmc.LOGDEBUG)
     xbmc.executebuiltin("XBMC.Notification(%s,%s, %s)" % ("ERROR", msg, str(3 * 1000)))
+
 
 def create_folder(folder):
     if not (os.path.exists(folder) and os.path.isdir(folder)):
         os.makedirs(folder)
     return folder
+
 
 def clean_html(raw_html):
     try:
