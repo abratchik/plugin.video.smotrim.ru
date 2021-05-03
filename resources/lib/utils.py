@@ -5,8 +5,11 @@
 # License: GPL v.3 https://www.gnu.org/copyleft/gpl.html
 import os
 import re
+import json
 
 import xbmc
+
+from urllib.request import urlopen
 
 def show_error_message(msg):
     xbmc.log(msg, xbmc.LOGDEBUG)
@@ -24,3 +27,7 @@ def clean_html(raw_html):
         return cleantext
     except TypeError:
         return raw_html
+
+def httpget(url):
+    response = urlopen(url)
+    return json.load(response)
