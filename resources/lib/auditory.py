@@ -4,16 +4,18 @@
 # Created on: 03.04.2021
 # License: GPL v.3 https://www.gnu.org/copyleft/gpl.html
 
-import os
-import json
+import datetime
 import xbmc
 
 from . import utils
+
 
 class User:
     def __init__(self):
         self.phone = ""
         self.cookies = {}
+        self.data_path = ""
+        self.uid_url = ""
 
     def watch(self, site):
         """
@@ -22,28 +24,27 @@ class User:
         :return:
         """
 
-        addon = site.get_addon()
-        self.phone = addon.getSetting("phone")
-        print("User phone is %s" % self.phone)\
+        self.phone = site.addon.getSetting("phone")
+        self.data_path = site.data_path
+        self.cookies = utils.load_cookies(self.data_path)
+        self.uid_url = site.addon.getSetting("uid_url")
 
-        data_path = addon.get_data_path()
-        self.load_cookies(data_path)
+        if self.login():
+            site.begin()
 
-        uid_url = addon.getSetting("uid_url")
+    def login(self):
+        if not self.phone:
+            xbmc.log("No Phone specified, login is not performed", xbmc.LOGDEBUG)
+            return True
 
-        site.begin()
-
-
-    def load_cookies(self, data_path):
-        try:
-            with open(os.path.join(data_path, "cookies.json"), 'r+') as f:
-                self.cookies = json.load(f)
-        except IOError:
-            xbmc.log("Cookie file is empty", xbmc.LOGDEBUG)
-
-    def save_cookies(self, data_path):
-        try:
-            with open(os.path.join(data_path, "cookies.json"), 'w+') as f:
-                json.dump(self.cookies, f)
-        except IOError:
-            xbmc.log("Couldn't save cookies", xbmc.LOGDEBUG)
+        xbmc.log("User phone is %s" % self.phone, xbmc.LOGDEBUG)
+        ngx_uid = (utils.httpget(self.uid_url + "/?" + str(utils.get_date_millis()))).decode('utf-8')
+        expires = datetime.datetime.today() + datetime.timedelta(days=7502)
+        self.cookies['ngx_uid'] = {'value': ngx_uid,
+                                   'path': "/",
+                                   'domain': "smotrim.ru",
+                                   'expires': expires.strftime("%a, %d %b %Y %I:%M:%S %p %Z"),
+                                   'secure': "false"
+                                   }
+        utils.save_cookies(self.cookies, self.data_path)
+        return True
