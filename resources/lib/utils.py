@@ -6,11 +6,11 @@
 import datetime
 import os
 import re
-import json
+import pickle
+
+from requests.cookies import RequestsCookieJar
 
 import xbmc
-
-from urllib.request import urlopen
 
 
 def show_error_message(msg):
@@ -34,24 +34,22 @@ def clean_html(raw_html):
 
 
 def load_cookies(data_path):
-    try:
-        with open(os.path.join(data_path, "cookies.json"), 'r+') as f:
-            return json.load(f)
-    except IOError:
-        xbmc.log("Cookie file is absent", xbmc.LOGDEBUG)
-        return {}
-    except json.decoder.JSONDecodeError:
-        xbmc.log("Cookie file is wrong structure, ignoring", xbmc.LOGDEBUG)
-        return {}
+    cookies_file = os.path.join(data_path, "cookies.dat")
+    if os.path.exists(cookies_file):
+        with open(cookies_file, 'rb') as f:
+            return pickle.load(f)
+    else:
+        cj = RequestsCookieJar()
+        return cj
+
 
 def save_cookies(cookies, data_path):
-    try:
-        with open(os.path.join(data_path, "cookies.json"), 'w+') as f:
-            json.dump(cookies, f)
-            return True
-    except IOError:
-        xbmc.log("Couldn't save cookies", xbmc.LOGDEBUG)
-        return False
+    with open(os.path.join(data_path, "cookies.dat"), "wb") as f:
+        pickle.dump(cookies, f)
+
+
+def is_login(cookies):
+    return ('sm_id' in cookies) and ('usgr' in cookies)
 
 
 def get_date_millis():
@@ -59,6 +57,4 @@ def get_date_millis():
     return int(delta.total_seconds() * 1000)
 
 
-def httpget(url):
-    response = urlopen(url)
-    return response.read()
+

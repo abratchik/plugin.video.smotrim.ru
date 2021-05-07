@@ -6,6 +6,7 @@
 import json
 import os
 import sys
+import requests
 from stat import ST_CTIME, S_ISREG, ST_MODE
 
 from urllib.parse import urlencode, parse_qsl
@@ -14,6 +15,7 @@ import xbmc
 import xbmcgui
 import xbmcplugin
 import xbmcaddon
+import xbmcvfs
 
 from . import utils
 
@@ -25,8 +27,11 @@ class Smotrim:
         self.addon = xbmcaddon.Addon(self.id)
         self.path = self.addon.getAddonInfo('path')
         self.mediapath = os.path.join(self.path, "resources/media")
-        self.data_path = utils.create_folder(os.path.join(xbmc.translatePath(self.addon.getAddonInfo('profile')),
+        self.data_path = utils.create_folder(os.path.join(xbmcvfs.translatePath(self.addon.getAddonInfo('profile')),
                                                           'data'))
+
+        self.cookies = utils.load_cookies(self.data_path)
+
         self.history_folder = utils.create_folder(os.path.join(self.data_path, 'history'))
 
         self.url = sys.argv[0]
@@ -65,7 +70,7 @@ class Smotrim:
         # channel menu
         self.channel_menu = {}
 
-    def begin(self):
+    def show_to(self, user):
         xbmc.log("Addon: %s" % self.id, xbmc.LOGDEBUG)
         xbmc.log("Handle: %d" % self.handle, xbmc.LOGDEBUG)
 
@@ -148,10 +153,10 @@ class Smotrim:
         if brand:
             xbmc.log("Load episodes for brand [ %s ] " % brand, xbmc.LOGDEBUG)
 
-            self.episodes = json.loads(utils.httpget(self.get_url(self.api_url + '/episodes',
+            self.episodes = self.httpget(self.get_url(self.api_url + '/episodes',
                                                        brands=brand,
                                                        limit=limit,
-                                                       offset=offset)))
+                                                       offset=offset), output="json")
 
             if 'data' in self.episodes:
                 self.context_title = self.episodes['data'][0]['brandTitle'] \
@@ -161,7 +166,7 @@ class Smotrim:
 
         xbmc.log("Loading channels", xbmc.LOGDEBUG)
 
-        self.channels = json.loads(utils.httpget(self.get_url(self.api_url + "/channels")))
+        self.channels = self.httpget(self.get_url(self.api_url + "/channels"), output="json")
         self.context_title = self.language(30400)
 
     def get_channel_menu(self):
@@ -170,9 +175,9 @@ class Smotrim:
 
         xbmc.log("items per page: %s" % limit, xbmc.LOGDEBUG)
 
-        self.channel_menu = json.loads(utils.httpget(self.get_url(self.api_url + '/menu/channels/' + self.params['channels'],
+        self.channel_menu = self.httpget(self.get_url(self.api_url + '/menu/channels/' + self.params['channels'],
                                                        limit=limit,
-                                                       offset=offset)))
+                                                       offset=offset), output="json")
 
         self.context_title = self.params['title']
 
@@ -184,9 +189,9 @@ class Smotrim:
 
         xbmc.log("items per page: %s" % limit, xbmc.LOGDEBUG)
 
-        self.articles = json.loads(utils.httpget(self.get_url(self.api_url + '/articles',
+        self.articles = self.httpget(self.get_url(self.api_url + '/articles',
                                                    limit=limit,
-                                                   offset=offset)))
+                                                   offset=offset), output="json")
 
         self.context_title = self.language(30301)
 
@@ -220,7 +225,7 @@ class Smotrim:
     def search_by_url(self, url):
         xbmc.log("Load search results for url [ %s ] " % url, xbmc.LOGDEBUG)
         if url:
-            self.brands = json.load(utils.httpget(url))
+            self.brands = self.httpget(url, output="json")
         else:
             self.context = "home"
 
@@ -568,31 +573,31 @@ class Smotrim:
         try:
             if 'episodes' in self.params:
                 if json.loads(self.params['is_audio'].lower()):
-                    audios =json.loads(utils.httpget(
-                        self.get_url(self.api_url + '/audios', episodes=self.params['episodes'])))
+                    audios =self.httpget(
+                        self.get_url(self.api_url + '/audios', episodes=self.params['episodes']), output="json")
                     spath = audios['data'][0]['sources']['mp3']
                 else:
-                    videos =json.loads(utils.httpget(
-                        self.get_url(self.api_url + '/videos', episodes=self.params['episodes'])))
+                    videos =self.httpget(
+                        self.get_url(self.api_url + '/videos', episodes=self.params['episodes']), output="json")
                     spath = videos['data'][0]['sources']['m3u8']['auto']
             elif 'brands' in self.params:
-                videos = json.loads(utils.httpget(self.get_url(self.api_url + '/videos', brands=self.params['brands'])))
+                videos = self.httpget(self.get_url(self.api_url + '/videos', brands=self.params['brands']), output="json")
                 spath = videos['data'][0]['sources']['m3u8']['auto']
             elif 'articles' in self.params:
-                articles = json.loads(utils.httpget(self.get_url(self.api_url + '/articles/' + self.params['articles'])))
+                articles = self.httpget(self.get_url(self.api_url + '/articles/' + self.params['articles']), output="json")
                 if articles['data']['videos']:
                     spath = articles['data']['videos'][0]['sources']['m3u8']['auto']
                 else:
                     xbmcgui.Dialog().textviewer(articles['data']['title'], utils.clean_html(articles['data']['body']))
                     return
             elif 'videos' in self.params:
-                videos = json.loads(utils.httpget(self.api_url + '/videos/' + self.params['videos']))
+                videos = self.httpget(self.api_url + '/videos/' + self.params['videos'], output="json")
                 spath = videos['data']['sources']['m3u8']['auto']
             else:
                 raise ValueError(self.language(30060))
 
             if self.addon.getSettingBool("addhistory") and 'brands' in self.params:
-                resp = json.loads(utils.httpget(self.api_url + '/brands/' + self.params['brands']))
+                resp = self.httpget(self.api_url + '/brands/' + self.params['brands'], output="json")
                 self.save_brand_to_history(resp['data'])
             play_item = xbmcgui.ListItem(path=spath)
             if '.m3u8' in spath:
@@ -602,6 +607,15 @@ class Smotrim:
             xbmcplugin.setResolvedUrl(self.handle, True, listitem=play_item)
         except ValueError:
             utils.show_error_message(self.language(30060))
+
+    def httpget(self, url, output="text"):
+        response = requests.get(url, cookies=self.cookies)
+        if output == "json":
+            return response.json()
+        elif output == "text":
+            return response.text
+        else:
+            return response
 
     @staticmethod
     def get_pic_from_plist(plist, res):

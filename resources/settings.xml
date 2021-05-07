@@ -9,7 +9,8 @@
     </category>
     <category id="hidden">
         <visible>false</visible>
+        <setting id="domain" type="text" label="" default="smotrim.ru"/>
         <setting id="api_url" type="text" label="" default="https://api.smotrim.ru/api/v1"/>
-        <setting id="uid_url" type="text" label="" default="https://msk-v.rtr-vesti.ru/uid"/>
+        <setting id="uid_url" type="text" label="" default="https://msk-v.rtr-vesti.ru/uid/"/>
     </category>
 </settings>

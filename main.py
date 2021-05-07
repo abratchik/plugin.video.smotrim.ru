@@ -8,11 +8,11 @@ Video plugin for Smotrim.ru portal
 """
 
 from resources.lib.smotrim import Smotrim
-from resources.lib.auditory import User
+from resources.lib.users import User
 
 if __name__ == '__main__':
-    User = User()
     Smotrim = Smotrim()
+    User = User()
 
     User.watch(Smotrim)
 
