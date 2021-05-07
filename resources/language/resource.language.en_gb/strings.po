@@ -183,3 +183,7 @@ msgstr "(Video)"
 msgctxt "#30400"
 msgid "Channels"
 msgstr "Channels"
+
+msgctxt "#30500"
+msgid "Please enter code you got on your mobile"
+msgstr "Please enter code you got on your mobile"
