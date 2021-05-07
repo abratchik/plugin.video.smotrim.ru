@@ -4,10 +4,7 @@
 # Created on: 03.04.2021
 # License: GPL v.3 https://www.gnu.org/copyleft/gpl.html
 
-import datetime as dt
 import requests
-import logging
-import http.client as http_client
 
 import xbmc
 import xbmcgui
@@ -65,14 +62,6 @@ class User:
                    'Referer': "https://%s/login" % self.domain,
                    'Sec-GPC': "1",
                    'X-Requested-With': "XMLHTTPRequest"}
-
-        # Enable logging
-        http_client.HTTPConnection.debuglevel = 1
-        logging.basicConfig()
-        logging.getLogger().setLevel(logging.DEBUG)
-        requests_log = logging.getLogger("requests.packages.urllib3")
-        requests_log.setLevel(logging.DEBUG)
-        requests_log.propagate = True
 
         with requests.Session() as s:
 

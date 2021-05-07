@@ -154,9 +154,9 @@ class Smotrim:
             xbmc.log("Load episodes for brand [ %s ] " % brand, xbmc.LOGDEBUG)
 
             self.episodes = self.httpget(self.get_url(self.api_url + '/episodes',
-                                                       brands=brand,
-                                                       limit=limit,
-                                                       offset=offset), output="json")
+                                                      brands=brand,
+                                                      limit=limit,
+                                                      offset=offset), output="json")
 
             if 'data' in self.episodes:
                 self.context_title = self.episodes['data'][0]['brandTitle'] \
@@ -176,8 +176,8 @@ class Smotrim:
         xbmc.log("items per page: %s" % limit, xbmc.LOGDEBUG)
 
         self.channel_menu = self.httpget(self.get_url(self.api_url + '/menu/channels/' + self.params['channels'],
-                                                       limit=limit,
-                                                       offset=offset), output="json")
+                                                      limit=limit,
+                                                      offset=offset), output="json")
 
         self.context_title = self.params['title']
 
@@ -190,8 +190,8 @@ class Smotrim:
         xbmc.log("items per page: %s" % limit, xbmc.LOGDEBUG)
 
         self.articles = self.httpget(self.get_url(self.api_url + '/articles',
-                                                   limit=limit,
-                                                   offset=offset), output="json")
+                                                  limit=limit,
+                                                  offset=offset), output="json")
 
         self.context_title = self.language(30301)
 
@@ -573,18 +573,20 @@ class Smotrim:
         try:
             if 'episodes' in self.params:
                 if json.loads(self.params['is_audio'].lower()):
-                    audios =self.httpget(
+                    audios = self.httpget(
                         self.get_url(self.api_url + '/audios', episodes=self.params['episodes']), output="json")
                     spath = audios['data'][0]['sources']['mp3']
                 else:
-                    videos =self.httpget(
+                    videos = self.httpget(
                         self.get_url(self.api_url + '/videos', episodes=self.params['episodes']), output="json")
                     spath = videos['data'][0]['sources']['m3u8']['auto']
             elif 'brands' in self.params:
-                videos = self.httpget(self.get_url(self.api_url + '/videos', brands=self.params['brands']), output="json")
+                videos = self.httpget(self.get_url(self.api_url + '/videos', brands=self.params['brands']),
+                                      output="json")
                 spath = videos['data'][0]['sources']['m3u8']['auto']
             elif 'articles' in self.params:
-                articles = self.httpget(self.get_url(self.api_url + '/articles/' + self.params['articles']), output="json")
+                articles = self.httpget(self.get_url(self.api_url + '/articles/' + self.params['articles']),
+                                        output="json")
                 if articles['data']['videos']:
                     spath = articles['data']['videos'][0]['sources']['m3u8']['auto']
                 else:
