@@ -13,7 +13,7 @@ The addon as been tested on
 - Kodi Matrix on Android v9 Pie
 
 The following packages need to be present in your system
-for addon to work properly. Below is th list of packages:
+for addon to work properly. Below is the list of packages:
 
 - ffmpeg
 
