@@ -168,6 +168,10 @@ msgctxt "#30223"
 msgid "Comedies"
 msgstr "Комедии"
 
+msgctxt "#30224"
+msgid "Live broadcasts"
+msgstr "Прямой эфир"
+
 msgctxt "#30300"
 msgid "Home"
 msgstr "Главная"

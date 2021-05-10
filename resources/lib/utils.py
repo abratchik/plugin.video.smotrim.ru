@@ -6,11 +6,9 @@
 import datetime
 import os
 import re
-import pickle
-
-from requests.cookies import RequestsCookieJar
 
 import xbmc
+import xbmcvfs
 
 
 def show_error_message(msg):
@@ -20,7 +18,7 @@ def show_error_message(msg):
 
 def create_folder(folder):
     if not (os.path.exists(folder) and os.path.isdir(folder)):
-        os.makedirs(folder)
+        xbmcvfs.mkdirs(folder)
     return folder
 
 
@@ -33,28 +31,6 @@ def clean_html(raw_html):
         return raw_html
 
 
-def load_cookies(data_path):
-    cookies_file = os.path.join(data_path, "cookies.dat")
-    if os.path.exists(cookies_file):
-        with open(cookies_file, 'rb') as f:
-            return pickle.load(f)
-    else:
-        cj = RequestsCookieJar()
-        return cj
-
-
-def save_cookies(cookies, data_path):
-    with open(os.path.join(data_path, "cookies.dat"), "wb") as f:
-        pickle.dump(cookies, f)
-
-
-def is_login(cookies):
-    return ('sm_id' in cookies) and ('usgr' in cookies)
-
-
 def get_date_millis():
     delta = (datetime.datetime.now() - datetime.datetime(1970, 1, 1))
     return int(delta.total_seconds() * 1000)
-
-
-

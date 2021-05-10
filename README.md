@@ -31,6 +31,15 @@ for Ubuntu below:
    
 That's all. Enjoy :)
 
+## User registration
+Starting from the release 1.0.18, the addon supports user registration with
+the mobile number. Registration is triggered whenever a valid mobile number is
+specified in the addon settings.
+
+At this point, only Russian mobile numbers accepted by the web site Smitrim.ru,
+any other mobile will not work, unfortunately. In case if you don't have such
+number, please leave the Phone number in the addon settings blank.
+
 ## Disclaimer
 This is a non-commercial community-supported addon for the Smotrim.ru web site.
 It has been created for watching Russian programs on the TV screen, just for fun and has no relation
