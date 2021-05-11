@@ -10,10 +10,8 @@ import xbmc
 import xbmcgui
 import xbmcplugin
 
-from abc import ABC, abstractmethod
 
-
-class Page(ABC):
+class Page(object):
 
     def __init__(self, site):
         self.site = site
@@ -73,11 +71,10 @@ class Page(ABC):
 
         play_item = xbmcgui.ListItem(path=url)
         if '.m3u8' in url:
+            play_item.setMimeType('application/x-mpegURL')
             play_item.setProperty('inputstreamaddon', 'inputstream.adaptive')
             play_item.setProperty('inputstream.adaptive.manifest_type', 'hls')
-        if 'rtmp://' in url:
-            play_item.setProperty('inputstreamaddon', 'inputstream.adaptive')
-            play_item.setProperty('inputstream.adaptive.manifest_type', 'mpd')
+
 
         xbmcplugin.setResolvedUrl(self.site.handle, True, listitem=play_item)
 
@@ -126,6 +123,35 @@ class Page(ABC):
             return ""
 
     @staticmethod
+    def format_date(s):
+        if s:
+            return "%s-%s-%s %s:%s:%s" % (s[6:10], s[3:5], s[0:2], s[11:13], s[14:16], s[17:19])
+        else:
+            return ""
+
+    @staticmethod
+    def get_mpaa(age):
+        if age == u'':
+            return 'G'
+        elif age == 6:
+            return 'PG'
+        elif age == 12:
+            return 'PG-13'
+        elif age == 16:
+            return 'R'
+        elif age == 18:
+            return 'NC-17'
+        else:
+            return ''
+
+    @staticmethod
+    def get_country(countries):
+        if type(countries) is list and len(countries)>0:
+            return countries[0]['title']
+        else:
+            return ""
+
+    @staticmethod
     def get_logo(ch, res="xxl"):
         try:
             return ch['logo'][res]['url']
@@ -152,18 +178,10 @@ class Page(ABC):
             list_item.setProperty('IsPlayable', str(category['is_playable']).lower())
 
             if 'info' in category:
-                for info in category['info']:
-                    list_item.setInfo('video', {info: category['info'][info]})
-                    if info == 'mediatype':
-                        list_item.addContextMenuItems([(self.site.language(30000),
-                                                        "XBMC.Action(%s)" % ("Play"
-                                                                             if category['info']['mediatype'] == "news"
-                                                                             else "Info")
-                                                        ), ])
+                list_item.setInfo(category['type'] if 'type' in category else "video", category['info'])
 
             if 'art' in category:
-                for art in category['art']:
-                    list_item.setArt({art: category['art'][art]})
+                list_item.setArt(category['art'])
 
             xbmcplugin.addDirectoryItem(self.site.handle, url, list_item, is_folder)
 
@@ -173,3 +191,5 @@ class Page(ABC):
     def save_brand_to_history(self, brand):
         with open(os.path.join(self.site.history_path, "brand_%s.json" % brand['id']), 'w+') as f:
             json.dump(brand, f)
+
+

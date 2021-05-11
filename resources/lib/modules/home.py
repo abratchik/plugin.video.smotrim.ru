@@ -7,7 +7,6 @@
 import resources.lib.modules.pages as pages
 import resources.lib.modules.brands as brands
 import resources.lib.modules.articles as articles
-import resources.lib.modules.lives as lives
 import resources.lib.modules.channels as channels
 import resources.lib.modules.history as histories
 
@@ -18,13 +17,11 @@ class Home(pages.Page):
         brand = brands.Brand(self.site)
         article = articles.Article(self.site)
         channel = channels.Channel(self.site)
-        live = lives.Live(self.site)
         history = histories.History(self.site)
 
         home_menu = [brand.create_search_li(),
                      article.create_root_li(),
-                     channel.create_root_li(),
-                     live.create_root_li()]
+                     channel.create_root_li()]
 
         home_menu.extend(list(brand.create_search_by_tag_lis()))
 

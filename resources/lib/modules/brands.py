@@ -58,9 +58,9 @@ class Brand(pages.Page):
                         'fanart': self.site.get_media("background.jpg")}
                 }
 
-    def create_search_by_tag_lis(self, tags = None):
+    def create_search_by_tag_lis(self, tags=None):
         if tags is None:
-                tags = self.TAGS
+            tags = self.TAGS
 
         for tag in tags:
             yield self.create_search_by_tag_li(str(tag['tag']),
@@ -110,7 +110,7 @@ class Brand(pages.Page):
             return {}
         else:
             print("loading brands")
-            return super().get_data_query()
+            return super(Brand, self).get_data_query()
 
     def get_load_url(self):
         if self.action == "search" and self.search_text:
@@ -136,19 +136,18 @@ class Brand(pages.Page):
 
         self.play_url(spath)
 
-
     def create_element_li(self, element):
 
         if 'has_children' in self.params and self.params['has_children'] == "True":
-            return super().create_element_li(element)
+            return super(Brand, self).create_element_li(element)
         else:
-            has_many_series = element['hasManySeries']
             is_folder = element['countVideos'] > 1 or element['countAudioEpisodes'] > 1
             is_music_folder = is_folder and element['countAudioEpisodes'] == element['countVideos']
+            label = self.get_label(element)
             return {'id': element['id'],
                     'is_folder': is_folder,
                     'is_playable': not is_folder,
-                    'label': "[B]%s[/B]" % element['title'] if is_folder else element['title'],
+                    'label': "[B]%s[/B]" % label if is_folder else label,
                     'url': self.site.get_url(self.site.url,
                                              action="load",
                                              context="audios" if is_music_folder else "videos",
@@ -161,13 +160,17 @@ class Brand(pages.Page):
                                            brands=element['id'],
                                            url=self.site.url),
                     'info': {'title': element['title'],
+                             'sorttitle': element['title'],
+                             'originaltitle': element['titleOrig'],
                              'genre': element['genre'],
                              'mediatype': "tvshow" if is_folder else "movie",
                              'year': element['productionYearStart'],
+                             'country': self.get_country(element['countries']),
+                             'mpaa': self.get_mpaa(element['ageRestrictions']),
                              'plot': clean_html(element['body']),
                              'plotoutline': element['anons'],
                              'rating': element['rank'],
-                             'dateadded': element['dateRec']
+                             'dateadded': self.format_date(element['dateRec'])
                              },
                     'art': {'thumb': "%s/pictures/%s/lw/redirect" % (self.site.api_url, element['picId']),
                             'icon': "%s/pictures/%s/lw/redirect" % (self.site.api_url, element['picId']),
@@ -186,3 +189,11 @@ class Brand(pages.Page):
                     return ct
         return {}
 
+    @staticmethod
+    def get_label(brand):
+        rank = brand['rank']
+        if rank:
+            color = "FF00FF00" if rank >= 7.0 else "yellow" if (7.0 > rank >= 5.0) else "red"
+            return "[COLOR %s][%s][/COLOR] %s" % (color, rank, brand['title'])
+        else:
+            return brand['title']

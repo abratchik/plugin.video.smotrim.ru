@@ -13,8 +13,7 @@ class Video(pages.Page):
         return self.site.get_url(self.site.api_url + '/videos',
                                  brands=self.params['brands'],
                                  limit=self.limit,
-                                 offset=self.offset,
-                                 sort="date")
+                                 offset=self.offset)
 
     def set_context_title(self):
         if 'data' in self.data:
@@ -45,7 +44,7 @@ class Video(pages.Page):
                          'mediatype': "episode",
                          'plotoutline': element['combinedTitle'],
                          'plot': element['anons'],
-                         'dateadded': element['dateRec']
+                         'dateadded': self.format_date(element['dateRec']),
                          },
                 'art': {'fanart': self.get_pic_from_plist(element['pictures'], 'hd'),
                         'icon': self.get_pic_from_plist(element['pictures'], 'lw'),
