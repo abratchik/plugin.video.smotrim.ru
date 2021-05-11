@@ -168,6 +168,14 @@ msgctxt "#30223"
 msgid "Comedies"
 msgstr "Comedies"
 
+msgctxt "#30224"
+msgid "Live broadcasts"
+msgstr "Live broadcasts"
+
+msgctxt "#30225"
+msgid "Playlist (.m3u)"
+msgstr "Playlist (.m3u)"
+
 msgctxt "#30300"
 msgid "Home"
 msgstr "Home"

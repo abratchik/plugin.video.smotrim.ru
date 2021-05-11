@@ -3,22 +3,27 @@
 # Author: Alex Bratchik
 # Created on: 03.04.2021
 # License: GPL v.3 https://www.gnu.org/copyleft/gpl.html
+import os
+import pickle
 
 import requests
 
 import xbmc
 import xbmcgui
 
-from . import utils
+NEVER = 100 * 1000 * 60 * 60 * 24
 
 
 class User:
     def __init__(self):
         self.phone = ""
         self.domain = ""
-        self.region = ""
+        self._geo = {}
 
-        self.site = None
+        self._site = None
+        self.session = None
+
+        self._cookies_file = ""
 
     def watch(self, site):
         """
@@ -26,34 +31,39 @@ class User:
         :param site: Smotrim
         :return:
         """
-        self.site = site
+        self._site = site
 
         self.phone = site.addon.getSetting("phone")
         self.domain = site.addon.getSetting("domain")
 
-        if self.login():
+        self.session = requests.Session()
+
+        if self._login():
             site.show_to(self)
 
-    def login(self):
+        self.session.close()
+
+    def _login(self):
+        # Load saved cookies
+        self._cookies_file = os.path.join(self._site.data_path, "cookies.dat")
+        self._load_cookies()
 
         if not self.phone:
-            xbmc.log("No Phone specified, login skipped", xbmc.LOGDEBUG)
-            self.logout(self.site.cookies)
+            self._logout()
             return True
         else:
-            xbmc.log("User phone is %s, logging in " % self.phone, xbmc.LOGDEBUG)
-            if 'phone' in self.site.cookies:
-                if not (self.site.cookies['phone'] == self.phone):
+            if 'phone' in self.session.cookies:
+                if not (self.session.cookies['phone'] == self.phone):
                     # phone has changed, logout
-                    self.logout(self.site.cookies)
+                    self._logout()
             else:
-                self.site.cookies.set("phone", self.phone,
-                                      expires=100 * 1000 * 60 * 60 * 24,
-                                      domain=self.site.id,
-                                      path="/")
+                self.session.cookies.set("phone", self.phone,
+                                         expires=NEVER,
+                                         domain=self._site.id,
+                                         path="/")
+                self._save_cookies()
 
-        if utils.is_login(self.site.cookies):
-            xbmc.log("User %s logged in" % self.phone, xbmc.LOGDEBUG)
+        if self._is_login():
             return True
 
         headers = {'User-agent': "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:88.0) Gecko/20100101 Firefox/88.0",
@@ -63,61 +73,73 @@ class User:
                    'Sec-GPC': "1",
                    'X-Requested-With': "XMLHTTPRequest"}
 
-        with requests.Session() as s:
+        # If UID not in cookies, request it
+        if not ('ngx_uid' in self.session.cookies):
+            xbmc.log("Cookie file not found or missing UID, requesting from %s" % self.domain, xbmc.LOGDEBUG)
+            self.session.get("https://%s" % self.domain)
 
-            # Load site cookies to session
-            if not (self.site.cookies is None):
-                for c in self.site.cookies:
-                    s.cookies.set_cookie(c)
+        self.session.cookies.set("isNGX_UID", "true", domain=self.domain, path="/")
 
-            # If UID not in cookies, request it
-            if not ('ngx_uid' in s.cookies):
-                xbmc.log("Cookie file not found or missing UID, requesting from %s" % self.domain, xbmc.LOGDEBUG)
-                s.get("https://%s" % self.domain)
+        # Set region
+        self.load_geo()
+        self.session.cookies.set("region", self.get_region(), expires=NEVER, domain=self.domain, path="/")
+        xbmc.log("Region is %s" % self.session.cookies['region'], xbmc.LOGDEBUG)
 
-            s.cookies.set("isNGX_UID", "true", domain=self.domain, path="/")
+        # Try to login
+        self.session.post("https://%s/login" % self.domain,
+                          files={'phone': (None, self.phone)},
+                          headers=headers)
 
-            xbmc.log("Determine region ...", xbmc.LOGDEBUG)
-            geo = s.get(self.site.api_url + '/geo').json()
-            try:
-                self.region = geo['data']['locale']['region']
-            except KeyError:
-                xbmc.log("Login failure - could not get the region", xbmc.LOGDEBUG)
-                return False
+        auth_code = xbmcgui.Dialog().numeric(0, self._site.language(30500), "")
 
-            s.cookies.set("region", self.region, expires=100 * 1000 * 60 * 60 * 24, domain=self.domain, path="/")
-            self.region = s.cookies['region']
-            xbmc.log("Region is %s" % s.cookies['region'], xbmc.LOGDEBUG)
+        if not auth_code:
+            self._logout()
+            self._save_cookies()
+            return False
 
-            s.post("https://%s/login" % self.domain,
-                   files={'phone': (None, self.phone)},
-                   headers=headers)
+        xbmc.log("Send the code %s for authorization to %s" % (auth_code, self.domain), xbmc.LOGDEBUG)
 
-            auth_code = xbmcgui.Dialog().numeric(0, self.site.language(30500), "")
+        self.session.post("https://%s/login" % self.domain,
+                          files={'code': (None, auth_code),
+                                 'phone': (None, self.phone)},
+                          headers=headers)
 
-            if not auth_code:
-                self.logout(s.cookies)
-                utils.save_cookies(s.cookies, self.site.data_path)
-                return False
-
-            xbmc.log("Send the code %s for authorization to %s" % (auth_code, self.domain), xbmc.LOGDEBUG)
-
-            s.post("https://%s/login" % self.domain,
-                   files={'code': (None, auth_code),
-                          'phone': (None, self.phone)},
-                   headers=headers)
-
-            if utils.is_login(s.cookies):
-                xbmc.log("User login SUCCESS, id=%s, usgr=%s" % (s.cookies['sm_id'], s.cookies['usgr']), xbmc.LOGDEBUG)
-                for c in s.cookies:
-                    self.site.cookies.set_cookie(c)
-                utils.save_cookies(s.cookies, self.site.data_path)
-                return True
+        if self._is_login():
+            xbmc.log("User login SUCCESS, id=%s, usgr=%s" %
+                     (self.session.cookies['sm_id'], self.session.cookies['usgr']), xbmc.LOGDEBUG)
+            self._save_cookies()
+            return True
 
         return False
 
-    def logout(self, cookies):
-        if 'sm_id' in cookies:
-            cookies.clear(domain=self.domain, path="/", name="sm_id")
-        if 'usgr' in cookies:
-            cookies.clear(domain=self.domain, path="/", name="usgr")
+    def load_geo(self):
+        if not ('data' in self._geo):
+            xbmc.log("Loading geo data", xbmc.LOGDEBUG)
+            self._geo = self.session.get(self._site.api_url + '/geo').json()
+        return self._geo
+
+    def get_region(self):
+        try:
+            return self._geo['data']['locale']['region']
+        except KeyError:
+            return ""
+
+    def _logout(self):
+        if 'sm_id' in self.session.cookies:
+            self.session.cookies.clear(domain=self.domain, path="/", name="sm_id")
+        if 'usgr' in self.session.cookies:
+            self.session.cookies.clear(domain=self.domain, path="/", name="usgr")
+
+    def _is_login(self):
+        return ('sm_id' in self.session.cookies) and ('usgr' in self.session.cookies)
+
+    def _save_cookies(self):
+        with open(self._cookies_file, "wb") as f:
+            pickle.dump(self.session.cookies, f)
+
+    def _load_cookies(self):
+        if os.path.exists(self._cookies_file):
+            with open(self._cookies_file, 'rb') as f:
+                cj = pickle.load(f)
+                for c in cj:
+                    self.session.cookies.set_cookie(c)

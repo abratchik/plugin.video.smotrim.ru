@@ -10,9 +10,10 @@ forum XBMC.ru [here](http://xbmc.ru/forum/showthread.php?t=23431).
 The addon as been tested on 
 - Kodi Leia under Ubuntu 18.04 LTS.
 - Kodi Matrix under Ubuntu 20.04 LTS
+- Kodi Matrix on Android v9 Pie
 
 The following packages need to be present in your system
-for addon to work properly. Below is th list of packages:
+for addon to work properly. Below is the list of packages:
 
 - ffmpeg
 
@@ -29,6 +30,15 @@ for Ubuntu below:
    Video add-ons**, click on "Smotrim.ru" and install it.
    
 That's all. Enjoy :)
+
+## User registration
+Starting from the release 1.0.18, the addon supports user registration with
+the mobile number. Registration is triggered whenever a valid mobile number is
+specified in the addon settings.
+
+At this point, only Russian mobile numbers accepted by the web site Smitrim.ru,
+any other mobile will not work, unfortunately. In case if you don't have such
+number, please leave the Phone number in the addon settings blank.
 
 ## Disclaimer
 This is a non-commercial community-supported addon for the Smotrim.ru web site.
