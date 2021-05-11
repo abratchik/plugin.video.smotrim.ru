@@ -44,7 +44,7 @@ class Article(pages.Page):
                                          articles=element['id'],
                                          url=self.site.url),
                 'info': {'title': element['title'],
-                         'mediatype': "video" if element['videos'] else "news",
+                         'mediatype': "video",
                          'plot': clean_html(element['body']),
                          'plotoutline': element['anons'],
                          'dateadded': element['datePub']
@@ -59,8 +59,7 @@ class Article(pages.Page):
     def play(self):
         articles = self.site.request(self.site.get_url(self.site.api_url + '/articles/' + self.params['articles']),
                                      output="json")
+        xbmcgui.Dialog().textviewer(articles['data']['title'], clean_html(articles['data']['body']))
         if articles['data']['videos']:
             spath = articles['data']['videos'][0]['sources']['m3u8']['auto']
             self.play_url(spath)
-        else:
-            xbmcgui.Dialog().textviewer(articles['data']['title'], clean_html(articles['data']['body']))

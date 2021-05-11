@@ -69,7 +69,6 @@ class Page(object):
             resp = self.site.request(self.site.api_url + '/brands/' + self.params['brands'], output="json")
             self.save_brand_to_history(resp['data'])
 
-        print("Player url is %s" % url)
         play_item = xbmcgui.ListItem(path=url)
         if '.m3u8' in url:
             play_item.setMimeType('application/x-mpegURL')
@@ -124,6 +123,35 @@ class Page(object):
             return ""
 
     @staticmethod
+    def format_date(s):
+        if s:
+            return "%s-%s-%s %s:%s:%s" % (s[6:10], s[3:5], s[0:2], s[11:13], s[14:16], s[17:19])
+        else:
+            return ""
+
+    @staticmethod
+    def get_mpaa(age):
+        if age == u'':
+            return 'G'
+        elif age == 6:
+            return 'PG'
+        elif age == 12:
+            return 'PG-13'
+        elif age == 16:
+            return 'R'
+        elif age == 18:
+            return 'NC-17'
+        else:
+            return ''
+
+    @staticmethod
+    def get_country(countries):
+        if type(countries) is list and len(countries)>0:
+            return countries[0]['title']
+        else:
+            return ""
+
+    @staticmethod
     def get_logo(ch, res="xxl"):
         try:
             return ch['logo'][res]['url']
@@ -150,18 +178,10 @@ class Page(object):
             list_item.setProperty('IsPlayable', str(category['is_playable']).lower())
 
             if 'info' in category:
-                for info in category['info']:
-                    list_item.setInfo('video', {info: category['info'][info]})
-                    if info == 'mediatype':
-                        list_item.addContextMenuItems([(self.site.language(30000),
-                                                        "XBMC.Action(%s)" % ("Play"
-                                                                             if category['info']['mediatype'] == "news"
-                                                                             else "Info")
-                                                        ), ])
+                list_item.setInfo(category['type'] if 'type' in category else "video", category['info'])
 
             if 'art' in category:
-                for art in category['art']:
-                    list_item.setArt({art: category['art'][art]})
+                list_item.setArt(category['art'])
 
             xbmcplugin.addDirectoryItem(self.site.handle, url, list_item, is_folder)
 
