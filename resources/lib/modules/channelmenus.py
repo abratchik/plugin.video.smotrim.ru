@@ -13,6 +13,7 @@ class ChannelMenu(pages.Page):
     def __init__(self, site):
         super(ChannelMenu, self).__init__(site)
         self.brand = brands.Brand(site)
+        self.cache_enabled = True
 
     def get_load_url(self):
         return self.site.get_url(self.site.api_url + '/menu/channels/' + self.params['channels'],

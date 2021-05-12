@@ -12,6 +12,10 @@ msgctxt "#30000"
 msgid "Information"
 msgstr "Сведения"
 
+msgctxt "#30001"
+msgid "Refresh from site"
+msgstr "Обновить с сайта"
+
 msgctxt "#30010"
 msgid "Search"
 msgstr "Поиск"
@@ -71,6 +75,18 @@ msgstr "Элементов на странице"
 msgctxt "#30112"
 msgid "Keep track of viewing history"
 msgstr "Вести историю просмотров"
+
+msgctxt "#30113"
+msgid "Auto play next episode"
+msgstr "Смотреть следующий эпизод"
+
+msgctxt "#30114"
+msgid "On"
+msgstr "Вкл."
+
+msgctxt "#30115"
+msgid "Выкл."
+msgstr "Выкл."
 
 msgctxt "#30200"
 msgid "Premieres"

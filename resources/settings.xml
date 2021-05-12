@@ -9,5 +9,6 @@
     <category id="interface" label="30110">
         <setting id="itemsperpage" type="enum" label="30111" values="10|20|30" default="1" />
         <setting id="addhistory" type="bool" label="30112" default="true" />
+        <setting id="upnext" type="enum" label="30113" lvalues="30115|30114" default="1" />
     </category>
 </settings>

@@ -6,7 +6,7 @@
     <requires>
         <import addon="xbmc.python" version="3.0.0"/>
         <import addon="script.module.requests"/>
-        <import addon="script.module.youtube.dl"/>
+        <import addon="service.upnext"/>
     </requires>
     <extension point="xbmc.python.pluginsource" library="main.py">
         <provides>video</provides>

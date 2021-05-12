@@ -10,6 +10,9 @@ from ..utils import clean_html
 
 
 class Audio(pages.Page):
+    def __init__(self, site):
+        super(Audio, self).__init__(site)
+        self.cache_enabled = True
 
     def get_load_url(self):
         return self.site.get_url(self.site.api_url + '/audios',
@@ -29,7 +32,7 @@ class Audio(pages.Page):
                                  context="audios",
                                  content=self.params['content'],
                                  brands=self.params['brands'],
-                                 limit=self.limit, offset=offset + 1, url=self.site.url)
+                                 limit=self.limit, offset=offset, url=self.site.url)
 
     def create_element_li(self, element):
         return {'id': element['id'],
@@ -46,11 +49,11 @@ class Audio(pages.Page):
                 'info': {'title': element['title'],
                          'originaltitle': element['title'],
                          'sorttitle': element['title'],
-                         'twshowtitle': element['brandTitle'],
+                         'tvshowtitle': element['brandTitle'],
                          'mediatype': "episode",
                          'episode': element['series'],
                          'dateadded': self.format_date(element['datePub']),
-                         'duration': element['duration'],
+                             'duration': element['duration'],
                          'plot': "%s[CR]%s" % (element['title'], element['anons'])},
                 'art': {'fanart': self.get_pic_from_plist(element['pictures'], 'hd'),
                         'icon': self.get_pic_from_plist(element['pictures'], 'lw'),

@@ -12,6 +12,10 @@ msgctxt "#30000"
 msgid "Information"
 msgstr "Information"
 
+msgctxt "#30001"
+msgid "Refresh from site"
+msgstr "Refresh from site"
+
 msgctxt "#30010"
 msgid "Search"
 msgstr "Search"
@@ -71,6 +75,18 @@ msgstr "Items per page"
 msgctxt "#30112"
 msgid "Keep track of viewing history"
 msgstr "Keep track of viewing history"
+
+msgctxt "#30113"
+msgid "Auto play next episode"
+msgstr "Auto play next episode"
+
+msgctxt "#30114"
+msgid "On"
+msgstr "On"
+
+msgctxt "#30115"
+msgid "Off"
+msgstr "Off"
 
 msgctxt "#30200"
 msgid "Premieres"

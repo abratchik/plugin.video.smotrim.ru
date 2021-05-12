@@ -82,7 +82,7 @@ class Brand(pages.Page):
             return self.site.get_url(self.site.url, action=self.action,
                                      context="brands",
                                      search=self.search_text,
-                                     offset=offset + 1,
+                                     offset=offset,
                                      limit=self.limit,
                                      url=self.site.url)
         elif self.action == "search_by_tag" and self.search_tag:
@@ -92,13 +92,13 @@ class Brand(pages.Page):
                                      tagname=self.params['tagname'],
                                      has_children=self.params['has_children'],
                                      content=self.params['content'],
-                                     offset=offset + 1,
+                                     offset=offset,
                                      limit=self.limit,
                                      url=self.site.url)
         else:
             return self.site.get_url(self.site.url, action=self.action,
                                      context="brands",
-                                     offset=offset + 1,
+                                     offset=offset,
                                      limit=self.limit,
                                      url=self.site.url)
 
@@ -132,9 +132,10 @@ class Brand(pages.Page):
 
         videos = self.site.request(self.site.get_url(self.site.api_url + '/videos', brands=self.params['brands']),
                                    output="json")
-        spath = videos['data'][0]['sources']['m3u8']['auto']
+        if len(videos['data']) > 0:
+            spath = videos['data'][0]['sources']['m3u8']['auto']
 
-        self.play_url(spath)
+            self.play_url(spath)
 
     def create_element_li(self, element):
 

@@ -3,12 +3,15 @@
 # Author: Alex Bratchik
 # Created on: 03.04.2021
 # License: GPL v.3 https://www.gnu.org/copyleft/gpl.html
+
 import json
 import os
 
 import xbmc
 import xbmcgui
 import xbmcplugin
+
+from ..utils import remove_files_by_pattern
 
 
 class Page(object):
@@ -24,12 +27,17 @@ class Page(object):
         self.limit = 0
         self.pages = 0
 
+        self.cache_enabled = False
+        self.cache_file = ""
+
     def load(self):
 
         self.offset = self.params['offset'] if 'offset' in self.params else 0
         self.limit = self.get_limit_setting()
 
         xbmc.log("Items per page: %s" % self.limit, xbmc.LOGDEBUG)
+
+        self.cache_file = self.get_cache_filename()
 
         self.data = self.get_data_query()
 
@@ -40,6 +48,10 @@ class Page(object):
         if 'data' in self.data:
             for element in self.data['data']:
                 self.append_li_for_element(element)
+
+            if self.cache_enabled:
+                with open(self.cache_file, 'w+') as f:
+                    json.dump(self.data, f)
 
         if self.pages > 1:
             self.list_items.append({'id': "home",
@@ -55,7 +67,7 @@ class Page(object):
                                         'label': "[COLOR=FF00FF00][B]%s[/B][/COLOR]" % self.site.language(30030),
                                         'is_folder': True,
                                         'is_playable': False,
-                                        'url': self.get_nav_url(offset=self.offset),
+                                        'url': self.get_nav_url(offset=self.offset + 1),
                                         'info': {'plot': self.site.language(30031) % (self.offset + 1, self.pages)},
                                         'art': {'icon': self.site.get_media("next.png")}
                                         })
@@ -75,7 +87,6 @@ class Page(object):
             play_item.setProperty('inputstreamaddon', 'inputstream.adaptive')
             play_item.setProperty('inputstream.adaptive.manifest_type', 'hls')
 
-
         xbmcplugin.setResolvedUrl(self.site.handle, True, listitem=play_item)
 
     def create_element_li(self, element):
@@ -91,13 +102,22 @@ class Page(object):
         self.site.context_title = self.context.title()
 
     def get_data_query(self):
-        return self.site.request(self.get_load_url(), output="json")
+        is_refresh = 'refresh' in self.params and self.params['refresh'] == "true"
+
+        if is_refresh:
+            remove_files_by_pattern(os.path.join(self.site.data_path, "%s*.json" % self.get_cache_filename_prefix()))
+
+        if not is_refresh and self.cache_enabled and os.path.exists(self.cache_file):
+            with open(self.cache_file, 'r+') as f:
+                return json.load(f)
+        else:
+            return self.site.request(self.get_load_url(), output="json")
 
     def get_nav_url(self, offset=0):
         return self.site.get_url(self.site.url,
                                  action=self.site.action,
                                  context=self.site.context,
-                                 limit=self.limit, offset=offset + 1, url=self.site.url)
+                                 limit=self.limit, offset=offset, url=self.site.url)
 
     def append_li_for_element(self, element):
         self.list_items.append(self.create_element_li(element))
@@ -146,7 +166,7 @@ class Page(object):
 
     @staticmethod
     def get_country(countries):
-        if type(countries) is list and len(countries)>0:
+        if type(countries) is list and len(countries) > 0:
             return countries[0]['title']
         else:
             return ""
@@ -177,6 +197,11 @@ class Page(object):
             is_folder = category['is_folder']
             list_item.setProperty('IsPlayable', str(category['is_playable']).lower())
 
+            if self.cache_enabled:
+                list_item.addContextMenuItems([(self.site.language(30001),
+                                                "ActivateWindow(Videos, %s&refresh=true)" %
+                                                self.get_nav_url(offset=0)), ])
+
             if 'info' in category:
                 list_item.setInfo(category['type'] if 'type' in category else "video", category['info'])
 
@@ -192,4 +217,11 @@ class Page(object):
         with open(os.path.join(self.site.history_path, "brand_%s.json" % brand['id']), 'w+') as f:
             json.dump(brand, f)
 
+    def get_cache_filename(self):
+        return os.path.join(self.site.data_path,
+                            "%s_%s_%s.json" % (self.get_cache_filename_prefix(),
+                                               self.limit,
+                                               self.offset))
 
+    def get_cache_filename_prefix(self):
+        return self.context
