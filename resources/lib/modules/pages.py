@@ -88,15 +88,18 @@ class Page(object):
             self.save_brand_to_history(resp['data'])
 
         play_item = xbmcgui.ListItem(path=url)
-        # if '.m3u8' in url:
-        #     play_item.setMimeType('application/x-mpegURL')
-        #     play_item.setProperty('inputstreamaddon', 'inputstream.adaptive')
-        #     play_item.setProperty('inputstream.adaptive.manifest_type', 'hls')
+        if '.m3u8' in url:
+            play_item.setMimeType('application/x-mpegURL')
+            play_item.setProperty('inputstreamaddon', 'inputstream.adaptive')
+            play_item.setProperty('inputstream.adaptive.manifest_type', 'hls')
 
         if not (this_episode is None) and 'duration' in this_episode:
             play_item.addStreamInfo(stream_type, {'duration': this_episode['duration']})
 
         xbmcplugin.setResolvedUrl(self.site.handle, True, listitem=play_item)
+
+        if not self.site.addon.getSettingBool("upnext"):
+            return
 
         # Wait for playback to start
         kodi_player = kodiplayer.KodiPlayer()
@@ -105,7 +108,6 @@ class Page(object):
             return
 
         if not (next_episode is None) and 'combinedTitle' in next_episode:
-            xbmc.log("Next video is %s" % this_episode['combinedTitle'])
             upnext_signal(sender=self.site.id, next_info=self.get_next_info(this_episode, next_episode))
 
     def get_this_and_next_episode(self, episode_id):

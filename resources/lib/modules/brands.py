@@ -167,7 +167,7 @@ class Brand(pages.Page):
                                              context="audios" if is_music_folder else "videos",
                                              content="musicvideos" if is_music_folder else "episodes",
                                              brands=element['id'],
-                                             cache_expire=self.params['cache_expire'],
+                                             cache_expire=str(self.cache_expire),
                                              url=self.site.url) if is_folder
                     else self.site.get_url(self.site.url,
                                            action="play",
