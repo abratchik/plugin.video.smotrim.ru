@@ -12,6 +12,10 @@ msgctxt "#30000"
 msgid "Information"
 msgstr "Information"
 
+msgctxt "#30001"
+msgid "Refresh from site"
+msgstr "Refresh from site"
+
 msgctxt "#30010"
 msgid "Search"
 msgstr "Search"
@@ -71,6 +75,10 @@ msgstr "Items per page"
 msgctxt "#30112"
 msgid "Keep track of viewing history"
 msgstr "Keep track of viewing history"
+
+msgctxt "#30113"
+msgid "Auto play next episode"
+msgstr "Auto play next episode"
 
 msgctxt "#30200"
 msgid "Premieres"
@@ -171,10 +179,6 @@ msgstr "Comedies"
 msgctxt "#30224"
 msgid "Live broadcasts"
 msgstr "Live broadcasts"
-
-msgctxt "#30225"
-msgid "Playlist (.m3u)"
-msgstr "Playlist (.m3u)"
 
 msgctxt "#30300"
 msgid "Home"

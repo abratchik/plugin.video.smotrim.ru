@@ -3,14 +3,23 @@
 # Author: Alex Bratchik
 # Created on: 03.04.2021
 # License: GPL v.3 https://www.gnu.org/copyleft/gpl.html
+import json
+import os
+import time
 
 import resources.lib.modules.pages as pages
+
+import xbmc
 
 
 class Video(pages.Page):
 
+    def __init__(self, site):
+        super(Video, self).__init__(site)
+        self.cache_enabled = True
+
     def get_load_url(self):
-        return self.site.get_url(self.site.api_url + '/videos',
+        return self.site.get_url(self.site.api_url + '/videos/',
                                  brands=self.params['brands'],
                                  limit=self.limit,
                                  offset=self.offset)
@@ -26,25 +35,22 @@ class Video(pages.Page):
                                  context="videos",
                                  content=self.params['content'],
                                  brands=self.params['brands'],
-                                 limit=self.limit, offset=offset + 1, url=self.site.url)
+                                 limit=self.limit, offset=offset, url=self.site.url)
 
     def create_element_li(self, element):
         return {'id': element['id'],
                 'label': element['combinedTitle'],
                 'is_folder': False,
                 'is_playable': True,
-                'url': self.site.get_url(self.site.url,
-                                         action="play",
-                                         context="videos",
-                                         brands=element['brandId'],
-                                         videos=element['id'],
-                                         url=self.site.url),
+                'url': self.get_play_url(element),
                 'info': {'title': element['combinedTitle'],
                          'tvshowtitle': element['brandTitle'],
                          'mediatype': "episode",
-                         'plotoutline': element['combinedTitle'],
+                         'episode': element['series'],
+                         'plotoutline': element['anons'],
                          'plot': element['anons'],
-                         'dateadded': element['dateRec']
+                         'duration': element['duration'],
+                         'dateadded': self.format_date(element['dateRec']),
                          },
                 'art': {'fanart': self.get_pic_from_plist(element['pictures'], 'hd'),
                         'icon': self.get_pic_from_plist(element['pictures'], 'lw'),
@@ -53,8 +59,24 @@ class Video(pages.Page):
                         }
                 }
 
-    def play(self):
-        videos = self.site.request(self.site.api_url + '/videos/' + self.params['videos'], output="json")
-        spath = videos['data']['sources']['m3u8']['auto']
+    def get_play_url(self, element):
+        return self.site.get_url(self.site.url,
+                                 action="play",
+                                 context="videos",
+                                 brands=element['brandId'],
+                                 videos=element['id'],
+                                 offset=self.offset,
+                                 limit=self.limit,
+                                 spath=element['sources']['m3u8']['auto'],
+                                 url=self.site.url)
 
-        self.play_url(spath)
+    def play(self):
+
+        spath = self.params['spath']
+
+        this_video, next_video = self.get_this_and_next_episode(self.params['videos'])
+        self.play_url(spath, this_video, next_video)
+
+    def get_cache_filename_prefix(self):
+        return "brand_videos_%s" % self.params['brands']
+

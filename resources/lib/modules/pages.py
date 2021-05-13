@@ -3,12 +3,17 @@
 # Author: Alex Bratchik
 # Created on: 03.04.2021
 # License: GPL v.3 https://www.gnu.org/copyleft/gpl.html
+
 import json
 import os
+import time
 
 import xbmc
 import xbmcgui
 import xbmcplugin
+
+from ..utils import remove_files_by_pattern, upnext_signal
+import resources.lib.kodiplayer as kodiplayer
 
 
 class Page(object):
@@ -24,12 +29,18 @@ class Page(object):
         self.limit = 0
         self.pages = 0
 
+        self.cache_enabled = False
+        self.cache_file = ""
+        self.cache_expire = int(self.params['cache_expire']) if 'cache_expire' in self.params else 0
+
     def load(self):
 
         self.offset = self.params['offset'] if 'offset' in self.params else 0
         self.limit = self.get_limit_setting()
 
         xbmc.log("Items per page: %s" % self.limit, xbmc.LOGDEBUG)
+
+        self.cache_file = self.get_cache_filename()
 
         self.data = self.get_data_query()
 
@@ -40,6 +51,11 @@ class Page(object):
         if 'data' in self.data:
             for element in self.data['data']:
                 self.append_li_for_element(element)
+
+            if self.cache_enabled and len(self.data['data']) > 0 and \
+                    not (os.path.exists(self.cache_file) and not self.is_cache_expired()):
+                with open(self.cache_file, 'w+') as f:
+                    json.dump(self.data, f)
 
         if self.pages > 1:
             self.list_items.append({'id': "home",
@@ -55,7 +71,7 @@ class Page(object):
                                         'label': "[COLOR=FF00FF00][B]%s[/B][/COLOR]" % self.site.language(30030),
                                         'is_folder': True,
                                         'is_playable': False,
-                                        'url': self.get_nav_url(offset=self.offset),
+                                        'url': self.get_nav_url(offset=self.offset + 1),
                                         'info': {'plot': self.site.language(30031) % (self.offset + 1, self.pages)},
                                         'art': {'icon': self.site.get_media("next.png")}
                                         })
@@ -64,7 +80,9 @@ class Page(object):
     def play(self):
         pass
 
-    def play_url(self, url):
+    def play_url(self, url, this_episode=None, next_episode=None, stream_type="video"):
+        if next_episode is None:
+            next_episode = {}
         if self.site.addon.getSettingBool("addhistory") and 'brands' in self.params:
             resp = self.site.request(self.site.api_url + '/brands/' + self.params['brands'], output="json")
             self.save_brand_to_history(resp['data'])
@@ -75,13 +93,83 @@ class Page(object):
             play_item.setProperty('inputstreamaddon', 'inputstream.adaptive')
             play_item.setProperty('inputstream.adaptive.manifest_type', 'hls')
 
+        if not (this_episode is None) and 'duration' in this_episode:
+            play_item.addStreamInfo(stream_type, {'duration': this_episode['duration']})
 
         xbmcplugin.setResolvedUrl(self.site.handle, True, listitem=play_item)
+
+        if not self.site.addon.getSettingBool("upnext"):
+            return
+
+        # Wait for playback to start
+        kodi_player = kodiplayer.KodiPlayer()
+        if not kodi_player.waitForPlayBack(url=url):
+            # Playback didn't start
+            return
+
+        if not (next_episode is None) and 'combinedTitle' in next_episode:
+            upnext_signal(sender=self.site.id, next_info=self.get_next_info(this_episode, next_episode))
+
+    def get_this_and_next_episode(self, episode_id):
+        self.offset = self.params['offset'] if 'offset' in self.params else 0
+        self.limit = self.get_limit_setting()
+
+        self.cache_file = self.get_cache_filename()
+
+        if os.path.exists(self.cache_file):
+            with open(self.cache_file, 'r+') as f:
+                self.data = json.load(f)
+            for i, episode in enumerate(self.data['data']):
+                if str(episode['id']) == episode_id:
+                    return episode, self.data['data'][i + 1] if i < self.limit - 1 else {}
+
+            xbmc.log("Reached page bottom, loading next page?")
+            return {}, {}
+        else:
+            return {}, {}
+
+    def get_next_info(self, this_episode, next_episode):
+        return {'current_episode': self.create_next_info(this_episode),
+                'next_episode': self.create_next_info(next_episode),
+                'play_url': self.get_play_url(next_episode)}
+
+    def get_play_url(self, element):
+        return ""
+
+    def create_next_info(self, episode):
+        """
+        Returns the structure needed for service.upnext addon for playback of next episode.
+        Called by get_next_info method.
+        This method is to be overridden in case if the episode structure is not compatible
+
+        @param episode:
+        @return: nex_info structure for the specified episode
+        """
+        return {'episodeid': episode['id'],
+                'tvshowid': self.params['brands'],
+                'title': episode['episodeTitle'],
+                'art': {'thumb': self.get_pic_from_plist(episode['pictures'], 'lw'),
+                        'fanart': self.get_pic_from_plist(episode['pictures'], 'hd'),
+                        'icon': self.get_pic_from_plist(episode['pictures'], 'lw'),
+                        'poster': self.get_pic_from_plist(episode['pictures'], 'vhdr')
+                        },
+                'episode': episode['series'],
+                'showtitle': episode['brandTitle'],
+                'plot': episode['anons'],
+                'playcount': 0,
+                'runtime': episode['duration']
+                }
 
     def create_element_li(self, element):
         return element
 
     def create_root_li(self):
+        """
+        This method can be optionally overridden if the the module class wants to expose a root-level menu.
+        Usage is mainly from the lib.modules.home module.
+
+        @return: the structure defining the list item
+        """
         return {}
 
     def get_load_url(self):
@@ -91,13 +179,35 @@ class Page(object):
         self.site.context_title = self.context.title()
 
     def get_data_query(self):
-        return self.site.request(self.get_load_url(), output="json")
+        is_refresh = 'refresh' in self.params and self.params['refresh'] == "true"
+
+        if is_refresh:
+            remove_files_by_pattern(os.path.join(self.site.data_path, "%s*.json" % self.get_cache_filename_prefix()))
+
+        if not is_refresh and self.cache_enabled and \
+                os.path.exists(self.cache_file) and not (self.is_cache_expired()):
+            with open(self.cache_file, 'r+') as f:
+                return json.load(f)
+        else:
+            return self.site.request(self.get_load_url(), output="json")
+
+    def is_cache_expired(self):
+
+        if self.cache_expire == 0:
+            # cache never expires
+            return False
+
+        mod_time = os.path.getmtime(self.cache_file)
+        now = time.time()
+        delta = now - mod_time
+
+        return delta > self.cache_expire
 
     def get_nav_url(self, offset=0):
         return self.site.get_url(self.site.url,
                                  action=self.site.action,
                                  context=self.site.context,
-                                 limit=self.limit, offset=offset + 1, url=self.site.url)
+                                 limit=self.limit, offset=offset, url=self.site.url)
 
     def append_li_for_element(self, element):
         self.list_items.append(self.create_element_li(element))
@@ -146,7 +256,7 @@ class Page(object):
 
     @staticmethod
     def get_country(countries):
-        if type(countries) is list and len(countries)>0:
+        if type(countries) is list and len(countries) > 0:
             return countries[0]['title']
         else:
             return ""
@@ -177,6 +287,11 @@ class Page(object):
             is_folder = category['is_folder']
             list_item.setProperty('IsPlayable', str(category['is_playable']).lower())
 
+            if self.cache_enabled:
+                list_item.addContextMenuItems([(self.site.language(30001),
+                                                "ActivateWindow(Videos, %s&refresh=true)" %
+                                                self.get_nav_url(offset=0)), ])
+
             if 'info' in category:
                 list_item.setInfo(category['type'] if 'type' in category else "video", category['info'])
 
@@ -191,3 +306,12 @@ class Page(object):
     def save_brand_to_history(self, brand):
         with open(os.path.join(self.site.history_path, "brand_%s.json" % brand['id']), 'w+') as f:
             json.dump(brand, f)
+
+    def get_cache_filename(self):
+        return os.path.join(self.site.data_path,
+                            "%s_%s_%s.json" % (self.get_cache_filename_prefix(),
+                                               self.limit,
+                                               self.offset))
+
+    def get_cache_filename_prefix(self):
+        return self.context

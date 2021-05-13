@@ -8,6 +8,9 @@ import resources.lib.modules.pages as pages
 
 
 class Channel(pages.Page):
+    def __init__(self, site):
+        super(Channel, self).__init__(site)
+        self.cache_enabled = True
 
     def get_load_url(self):
         return self.site.get_url(self.site.api_url + '/channels')

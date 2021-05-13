@@ -13,6 +13,7 @@ class ChannelMenu(pages.Page):
     def __init__(self, site):
         super(ChannelMenu, self).__init__(site)
         self.brand = brands.Brand(site)
+        self.cache_enabled = True
 
     def get_load_url(self):
         return self.site.get_url(self.site.api_url + '/menu/channels/' + self.params['channels'],
@@ -27,4 +28,8 @@ class ChannelMenu(pages.Page):
                                                   element['title'].encode('utf-8', 'ignore'),
                                                   element['title'].encode('utf-8', 'ignore'),
                                                   tagicon=self.site.get_media("search.png"),
-                                                  has_children=False)
+                                                  has_children=False,
+                                                  cache_expire="86400")
+
+    def get_cache_filename_prefix(self):
+        return "channel_menu_%s" % self.params['channels']
