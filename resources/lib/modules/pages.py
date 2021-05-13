@@ -121,7 +121,7 @@ class Page(object):
                 self.data = json.load(f)
             for i, episode in enumerate(self.data['data']):
                 if str(episode['id']) == episode_id:
-                    return episode, self.data['data'][i + 1] if i < self.limit - 1 else {}
+                    return episode, self.data['data'][i + 1] if i < min(self.limit, len(self.data['data'])) - 1 else {}
 
             xbmc.log("Reached page bottom, loading next page?")
             return {}, {}
