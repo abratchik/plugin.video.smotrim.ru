@@ -39,12 +39,7 @@ class Audio(pages.Page):
                 'label': element['title'],
                 'is_folder': False,
                 'is_playable': True,
-                'url': self.site.get_url(self.site.url,
-                                         action="play",
-                                         context="audios",
-                                         brands=element['brandId'],
-                                         audios=element['id'],
-                                         url=self.site.url),
+                'url': self.get_play_url(element),
                 'type': "video",
                 'info': {'title': element['title'],
                          'originaltitle': element['title'],
@@ -53,7 +48,7 @@ class Audio(pages.Page):
                          'mediatype': "episode",
                          'episode': element['series'],
                          'dateadded': self.format_date(element['datePub']),
-                             'duration': element['duration'],
+                         'duration': element['duration'],
                          'plot': "%s[CR]%s" % (element['title'], element['anons'])},
                 'art': {'fanart': self.get_pic_from_plist(element['pictures'], 'hd'),
                         'icon': self.get_pic_from_plist(element['pictures'], 'lw'),
@@ -63,8 +58,24 @@ class Audio(pages.Page):
                 }
 
     def play(self):
-        audios = self.site.request(
-            self.site.get_url(self.site.api_url + '/audios/' + self.params['audios']), output="json")
-        spath = audios['data']['sources']['mp3']
+        spath = self.params['spath']
 
-        self.play_url(spath)
+        this_audio, next_audio = self.get_this_and_next_episode(self.params['audios'])
+
+        self.play_url(spath, this_audio, next_audio, stream_type="audio")
+
+    def get_play_url(self, element):
+        return self.site.get_url(self.site.url,
+                                 action="play",
+                                 context="audios",
+                                 brands=element['brandId'],
+                                 audios=element['id'],
+                                 offset=self.offset,
+                                 limit=self.limit,
+                                 spath=element['sources']['mp3'],
+                                 url=self.site.url)
+
+    def get_cache_filename_prefix(self):
+        return "brand_audios_%s" % self.params['brands']
+
+

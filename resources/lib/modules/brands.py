@@ -40,7 +40,19 @@ class Brand(pages.Page):
                 }
 
     def create_search_by_tag_li(self, tag, tagname, taginfo=None, tagicon="DefaultAddonsSearch.png",
-                                content="videos", has_children=False):
+                                content="videos", has_children=False, cache_expire="0"):
+        """
+
+        @param tag: tag id
+        @param tagname: tag name
+        @param taginfo: tag description
+        @param tagicon: tag icon
+        @param content: content type in the context of this tag. Can be one of the following: videos (default),
+        files, songs, musicvideos, tvshows, episodes, movies
+        @param has_children: if true the eliement is interpreted as tag group (like submenu)
+        @param cache_expire: number of seconds for cache to expire. Default is "0" meaning cache will never expire
+        @return:
+        """
         return {'id': "tag%s" % tag,
                 'label': "[B]%s[/B]" % tagname,
                 'is_folder': True,
@@ -52,6 +64,7 @@ class Brand(pages.Page):
                                          tagname=tagname,
                                          has_children=has_children,
                                          content=content,
+                                         cache_expire=cache_expire,
                                          url=self.site.url),
                 'info': {'plot': taginfo if taginfo else tagname},
                 'art': {'icon': tagicon,
@@ -135,7 +148,7 @@ class Brand(pages.Page):
         if len(videos['data']) > 0:
             spath = videos['data'][0]['sources']['m3u8']['auto']
 
-            self.play_url(spath)
+            self.play_url(spath, videos['data'][0])
 
     def create_element_li(self, element):
 
@@ -154,6 +167,7 @@ class Brand(pages.Page):
                                              context="audios" if is_music_folder else "videos",
                                              content="musicvideos" if is_music_folder else "episodes",
                                              brands=element['id'],
+                                             cache_expire=self.params['cache_expire'],
                                              url=self.site.url) if is_folder
                     else self.site.get_url(self.site.url,
                                            action="play",

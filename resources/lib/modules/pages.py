@@ -6,12 +6,14 @@
 
 import json
 import os
+import time
 
 import xbmc
 import xbmcgui
 import xbmcplugin
 
-from ..utils import remove_files_by_pattern
+from ..utils import remove_files_by_pattern, upnext_signal
+import resources.lib.kodiplayer as kodiplayer
 
 
 class Page(object):
@@ -29,6 +31,7 @@ class Page(object):
 
         self.cache_enabled = False
         self.cache_file = ""
+        self.cache_expire = int(self.params['cache_expire']) if 'cache_expire' in self.params else 0
 
     def load(self):
 
@@ -49,7 +52,8 @@ class Page(object):
             for element in self.data['data']:
                 self.append_li_for_element(element)
 
-            if self.cache_enabled:
+            if self.cache_enabled and len(self.data['data']) > 0 and \
+                    not (os.path.exists(self.cache_file) and not self.is_cache_expired()):
                 with open(self.cache_file, 'w+') as f:
                     json.dump(self.data, f)
 
@@ -76,23 +80,94 @@ class Page(object):
     def play(self):
         pass
 
-    def play_url(self, url):
+    def play_url(self, url, this_episode=None, next_episode=None, stream_type="video"):
+        if next_episode is None:
+            next_episode = {}
         if self.site.addon.getSettingBool("addhistory") and 'brands' in self.params:
             resp = self.site.request(self.site.api_url + '/brands/' + self.params['brands'], output="json")
             self.save_brand_to_history(resp['data'])
 
         play_item = xbmcgui.ListItem(path=url)
-        if '.m3u8' in url:
-            play_item.setMimeType('application/x-mpegURL')
-            play_item.setProperty('inputstreamaddon', 'inputstream.adaptive')
-            play_item.setProperty('inputstream.adaptive.manifest_type', 'hls')
+        # if '.m3u8' in url:
+        #     play_item.setMimeType('application/x-mpegURL')
+        #     play_item.setProperty('inputstreamaddon', 'inputstream.adaptive')
+        #     play_item.setProperty('inputstream.adaptive.manifest_type', 'hls')
+
+        if not (this_episode is None) and 'duration' in this_episode:
+            play_item.addStreamInfo(stream_type, {'duration': this_episode['duration']})
 
         xbmcplugin.setResolvedUrl(self.site.handle, True, listitem=play_item)
+
+        # Wait for playback to start
+        kodi_player = kodiplayer.KodiPlayer()
+        if not kodi_player.waitForPlayBack(url=url):
+            # Playback didn't start
+            return
+
+        if not (next_episode is None) and 'combinedTitle' in next_episode:
+            xbmc.log("Next video is %s" % this_episode['combinedTitle'])
+            upnext_signal(sender=self.site.id, next_info=self.get_next_info(this_episode, next_episode))
+
+    def get_this_and_next_episode(self, episode_id):
+        self.offset = self.params['offset'] if 'offset' in self.params else 0
+        self.limit = self.get_limit_setting()
+
+        self.cache_file = self.get_cache_filename()
+
+        if os.path.exists(self.cache_file):
+            with open(self.cache_file, 'r+') as f:
+                self.data = json.load(f)
+            for i, episode in enumerate(self.data['data']):
+                if str(episode['id']) == episode_id:
+                    return episode, self.data['data'][i + 1] if i < self.limit - 1 else {}
+
+            xbmc.log("Reached page bottom, loading next page?")
+            return {}, {}
+        else:
+            return {}, {}
+
+    def get_next_info(self, this_episode, next_episode):
+        return {'current_episode': self.create_next_info(this_episode),
+                'next_episode': self.create_next_info(next_episode),
+                'play_url': self.get_play_url(next_episode)}
+
+    def get_play_url(self, element):
+        return ""
+
+    def create_next_info(self, episode):
+        """
+        Returns the structure needed for service.upnext addon for playback of next episode.
+        Called by get_next_info method.
+        This method is to be overridden in case if the episode structure is not compatible
+
+        @param episode:
+        @return: nex_info structure for the specified episode
+        """
+        return {'episodeid': episode['id'],
+                'tvshowid': self.params['brands'],
+                'title': episode['episodeTitle'],
+                'art': {'thumb': self.get_pic_from_plist(episode['pictures'], 'lw'),
+                        'fanart': self.get_pic_from_plist(episode['pictures'], 'hd'),
+                        'icon': self.get_pic_from_plist(episode['pictures'], 'lw'),
+                        'poster': self.get_pic_from_plist(episode['pictures'], 'vhdr')
+                        },
+                'episode': episode['series'],
+                'showtitle': episode['brandTitle'],
+                'plot': episode['anons'],
+                'playcount': 0,
+                'runtime': episode['duration']
+                }
 
     def create_element_li(self, element):
         return element
 
     def create_root_li(self):
+        """
+        This method can be optionally overridden if the the module class wants to expose a root-level menu.
+        Usage is mainly from the lib.modules.home module.
+
+        @return: the structure defining the list item
+        """
         return {}
 
     def get_load_url(self):
@@ -107,11 +182,24 @@ class Page(object):
         if is_refresh:
             remove_files_by_pattern(os.path.join(self.site.data_path, "%s*.json" % self.get_cache_filename_prefix()))
 
-        if not is_refresh and self.cache_enabled and os.path.exists(self.cache_file):
+        if not is_refresh and self.cache_enabled and \
+                os.path.exists(self.cache_file) and not (self.is_cache_expired()):
             with open(self.cache_file, 'r+') as f:
                 return json.load(f)
         else:
             return self.site.request(self.get_load_url(), output="json")
+
+    def is_cache_expired(self):
+
+        if self.cache_expire == 0:
+            # cache never expires
+            return False
+
+        mod_time = os.path.getmtime(self.cache_file)
+        now = time.time()
+        delta = now - mod_time
+
+        return delta > self.cache_expire
 
     def get_nav_url(self, offset=0):
         return self.site.get_url(self.site.url,

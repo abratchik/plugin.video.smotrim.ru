@@ -26,6 +26,10 @@ class ChannelMenu(pages.Page):
     def create_element_li(self, element):
         return self.brand.create_search_by_tag_li(element['tags'][0]['id'],
                                                   element['title'],
-                                                  element['title'],
+                                                  taginfo=element['title'],
                                                   tagicon=self.site.get_media("search.png"),
-                                                  has_children=False)
+                                                  has_children=False,
+                                                  cache_expire="86400")
+
+    def get_cache_filename_prefix(self):
+        return "channel_menu_%s" % self.params['channels']
