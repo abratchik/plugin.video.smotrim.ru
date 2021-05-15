@@ -5,6 +5,7 @@
 # License: GPL v.3 https://www.gnu.org/copyleft/gpl.html
 
 import resources.lib.modules.pages as pages
+import resources.lib.modules.searches as searches
 import resources.lib.modules.brands as brands
 import resources.lib.modules.articles as articles
 import resources.lib.modules.channels as channels
@@ -14,12 +15,13 @@ import resources.lib.modules.history as histories
 class Home(pages.Page):
 
     def get_data_query(self):
+        search = searches.Search(self.site)
         brand = brands.Brand(self.site)
         article = articles.Article(self.site)
         channel = channels.Channel(self.site)
         history = histories.History(self.site)
 
-        home_menu = [brand.create_search_li(),
+        home_menu = [search.create_root_li(),
                      article.create_root_li(),
                      channel.create_root_li()]
 

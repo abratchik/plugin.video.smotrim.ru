@@ -9,8 +9,6 @@ import time
 
 import resources.lib.modules.pages as pages
 
-import xbmc
-
 
 class Video(pages.Page):
 
