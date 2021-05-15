@@ -5,6 +5,7 @@
 # License: GPL v.3 https://www.gnu.org/copyleft/gpl.html
 import json
 import os
+import re
 
 import resources.lib.modules.pages as pages
 
@@ -20,8 +21,20 @@ class Brand(pages.Page):
         with open(os.path.join(self.site.path, "resources/data/tags.json"), "r+") as f:
             self.TAGS = json.load(f)
 
+        self.KEYWORDS = []
+        with open(os.path.join(self.site.path, "resources/data/keywords.json"), "r+") as f:
+            self.KEYWORDS = json.load(f)
+
     def search(self):
-        self.search_text = self.params['search'] if 'search' in self.params else self.site.get_user_input()
+        if not ('search' in self.params):
+            self.search_text = self.site.get_user_input()
+            if self.search_text:
+                import resources.lib.modules.searches as searches
+                search = searches.Search(self.site)
+                search.save_to_history(self.search_text)
+        else:
+            self.search_text = self.params['search']
+
         self.load()
 
     def search_by_tag(self):
@@ -122,7 +135,6 @@ class Brand(pages.Page):
                 return {'data': list(self.create_search_by_tag_lis(tag_dict['tags']))}
             return {}
         else:
-            print("loading brands")
             return super(Brand, self).get_data_query()
 
     def get_load_url(self):
@@ -158,6 +170,7 @@ class Brand(pages.Page):
             is_folder = element['countVideos'] > 1 or element['countAudioEpisodes'] > 1
             is_music_folder = is_folder and element['countAudioEpisodes'] == element['countVideos']
             label = self.get_label(element)
+            bp = self.parse_body(element['body'])
             return {'id': element['id'],
                     'is_folder': is_folder,
                     'is_playable': not is_folder,
@@ -182,7 +195,10 @@ class Brand(pages.Page):
                              'year': element['productionYearStart'],
                              'country': self.get_country(element['countries']),
                              'mpaa': self.get_mpaa(element['ageRestrictions']),
-                             'plot': clean_html(element['body']),
+                             'plot': bp['plot'],
+                             'cast': bp['cast'],
+                             'director': bp['director'],
+                             'writer': bp['writer'],
                              'plotoutline': element['anons'],
                              'rating': element['rank'],
                              'dateadded': self.format_date(element['dateRec'])
@@ -212,3 +228,24 @@ class Brand(pages.Page):
             return "[COLOR %s][%s][/COLOR] %s" % (color, rank, brand['title'])
         else:
             return brand['title']
+
+    def parse_body(self, body):
+        result = {}
+
+        body_parts = clean_html(body).splitlines() if body else []
+        delimiter = re.compile(r',|;')
+        for key in self.KEYWORDS:
+            if len(body_parts) > 0:
+                lbgroups = ["(%s)" % kw for kw in self.KEYWORDS[key]]
+                pattern = re.compile(r"(?:%s)(?P<text>.*)" % '|'.join(lbgroups), re.UNICODE)
+                for part in body_parts:
+                    m = pattern.search(part)
+                    if m:
+                        result[key] = [x.strip() for x in delimiter.split(m.group('text'))]
+                        print(result[key])
+            if not (key in result):
+                result[key] = []
+
+        result['plot'] = "\r\n".join(body_parts)
+
+        return result

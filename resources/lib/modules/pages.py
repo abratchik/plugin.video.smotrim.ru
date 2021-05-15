@@ -12,7 +12,7 @@ import xbmc
 import xbmcgui
 import xbmcplugin
 
-from ..utils import remove_files_by_pattern, upnext_signal
+from ..utils import remove_files_by_pattern, upnext_signal, kodi_version_major
 import resources.lib.kodiplayer as kodiplayer
 
 
@@ -90,7 +90,10 @@ class Page(object):
         play_item = xbmcgui.ListItem(path=url)
         if '.m3u8' in url:
             play_item.setMimeType('application/x-mpegURL')
-            play_item.setProperty('inputstreamaddon', 'inputstream.adaptive')
+            if kodi_version_major() >= 19:
+                play_item.setProperty('inputstream', 'inputstream.adaptive')
+            else:
+                play_item.setProperty('inputstreamaddon', 'inputstream.adaptive')
             play_item.setProperty('inputstream.adaptive.manifest_type', 'hls')
 
         if not (this_episode is None) and 'duration' in this_episode:
@@ -173,9 +176,18 @@ class Page(object):
         return {}
 
     def get_load_url(self):
+        """
+        This method is to be overridden in the child class to provide the url for querying the site. It is used in the
+        get_data_query method and can be ignored if get_data_query is overriden in the child class.
+        @return:
+        """
         return ""
 
     def set_context_title(self):
+        """
+        This method is setting the title of the context by setting self.site.context_title attribute. Override if
+        you want to create custom title, otherwise the context name will be used by default.
+        """
         self.site.context_title = self.context.title()
 
     def get_data_query(self):
