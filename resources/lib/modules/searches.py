@@ -42,7 +42,7 @@ class Search(pages.Page):
                 self.site.get_url(self.site.url,
                                   action="search",
                                   context="brands",
-                                  search=element['title'],
+                                  search=element['title'].encode('utf-8', 'ignore'),
                                   url=self.site.url),
                 'info': {'plot': element['title'] if element['is_new'] == "true" else
                                  "%s [%s]" % (self.site.language(30010), element['title'])},

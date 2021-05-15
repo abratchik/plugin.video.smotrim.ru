@@ -242,7 +242,6 @@ class Brand(pages.Page):
                     m = pattern.search(part)
                     if m:
                         result[key] = [x.strip() for x in delimiter.split(m.group('text'))]
-                        print(result[key])
             if not (key in result):
                 result[key] = []
 
