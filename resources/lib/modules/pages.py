@@ -243,6 +243,8 @@ class Page(object):
             return ""
         except IndexError:
             return ""
+        except KeyError:
+            return ""
 
     @staticmethod
     def format_date(s):
