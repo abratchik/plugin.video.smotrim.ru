@@ -246,8 +246,7 @@ class Page(object):
         except KeyError:
             return ""
 
-    @staticmethod
-    def get_pic_from_element(element, res):
+    def get_pic_from_element(self, element, res):
         try:
             return self.get_pic_from_plist(element['pictures'], res)
         except KeyError:
