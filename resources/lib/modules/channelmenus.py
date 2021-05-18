@@ -24,12 +24,29 @@ class ChannelMenu(pages.Page):
         self.site.context_title = self.params['title']
 
     def create_element_li(self, element):
-        return self.brand.create_search_by_tag_li(element['tags'][0]['id'],
-                                                  element['title'],
-                                                  taginfo=element['title'],
-                                                  tagicon=self.site.get_media("search.png"),
-                                                  has_children=False,
-                                                  cache_expire="86400")
+        if len(element['tags'] > 0):
+            tags = ":".join([t['id'] for t in element['tags']])
+            return self.brand.create_search_by_tag_li(tags,
+                                                      element['title'],
+                                                      taginfo=element['title'],
+                                                      tagicon=self.site.get_media("search.png"),
+                                                      has_children=False,
+                                                      cache_expire="86400")
+        else:
+            return {'id': element['id'],
+                    'label': "[B]%s[/B]" % element['title'],
+                    'is_folder': True,
+                    'is_playable': False,
+                    'url': self.site.get_url(self.site.url,
+                                             action="search",
+                                             context="brands",
+                                             search=element['title'],
+                                             cache_expire="86400",
+                                             url=self.site.url),
+                    'info': {'plot': "%s [%s]" % (self.site.language(30010), element['title'])},
+                    'art': {'icon': self.site.get_media("search.png"),
+                            'fanart': self.site.get_media("background.jpg")}
+                    }
 
     def get_cache_filename_prefix(self):
         return "channel_menu_%s" % self.params['channels']
