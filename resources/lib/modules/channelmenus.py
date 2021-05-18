@@ -24,8 +24,8 @@ class ChannelMenu(pages.Page):
         self.site.context_title = self.params['title']
 
     def create_element_li(self, element):
-        if len(element['tags'] > 0):
-            tags = ":".join([t['id'] for t in element['tags']])
+        if len(element['tags']) > 0:
+            tags = ":".join([str(t['id']) for t in element['tags']])
             return self.brand.create_search_by_tag_li(tags,
                                                       element['title'],
                                                       taginfo=element['title'],
