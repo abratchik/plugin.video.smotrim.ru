@@ -151,10 +151,10 @@ class Page(object):
         return {'episodeid': episode['id'],
                 'tvshowid': self.params['brands'],
                 'title': episode['episodeTitle'],
-                'art': {'thumb': self.get_pic_from_plist(episode['pictures'], 'lw'),
-                        'fanart': self.get_pic_from_plist(episode['pictures'], 'hd'),
-                        'icon': self.get_pic_from_plist(episode['pictures'], 'lw'),
-                        'poster': self.get_pic_from_plist(episode['pictures'], 'vhdr')
+                'art': {'thumb': self.get_pic_from_element(episode, 'lw'),
+                        'fanart': self.get_pic_from_element(episode, 'hd'),
+                        'icon': self.get_pic_from_element(episode, 'lw'),
+                        'poster': self.get_pic_from_element(episode, 'vhdr')
                         },
                 'episode': episode['series'],
                 'showtitle': episode['brandTitle'],
@@ -243,6 +243,13 @@ class Page(object):
             return ""
         except IndexError:
             return ""
+        except KeyError:
+            return ""
+
+    @staticmethod
+    def get_pic_from_element(element, res):
+        try:
+            return self.get_pic_from_plist(element['pictures'], res)
         except KeyError:
             return ""
 

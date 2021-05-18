@@ -49,10 +49,10 @@ class Article(pages.Page):
                          'plotoutline': element['anons'],
                          'dateadded': element['datePub']
                          },
-                'art': {'fanart': self.get_pic_from_plist(element['pictures'], 'hd'),
-                        'icon': self.get_pic_from_plist(element['pictures'], 'lw'),
-                        'thumb': self.get_pic_from_plist(element['pictures'], 'lw'),
-                        'poster': self.get_pic_from_plist(element['pictures'], 'it')
+                'art': {'fanart': self.get_pic_from_element(element, 'hd'),
+                        'icon': self.get_pic_from_element(element, 'lw'),
+                        'thumb': self.get_pic_from_element(element, 'lw'),
+                        'poster': self.get_pic_from_element(element, 'it')
                         }
                 }
 
