@@ -16,7 +16,7 @@ import xbmc
 import xbmcaddon
 import xbmcvfs
 
-from . import utils
+from . import kodiutils
 
 
 class Smotrim:
@@ -26,9 +26,9 @@ class Smotrim:
         self.addon = xbmcaddon.Addon(self.id)
         self.path = self.addon.getAddonInfo('path')
         self.media_path = os.path.join(self.path, "resources/media")
-        self.data_path = utils.create_folder(os.path.join(xbmcvfs.translatePath(self.addon.getAddonInfo('profile')),
+        self.data_path = kodiutils.create_folder(os.path.join(xbmcvfs.translatePath(self.addon.getAddonInfo('profile')),
                                                           'data'))
-        self.history_path = utils.create_folder(os.path.join(self.data_path, 'history'))
+        self.history_path = kodiutils.create_folder(os.path.join(self.data_path, 'history'))
 
         self.user = None
 

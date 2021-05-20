@@ -6,8 +6,6 @@
 
 import resources.lib.modules.pages as pages
 
-from ..utils import clean_html
-
 
 class Audio(pages.Page):
     def __init__(self, site):
