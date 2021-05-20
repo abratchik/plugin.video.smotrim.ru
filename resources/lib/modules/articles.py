@@ -6,7 +6,7 @@
 
 import resources.lib.modules.pages as pages
 
-from ..utils import clean_html
+from ..kodiutils import clean_html
 
 import xbmcgui
 

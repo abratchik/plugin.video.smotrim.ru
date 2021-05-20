@@ -21,6 +21,7 @@ def show_error_message(msg):
     xbmc.log(msg, xbmc.LOGDEBUG)
     xbmc.executebuiltin("XBMC.Notification(%s,%s, %s)" % ("ERROR", msg, str(3 * 1000)))
 
+
 def kodi_version():
     """Returns full Kodi version as string"""
     return xbmc.getInfoLabel('System.BuildVersion').split(' ')[0]
@@ -29,6 +30,7 @@ def kodi_version():
 def kodi_version_major():
     """Returns major Kodi version as integer"""
     return int(kodi_version().split('.')[0])
+
 
 def create_folder(folder):
     if not (os.path.exists(folder) and os.path.isdir(folder)):

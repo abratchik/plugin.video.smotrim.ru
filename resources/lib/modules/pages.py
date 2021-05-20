@@ -12,7 +12,7 @@ import xbmc
 import xbmcgui
 import xbmcplugin
 
-from ..utils import remove_files_by_pattern, upnext_signal, kodi_version_major
+from ..kodiutils import remove_files_by_pattern, upnext_signal, kodi_version_major
 import resources.lib.kodiplayer as kodiplayer
 
 
