@@ -22,7 +22,7 @@ class Brand(pages.Page):
             self.TAGS = json.load(f)
 
         self.KEYWORDS = []
-        with open(os.path.join(self.site.path, "resources/data/keywords.json"), "r+", encoding="utf-8") as f:
+        with open(os.path.join(self.site.path, "resources/data/keywords.json"), "r+") as f:
             self.KEYWORDS = json.load(f)
 
     def search(self):
