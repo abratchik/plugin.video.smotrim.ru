@@ -12,6 +12,7 @@ The addon as been tested on
 - Kodi Matrix under Ubuntu 20.04 LTS
 - Kodi Matrix on Android v9 Pie
 - Kodi Matrix on macOS BigSur 11.1
+- Kodi Matrix on Windows 10 
 
 ## Installation 
 1. Download  [this file](https://abratchik.github.io/kodi.repository/matrix/repository.abratchik/repository.abratchik-1.0.2.zip)
