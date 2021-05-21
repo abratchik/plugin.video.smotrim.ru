@@ -6,21 +6,12 @@ This is Kodi video addon for viewing video from the site
 If you have any questions of feedback please post in on the 
 forum XBMC.ru [here](http://xbmc.ru/forum/showthread.php?t=23431).
 
-## Pre-requisites
+## Compatibility
 The addon as been tested on 
 - Kodi Leia under Ubuntu 18.04 LTS.
 - Kodi Matrix under Ubuntu 20.04 LTS
 - Kodi Matrix on Android v9 Pie
-
-The following packages need to be present in your system
-for addon to work properly. Below is the list of packages:
-
-- ffmpeg
-
-Installation of them depends on your host OS. The commands 
-for Ubuntu below:
-
-`sudo apt install ffmpeg`
+- Kodi Matrix on macOS BigSur 11.1
 
 ## Installation 
 1. Download  [this file](https://abratchik.github.io/kodi.repository/matrix/repository.abratchik/repository.abratchik-1.0.2.zip)

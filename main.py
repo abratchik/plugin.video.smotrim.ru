@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+# coding=utf-8
 # Module: main
 # Author: Alex Bratchik
 # Created on: 03.04.2021
