@@ -95,7 +95,8 @@ class Brand(pages.Page):
                                                tagicon=self.site.get_media(tag['icon']) if 'icon' in tag
                                                else "DefaultAddonsSearch.png",
                                                content=tag['content'] if 'content' in tag else "videos",
-                                               has_children=True if 'tags' in tag else False)
+                                               has_children=True if 'tags' in tag else False,
+                                               cache_expire="86400")
 
     def set_context_title(self):
         if self.action == "search_by_tag":

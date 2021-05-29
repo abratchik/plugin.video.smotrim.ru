@@ -318,10 +318,20 @@ class Page(object):
             if 'art' in category:
                 list_item.setArt(category['art'])
 
+            self.enrich_info_tag(list_item, is_folder)
+
             xbmcplugin.addDirectoryItem(self.site.handle, url, list_item, is_folder)
 
         # Finish creating a virtual folder.
         xbmcplugin.endOfDirectory(self.site.handle)
+
+    def enrich_info_tag(self, list_item, is_folder):
+        """
+        This function can be overriden to enrich the information available on the list item
+        @param list_item: ListItem to be enriched
+        @param is_folder:
+        """
+        pass
 
     def save_brand_to_history(self, brand):
         with open(os.path.join(self.site.history_path, "brand_%s.json" % brand['id']), 'w+') as f:
