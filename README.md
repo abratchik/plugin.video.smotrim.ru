@@ -28,9 +28,27 @@ Starting from the release 1.0.18, the addon supports user registration with
 the mobile number. Registration is triggered whenever a valid mobile number is
 specified in the addon settings.
 
-At this point, only Russian mobile numbers accepted by the web site Smitrim.ru,
-any other mobile will not work, unfortunately. In case if you don't have such
+At this point, mostly Russian mobile numbers accepted by the web site Smitrim.ru,
+any other mobile may not work, unfortunately. In case if you don't have such
 number, please leave the Phone number in the addon settings blank.
+
+## Resolution of video playback issues
+The site smotrim.ru is streaming HD content, which may require additional
+configuration of the Kodi system. If you are experiencing unstable 
+video, skipping fragments or slow start of the video, it is recommended to 
+modify the cache parameters as follows:
+
+````
+memorysize = 41943040
+readfactor = 10
+````
+
+You can set these parameters by manually editing [advancedsettings.xml](https://kodi.wiki/view/Advancedsettings.xml#cache)
+file. Most conveniently it can be done with help of another plugin,
+[Unlock Advanced Settings](https://github.com/abratchik/script.unlock.advancedsettings),
+which you can install from the [same repository](https://abratchik.github.io/kodi.repository/matrix/repository.abratchik/repository.abratchik-1.0.2.zip)
+Once installed, please go to **Cache** section, change the parameters, save
+and restart Kodi. After that the video playback shall be smoother.
 
 ## Disclaimer
 This is a non-commercial community-supported addon for the Smotrim.ru web site.
