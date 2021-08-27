@@ -43,7 +43,7 @@ class Audio(pages.Page):
                          'originaltitle': element['title'],
                          'sorttitle': element['title'],
                          'tvshowtitle': element['brandTitle'],
-                         'mediatype': "episode",
+                         'mediatype': "musicvideo",
                          'episode': element['series'],
                          'dateadded': self.format_date(element['datePub']),
                          'duration': element['duration'],
@@ -54,6 +54,14 @@ class Audio(pages.Page):
                         'poster': self.get_pic_from_element(element, 'vhdr')
                         }
                 }
+
+    def enrich_info_tag(self, list_item, episode, brand):
+        list_item.setInfo("music", {"title": episode['combinedTitle'],
+                                    "mediatype": "musicvideo",
+                                    "plot": episode['anons'],
+                                    "year": self.get_dict_value(brand, 'productionYearStart'),
+                                    "genre": self.get_dict_value(brand, 'genre'),
+                                    "rating": self.get_dict_value(brand, 'rank')})
 
     def play(self):
         spath = self.params['spath']
