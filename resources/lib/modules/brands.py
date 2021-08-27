@@ -5,11 +5,8 @@
 # License: GPL v.3 https://www.gnu.org/copyleft/gpl.html
 import json
 import os
-import re
 
 import resources.lib.modules.pages as pages
-
-from ..kodiutils import clean_html
 
 
 class Brand(pages.Page):
@@ -20,10 +17,6 @@ class Brand(pages.Page):
         self.TAGS = []
         with open(os.path.join(self.site.path, "resources/data/tags.json"), "r+") as f:
             self.TAGS = json.load(f)
-
-        self.KEYWORDS = []
-        with open(os.path.join(self.site.path, "resources/data/keywords.json"), "r+", encoding="utf-8") as f:
-            self.KEYWORDS = json.load(f)
 
     def search(self):
         if not ('search' in self.params):
@@ -211,6 +204,20 @@ class Brand(pages.Page):
                             }
                     }
 
+    def enrich_info_tag(self, list_item, episode, brand):
+        bp = self.parse_body(brand['body'])
+        list_item.setInfo("video", {"title": episode['combinedTitle'],
+                                    "mediatype": "movie",
+                                    "plot": episode['anons'] if episode['anons'] else bp['plot'],
+                                    "year": self.get_dict_value(brand, 'productionYearStart'),
+                                    "country": self.get_country(self.get_dict_value(brand, 'countries')),
+                                    "genre": self.get_dict_value(brand, 'genre'),
+                                    "mpaa": self.get_mpaa(self.get_dict_value(brand, 'ageRestrictions')),
+                                    "cast": bp['cast'],
+                                    "director": bp['director'],
+                                    "writer": bp['writer'],
+                                    "rating": self.get_dict_value(brand, 'rank')})
+
     def get_tag_by_id(self, tags, tag):
         for t in tags:
             if t['tag'] == tag:
@@ -229,23 +236,3 @@ class Brand(pages.Page):
             return "[COLOR %s][%s][/COLOR] %s" % (color, rank, brand['title'])
         else:
             return brand['title']
-
-    def parse_body(self, body):
-        result = {}
-
-        body_parts = clean_html(body).splitlines() if body else []
-        delimiter = re.compile(r',|;')
-        for key in self.KEYWORDS:
-            if len(body_parts) > 0:
-                lbgroups = ["(%s)" % kw for kw in self.KEYWORDS[key]]
-                pattern = re.compile(r"(?:%s)(?P<text>.*)" % '|'.join(lbgroups))
-                for part in body_parts:
-                    m = pattern.search(part)
-                    if m:
-                        result[key] = [x.strip() for x in delimiter.split(m.group('text'))]
-            if not (key in result):
-                result[key] = []
-
-        result['plot'] = "\r\n".join(body_parts)
-
-        return result

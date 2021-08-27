@@ -7,6 +7,7 @@
 import json
 import os
 import time
+import re
 
 import xbmc
 import xbmcgui
@@ -14,6 +15,7 @@ import xbmcplugin
 
 from ..kodiutils import remove_files_by_pattern, upnext_signal, kodi_version_major
 import resources.lib.kodiplayer as kodiplayer
+from ..kodiutils import clean_html
 
 
 class Page(object):
@@ -32,6 +34,10 @@ class Page(object):
         self.cache_enabled = False
         self.cache_file = ""
         self.cache_expire = int(self.params['cache_expire']) if 'cache_expire' in self.params else 0
+
+        self.KEYWORDS = []
+        with open(os.path.join(self.site.path, "resources/data/keywords.json"), "r+") as f:
+            self.KEYWORDS = json.load(f)
 
     def load(self):
 
@@ -83,9 +89,14 @@ class Page(object):
     def play_url(self, url, this_episode=None, next_episode=None, stream_type="video"):
         if next_episode is None:
             next_episode = {}
-        if self.site.addon.getSettingBool("addhistory") and 'brands' in self.params:
+
+        brand = {}
+        if 'brands' in self.params:
             resp = self.site.request(self.site.api_url + '/brands/' + self.params['brands'], output="json")
-            self.save_brand_to_history(resp['data'])
+            if 'data' in resp:
+                brand = resp['data']
+            if self.site.addon.getSettingBool("addhistory"):
+                self.save_brand_to_history(brand)
 
         play_item = xbmcgui.ListItem(path=url)
         if '.m3u8' in url:
@@ -96,8 +107,20 @@ class Page(object):
                 play_item.setProperty('inputstreamaddon', 'inputstream.adaptive')
             play_item.setProperty('inputstream.adaptive.manifest_type', 'hls')
 
-        if not (this_episode is None) and 'duration' in this_episode:
-            play_item.addStreamInfo(stream_type, {'duration': this_episode['duration']})
+        if this_episode:
+            play_item.setLabel(this_episode['combinedTitle'])
+
+            self.enrich_info_tag(play_item, this_episode, brand)
+
+            play_item.setArt({'fanart': self.get_pic_from_element(this_episode, 'hd'),
+                              'icon': self.get_pic_from_element(this_episode, 'lw'),
+                              'thumb': self.get_pic_from_element(this_episode, 'lw'),
+                              'poster': self.get_pic_from_element(this_episode, 'vhdr')
+                              })
+
+            play_item.setProperty('IsPlayable', 'true')
+
+            play_item.addStreamInfo(stream_type, {'duration': self.get_dict_value(this_episode, 'duration')})
 
         xbmcplugin.setResolvedUrl(self.site.handle, True, listitem=play_item)
 
@@ -288,6 +311,10 @@ class Page(object):
         except KeyError:
             return ""
 
+    @staticmethod
+    def get_dict_value(dct, name):
+        return dct[name] if name in dct else ""
+
     def show_list_items(self):
 
         xbmcplugin.setPluginCategory(self.site.handle, self.site.context_title)
@@ -318,20 +345,31 @@ class Page(object):
             if 'art' in category:
                 list_item.setArt(category['art'])
 
-            self.enrich_info_tag(list_item, is_folder)
-
             xbmcplugin.addDirectoryItem(self.site.handle, url, list_item, is_folder)
 
         # Finish creating a virtual folder.
-        xbmcplugin.endOfDirectory(self.site.handle)
+        xbmcplugin.endOfDirectory(self.site.handle, cacheToDisc=False)
 
-    def enrich_info_tag(self, list_item, is_folder):
+    def enrich_info_tag(self, list_item, episode, brand):
         """
-        This function can be overriden to enrich the information available on the list item
+        This function can be overriden to enrich the information available on the list item before passing to the player
         @param list_item: ListItem to be enriched
-        @param is_folder:
+        @param episode: the element, which will be played
+        @param brand: the element brand used for enrichment
         """
         pass
+
+    def get_cast(self, element_id):
+        actors = []
+        if 'brands' in self.params:
+            persons = self.site.request("%s/persons?brands=%s&offset=0&limit=20" %
+                                        (self.site.api_url, element_id), output="json")
+            if 'data' in persons:
+                for person in persons['data']:
+                    actor = {'name': "%s %s" % (person['name'], person['surname']),
+                                   'thumbnail': self.get_pic_from_element(person, 'vhdr')}
+                    actors.append(actor)
+        return actors
 
     def save_brand_to_history(self, brand):
         with open(os.path.join(self.site.history_path, "brand_%s.json" % brand['id']), 'w+') as f:
@@ -345,3 +383,23 @@ class Page(object):
 
     def get_cache_filename_prefix(self):
         return self.context
+
+    def parse_body(self, body):
+        result = {}
+
+        body_parts = clean_html(body).splitlines() if body else []
+        delimiter = re.compile(r',|;')
+        for key in self.KEYWORDS:
+            if len(body_parts) > 0:
+                lbgroups = ["(%s)" % kw for kw in self.KEYWORDS[key]]
+                pattern = re.compile(r"(?:%s)(?P<text>.*)" % '|'.join(lbgroups), re.UNICODE)
+                for part in body_parts:
+                    m = pattern.search(part)
+                    if m:
+                        result[key] = [x.strip() for x in delimiter.split(m.group('text'))]
+            if not (key in result):
+                result[key] = []
+
+        result['plot'] = "\r\n".join(body_parts)
+
+        return result
