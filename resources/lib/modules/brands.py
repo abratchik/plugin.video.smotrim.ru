@@ -190,6 +190,7 @@ class Brand(pages.Page):
                              'country': self.get_country(element['countries']),
                              'mpaa': self.get_mpaa(element['ageRestrictions']),
                              'plot': bp['plot'],
+                             'artist': bp['cast'],
                              'cast': bp['cast'],
                              'director': bp['director'],
                              'writer': bp['writer'],
@@ -217,6 +218,7 @@ class Brand(pages.Page):
                                     "director": bp['director'],
                                     "writer": bp['writer'],
                                     "rating": self.get_dict_value(brand, 'rank')})
+        list_item.setCast(self.get_cast(brand['id']))
 
     def get_tag_by_id(self, tags, tag):
         for t in tags:

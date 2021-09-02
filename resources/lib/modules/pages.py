@@ -345,6 +345,10 @@ class Page(object):
             if 'art' in category:
                 list_item.setArt(category['art'])
 
+            if 'cast' in category:
+                print(category['cast'])
+                list_item.setCast(category['cast'])
+
             xbmcplugin.addDirectoryItem(self.site.handle, url, list_item, is_folder)
 
         # Finish creating a virtual folder.
@@ -359,16 +363,16 @@ class Page(object):
         """
         pass
 
-    def get_cast(self, element_id):
+    def get_cast(self, brand_id):
         actors = []
-        if 'brands' in self.params:
-            persons = self.site.request("%s/persons?brands=%s&offset=0&limit=20" %
-                                        (self.site.api_url, element_id), output="json")
-            if 'data' in persons:
-                for person in persons['data']:
-                    actor = {'name': "%s %s" % (person['name'], person['surname']),
-                                   'thumbnail': self.get_pic_from_element(person, 'vhdr')}
-                    actors.append(actor)
+
+        persons = self.site.request("%s/persons?brands=%s&offset=0&limit=20" %
+                                    (self.site.api_url, brand_id), output="json")
+        if 'data' in persons:
+            for person in persons['data']:
+                actor = {'name': "%s %s" % (person['name'], person['surname']),
+                         'thumbnail': self.get_pic_from_element(person, 'bp')}
+                actors.append(actor)
         return actors
 
     def save_brand_to_history(self, brand):
