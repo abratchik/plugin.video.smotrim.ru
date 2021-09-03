@@ -36,7 +36,7 @@ class Page(object):
         self.cache_expire = int(self.params['cache_expire']) if 'cache_expire' in self.params else 0
 
         self.KEYWORDS = []
-        with open(os.path.join(self.site.path, "resources/data/keywords.json"), "r+") as f:
+        with open(os.path.join(self.site.path, "resources/data/keywords.json"), "r+", encoding="utf-8") as f:
             self.KEYWORDS = json.load(f)
 
     def load(self):
