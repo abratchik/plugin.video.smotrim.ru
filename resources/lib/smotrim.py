@@ -3,7 +3,7 @@
 # Author: Alex Bratchik
 # Created on: 03.04.2021
 # License: GPL v.3 https://www.gnu.org/copyleft/gpl.html
-import json
+
 import os
 import sys
 import inspect
@@ -25,7 +25,7 @@ class Smotrim:
         self.id = "plugin.video.smotrim.ru"
         self.addon = xbmcaddon.Addon(self.id)
         self.path = self.addon.getAddonInfo('path').decode('utf-8')
-        self.media_path = os.path.join(self.path, "resources/media")
+        self.media_path = os.path.join(self.path, "resources", "media")
         self.data_path = kodiutils.create_folder(os.path.join(xbmc.translatePath(self.addon.getAddonInfo('profile')),
                                                           'data'))
         self.history_path = kodiutils.create_folder(os.path.join(self.data_path, 'history'))
