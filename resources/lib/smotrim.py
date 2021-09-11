@@ -25,7 +25,7 @@ class Smotrim:
         self.id = "plugin.video.smotrim.ru"
         self.addon = xbmcaddon.Addon(self.id)
         self.path = self.addon.getAddonInfo('path')
-        self.media_path = os.path.join(self.path, "resources/media")
+        self.media_path = os.path.join(self.path, "resources", "media")
         self.data_path = kodiutils.create_folder(os.path.join(xbmcvfs.translatePath(self.addon.getAddonInfo('profile')),
                                                           'data'))
         self.history_path = kodiutils.create_folder(os.path.join(self.data_path, 'history'))
