@@ -64,6 +64,8 @@ class UsersTestCase(unittest.TestCase):
         smotrim = Smotrim()
         smotrim.api_url = web_api_url
         self.project_dir = get_project_folder(cwd, smotrim.id)
+
+        smotrim.path = self.project_dir
         smotrim.data_path = os.path.join(self.project_dir, "data")
         smotrim.history_path = os.path.join(smotrim.data_path, "history")
 
