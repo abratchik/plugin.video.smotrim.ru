@@ -37,6 +37,7 @@ class Smotrim:
         self.params = {}
 
         self.api_url = self.addon.getSetting("api_url")
+        self.liveapi_url = self.addon.getSetting("liveapi_url")
 
         self.language = self.addon.getLocalizedString
 

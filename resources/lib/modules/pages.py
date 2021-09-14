@@ -46,6 +46,8 @@ class Page(object):
 
         xbmc.log("Items per page: %s" % self.limit, xbmc.LOGDEBUG)
 
+        self.preload()
+
         self.cache_file = self.get_cache_filename()
 
         self.data = self.get_data_query()
@@ -82,6 +84,13 @@ class Page(object):
                                         'art': {'icon': self.site.get_media("next.png")}
                                         })
         self.show_list_items()
+
+    def preload(self):
+        """
+        Override this function if it is necessary to perform some actions before loading the list items
+        @return:
+        """
+        pass
 
     def play(self):
         pass
