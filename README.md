@@ -32,6 +32,12 @@ At this point, mostly Russian mobile numbers accepted by the web site Smitrim.ru
 any other mobile may not work, unfortunately. In case if you don't have such
 number, please leave the Phone number in the addon settings blank.
 
+## Watching Live TV
+Starting version 1.1.11, the addon supports Live TV streaming. Live TV streams
+are available only for some channels and may be not accessible outside Russia.
+
+Navigation to the live TV: Channels > [ChannelName] > Live TV. 
+
 ## Resolution of video playback issues
 The site smotrim.ru is streaming HD content, which may require additional
 configuration of the Kodi system. If you are experiencing unstable 
