@@ -1,3 +1,9 @@
+# -*- coding: utf-8 -*-
+# Module: test_users
+# Author: Alex Bratchik
+# Created on: 03.04.2021
+# License: GPL v.3 https://www.gnu.org/copyleft/gpl.html
+
 import os
 import re
 import shutil
@@ -21,7 +27,7 @@ def get_project_folder(fld, plugin_name):
 
 class UsersTestCase(unittest.TestCase):
 
-    @mock.patch('sys.argv', ["", "1", "?action=load&context=home&url=plugin%3a%2f%2fplugin.video.smotrim.ru%2f"])
+    @mock.patch('sys.argv', ["", "1", ""])
     def test_01_load(self):
         self.run_plugin()
 

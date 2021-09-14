@@ -36,8 +36,8 @@ class Smotrim:
         self.handle = int(sys.argv[1])
         self.params = {}
 
-        self.api_url = self.addon.getSetting("api_url")
-        self.liveapi_url = self.addon.getSetting("liveapi_url")
+        self.api_url = "https://cdnapi.smotrim.ru/api/v1"
+        self.liveapi_url = "https://player.vgtrk.com/iframe"
 
         self.language = self.addon.getLocalizedString
 
