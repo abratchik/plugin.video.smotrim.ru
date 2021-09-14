@@ -3,8 +3,6 @@
     <category id="account" label="30100">
         <setting id="phone" type="text" label="30101" default="" />
         <setting id="domain" type="text" label="" default="smotrim.ru" visible="false"/>
-        <setting id="api_url" type="text" label="" default="https://cdnapi.smotrim.ru/api/v1" visible="false"/>
-        <setting id="liveapi_url" type="text" label="" default="https://live.russia.tv/api/playerInfo" visible="false"/>
     </category>
     <category id="interface" label="30110">
         <setting id="itemsperpage" type="enum" label="30111" values="10|20|30" default="1" />

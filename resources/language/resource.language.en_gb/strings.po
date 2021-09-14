@@ -200,6 +200,10 @@ msgctxt "#30400"
 msgid "Channels"
 msgstr "Channels"
 
+msgctxt "#30410"
+msgid "Live TV"
+msgstr "Live TV"
+
 msgctxt "#30500"
 msgid "Please enter code you got on your mobile"
 msgstr "Please enter code you got on your mobile"

@@ -15,6 +15,23 @@ class ChannelMenu(pages.Page):
         self.brand = brands.Brand(site)
         self.cache_enabled = True
 
+    def preload(self):
+        spath = self.get_channel_live_double(self.params['channels'])
+        if spath:
+            self.list_items.append({'id': "livetv",
+                                    'label': "[COLOR=FF00FF00][B]%s[/B][/COLOR]" % self.site.language(30410),
+                                    'is_folder': False,
+                                    'is_playable': True,
+                                    'url': self.site.get_url(self.site.url,
+                                                             action="play",
+                                                             context="channelmenus",
+                                                             channels=self.params['channels'],
+                                                             url=self.site.url),
+                                    'info': {'plot': self.site.language(30410)},
+                                    'art': {'icon': self.site.get_media("lives.png")}
+                                    })
+        return
+
     def get_load_url(self):
         return self.site.get_url(self.site.api_url + '/menu/channels/' + self.params['channels'],
                                  limit=self.limit,
@@ -50,3 +67,23 @@ class ChannelMenu(pages.Page):
 
     def get_cache_filename_prefix(self):
         return "channel_menu_%s" % self.params['channels']
+
+    def play(self):
+        spath = self.get_channel_live_double(self.params["channels"])
+        self.play_url(spath)
+
+    def get_channel_live_double(self, channel_id):
+
+        doublemap = self.site.request(self.site.get_url(self.site.liveapi_url +
+                                                        '/live-double/channel_id/' + channel_id), output="json")
+
+        if "live_id" in doublemap and doublemap['live_id']:
+            try:
+                datalive = self.site.request(self.site.get_url(self.site.liveapi_url +
+                                                               '/datalive/id/' + doublemap['live_id']), output="json")
+
+                return datalive['data']['playlist']['medialist'][0]['sources']['m3u8']['auto']
+            except KeyError:
+                return ""
+        else:
+            return ""
