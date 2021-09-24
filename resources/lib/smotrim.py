@@ -27,13 +27,14 @@ class Smotrim:
         self.path = self.addon.getAddonInfo('path')
         self.media_path = os.path.join(self.path, "resources", "media")
         self.data_path = kodiutils.create_folder(os.path.join(xbmcvfs.translatePath(self.addon.getAddonInfo('profile')),
-                                                          'data'))
+                                                              'data'))
         self.history_path = kodiutils.create_folder(os.path.join(self.data_path, 'history'))
 
         self.user = None
 
-        self.url = sys.argv[0]
-        self.handle = int(sys.argv[1])
+        self.url = sys.argv[0]  if len(sys.argv) > 0 else ""
+        self.handle = int(sys.argv[1]) if len(sys.argv) > 1 else 0
+
         self.params = {}
 
         self.api_url = "https://cdnapi.smotrim.ru/api/v1"
@@ -46,7 +47,7 @@ class Smotrim:
         self.action = "load"
         self.context_title = self.language(30300)
 
-    def show_to(self, user):
+    def show_to(self, user, context=""):
 
         self.user = user
 
@@ -54,9 +55,13 @@ class Smotrim:
         xbmc.log("Handle: %d" % self.handle, xbmc.LOGDEBUG)
         xbmc.log("User: %s" % user.phone, xbmc.LOGDEBUG)
 
-        params_ = sys.argv[2]
-        xbmc.log("Params: %s" % params_, xbmc.LOGDEBUG)
-        self.params = dict(parse_qsl(params_[1:]))
+        if context:
+            self.params = {'context': context}
+            xbmc.log("Params ignored")
+        else:
+            params_ = sys.argv[2]
+            xbmc.log("Params: %s" % params_, xbmc.LOGDEBUG)
+            self.params = dict(parse_qsl(params_[1:]))
 
         self.context = self.params['context'] if self.params and ('context' in self.params) else "home"
         self.action = self.params['action'] if self.params and ('action' in self.params) else "load"
@@ -73,10 +78,13 @@ class Smotrim:
 
     def request(self, url, output="text"):
         response = self.user.session.get(url)
+        err = response.status_code != 200
+        if err:
+            xbmc.log("Query %s returned HTTP error %s" % (url, response.status_code))
         if output == "json":
-            return response.json()
+            return {} if err else response.json()
         elif output == "text":
-            return response.text
+            return "" if err else response.text
         else:
             return response
 

@@ -8,5 +8,8 @@
         <setting id="itemsperpage" type="enum" label="30111" values="10|20|30" default="1" />
         <setting id="addhistory" type="bool" label="30112" default="true" />
         <setting id="upnext" type="bool" label="30113" default="true" />
+        <setting id="exportchannels" type="bool" label="30420" default="false" />
+        <setting id="exporttvguide" type="bool" label="30430" default="false" />
+        <setting id="epgshift" type="slider" label="30440" default="-3.0" range="-12.0,0.5,14.0" option="float"/>
     </category>
 </settings>

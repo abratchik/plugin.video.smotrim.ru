@@ -36,6 +36,10 @@ msgctxt "#30021"
 msgid "Return to Home page"
 msgstr "Return to Home page"
 
+msgctxt "#30022"
+msgid "Smotrim.ru"
+msgstr "Smotrim.ru"
+
 msgctxt "#30030"
 msgid "Next page"
 msgstr "Next page"
@@ -203,6 +207,18 @@ msgstr "Channels"
 msgctxt "#30410"
 msgid "Live TV"
 msgstr "Live TV"
+
+msgctxt "#30420"
+msgid "Export live channels to IPTV"
+msgstr "Export live channels to IPTV"
+
+msgctxt "#30430"
+msgid "Export TV Guide to IPTV"
+msgstr "Export TV Guide to IPTV"
+
+msgctxt "#30440"
+msgid "TV guide time shift, hrs"
+msgstr "TV guide time shift, hrs"
 
 msgctxt "#30500"
 msgid "Please enter code you got on your mobile"

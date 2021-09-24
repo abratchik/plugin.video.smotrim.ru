@@ -9,6 +9,8 @@ import glob
 import re
 
 import json
+import time
+from datetime import datetime
 
 from base64 import b64encode
 from json import dumps
@@ -36,6 +38,21 @@ def create_folder(folder):
     if not (os.path.exists(folder) and os.path.isdir(folder)):
         xbmcvfs.mkdirs(folder)
     return folder
+
+
+def get_file_timestamp(spath):
+    statinfo = os.stat(spath)
+    return max(statinfo.st_mtime, statinfo.st_ctime)
+
+
+def get_date_from_timestamp(ts=0):
+    if not ts:
+        ts = time.time()
+    return datetime.fromtimestamp(ts).strftime('%d-%m-%Y')
+
+
+def get_sec_since_last_mod(spath):
+    return time.time() - get_file_timestamp(spath)
 
 
 def remove_files_by_pattern(pattern):
