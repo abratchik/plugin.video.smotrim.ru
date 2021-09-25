@@ -6,6 +6,8 @@
 """
 Video plugin for Smotrim.ru portal
 """
+import xbmc
+import time
 
 from resources.lib.smotrim import Smotrim
 from resources.lib.users import User
@@ -15,3 +17,12 @@ if __name__ == '__main__':
     User = User()
 
     User.watch(Smotrim, "extras")
+
+    monitor = xbmc.Monitor()
+    while not monitor.abortRequested():
+
+        if monitor.waitForAbort(3600):
+            break
+
+        if 3 <= int(time.strftime("%H")) <= 4:
+            User.watch(Smotrim, "extras")

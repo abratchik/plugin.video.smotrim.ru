@@ -216,6 +216,10 @@ msgctxt "#30430"
 msgid "Export TV Guide to IPTV"
 msgstr "Export TV Guide to IPTV"
 
+msgctxt "#30435"
+msgid "completed successfully"
+msgstr "completed successfully"
+
 msgctxt "#30440"
 msgid "TV guide time shift, hrs"
 msgstr "TV guide time shift, hrs"

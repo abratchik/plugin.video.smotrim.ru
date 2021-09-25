@@ -9,6 +9,7 @@ import re
 
 import xbmc
 import xbmcaddon
+import xbmcgui
 import xbmcvfs
 
 import resources.lib.modules.channels as channels
@@ -27,16 +28,19 @@ class Extra:
         self.m3u_playlist = os.path.join(self.export_path, "%s_iptv.m3u" % self.site.id)
         self.xmltv_guide = os.path.join(self.export_path, "%s_iptv_guide.xml" % self.site.id)
 
+        self.icon_path = os.path.join(self.site.path, "icon.png")
+
     def load(self):
-        if (self.site.addon.getSettingBool("exportchannels") and
-                (not xbmcvfs.exists(self.m3u_playlist))):
+        forceexport = "forceexport" in self.site.params
+
+        if forceexport or (self.site.addon.getSettingBool("exportchannels") and
+                           (not xbmcvfs.exists(self.m3u_playlist))):
             self.export_channels()
-        if xbmcvfs.exists(self.m3u_playlist):
-            if (self.site.addon.getSettingBool("exporttvguide") and
-                    (not xbmcvfs.exists(self.xmltv_guide) or
-                     not self.__is_created_today(self.xmltv_guide))):
-                self.export_tv_guide()
-            self.update_iptv_settings()
+        if forceexport or (self.site.addon.getSettingBool("exporttvguide") and
+                           (not xbmcvfs.exists(self.xmltv_guide) or
+                            not self.__is_created_today(self.xmltv_guide))):
+            self.export_tv_guide()
+        self.update_iptv_settings()
 
     @staticmethod
     def __is_created_today(spath):
@@ -50,6 +54,10 @@ class Extra:
         if "data" in cd:
             monitor = xbmc.Monitor()
             xbmc.log("Running export channels")
+            xbmcgui.Dialog().notification(heading=self.site.language(30022),
+                                          message=self.site.language(30420),
+                                          icon=self.icon_path,
+                                          time=5000)
             new_playlist = "%s.new" % self.m3u_playlist
             with open(new_playlist, "w") as m3u:
                 m3u.write("#EXTM3U\n")
@@ -93,6 +101,10 @@ class Extra:
             xbmcvfs.copy(new_playlist, self.m3u_playlist)
             xbmcvfs.delete(new_playlist)
             xbmc.log("Channel export complete")
+            xbmcgui.Dialog().notification(heading=self.site.language(30022),
+                                          message="%s %s" % (self.site.language(30420), self.site.language(30435)),
+                                          icon=self.icon_path,
+                                          time=5000)
         else:
             xbmc.log("Could not load channel list")
 
@@ -104,6 +116,10 @@ class Extra:
         new_tvguide = "%s.new" % self.xmltv_guide
 
         xbmc.log("Start export of the channel TV guide")
+        xbmcgui.Dialog().notification(heading=self.site.language(30022),
+                                      message=self.site.language(30430),
+                                      icon=self.icon_path,
+                                      time=5000)
         with open(new_tvguide, "w") as xmltv:
             xmltv.write('<?xml version="1.0" encoding="UTF-8"?>\n')
             xmltv.write('<!DOCTYPE tv SYSTEM "xmltv.dtd">\n')
@@ -171,6 +187,11 @@ class Extra:
         xbmcvfs.copy(new_tvguide, self.xmltv_guide)
         xbmcvfs.delete(new_tvguide)
         xbmc.log("Channel TV guide export complete")
+        xbmcgui.Dialog().notification(heading=self.site.language(30022),
+                                      message="%s %s" % (self.site.language(30430), self.site.language(30435)),
+                                      icon=self.icon_path,
+                                      time=5000)
+
 
     def __format_date(self, s):
         return "%s%s%s%s%s%s 0000" % (s[6:10], s[3:5], s[0:2], s[11:13], s[14:16], s[17:19])

@@ -53,6 +53,7 @@ class Channel(pages.Page):
                                         "RunPlugin(%s)" %
                                         self.site.get_url(action="load",
                                                           context="extras",
+                                                          forceexport="true",
                                                           url=self.site.url)))
 
     def set_context_title(self):

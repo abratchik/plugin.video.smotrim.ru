@@ -32,7 +32,7 @@ class Smotrim:
 
         self.user = None
 
-        self.url = sys.argv[0]  if len(sys.argv) > 0 else ""
+        self.url = sys.argv[0] if len(sys.argv) > 0 else ""
         self.handle = int(sys.argv[1]) if len(sys.argv) > 1 else 0
 
         self.params = {}
