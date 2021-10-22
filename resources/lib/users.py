@@ -25,11 +25,13 @@ class User:
 
         self._cookies_file = ""
 
-    def watch(self, site):
+    def watch(self, site, context=""):
         """
 
         :param site: Smotrim
         :return:
+        @param site: assumed Smotrim class
+        @param context: context to load. If empty then site will use CLI arguments
         """
         self._site = site
 
@@ -39,7 +41,7 @@ class User:
         self.session = requests.Session()
 
         if self._login():
-            site.show_to(self)
+            site.show_to(self, context)
 
         self.session.close()
 

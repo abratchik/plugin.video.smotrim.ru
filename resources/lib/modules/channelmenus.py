@@ -3,6 +3,7 @@
 # Author: Alex Bratchik
 # Created on: 03.04.2021
 # License: GPL v.3 https://www.gnu.org/copyleft/gpl.html
+import xbmc
 
 import resources.lib.modules.pages as pages
 
@@ -16,7 +17,7 @@ class ChannelMenu(pages.Page):
         self.cache_enabled = True
 
     def preload(self):
-        spath = self.get_channel_live_double(self.params['channels'])
+        spath = self.get_stream_url_from_double(self.params['channels'])
         if spath:
             self.list_items.append({'id': "livetv",
                                     'label': "[COLOR=FF00FF00][B]%s[/B][/COLOR]" % self.site.language(30410),
@@ -69,21 +70,46 @@ class ChannelMenu(pages.Page):
         return "channel_menu_%s" % self.params['channels']
 
     def play(self):
-        spath = self.get_channel_live_double(self.params["channels"])
+        spath = self.get_stream_url_from_double(self.params["channels"])
         self.play_url(spath)
+
+    def get_stream_url_from_double(self, channel_id):
+        _, live = self.get_channel_live_double(channel_id)
+        try:
+            return live['sources']['m3u8']['auto']
+        except KeyError:
+            xbmc.log("Error in finding live stream for the channel %s" % channel_id)
+            return ""
 
     def get_channel_live_double(self, channel_id):
 
-        doublemap = self.site.request(self.site.get_url(self.site.liveapi_url +
-                                                        '/live-double/channel_id/' + channel_id), output="json")
+        doublemap = self.site.request('%s/live-double/channel_id/%s' % (self.site.liveapi_url,
+                                                                        channel_id),
+                                      output="json")
 
         if "live_id" in doublemap and doublemap['live_id']:
             try:
-                datalive = self.site.request(self.site.get_url(self.site.liveapi_url +
-                                                               '/datalive/id/' + doublemap['live_id']), output="json")
+                datalive = self.site.request('%s/datalive/id/%s' % (self.site.liveapi_url,
+                                                                    doublemap['live_id']),
+                                             output="json")
 
-                return datalive['data']['playlist']['medialist'][0]['sources']['m3u8']['auto']
+                return doublemap, datalive['data']['playlist']['medialist'][0]
             except KeyError:
-                return ""
+                return doublemap, {}
         else:
-            return ""
+            return doublemap, {}
+
+    def get_channel_tvguide(self, channel_id, double_id):
+
+        tvguide = self.site.request('%s/tvps/channels/%s/doubles/%s/?time=today' % (self.site.api_url,
+                                                                                    channel_id,
+                                                                                    double_id),
+                                    output="json")
+
+        if "data" in tvguide:
+            return tvguide["data"]
+        else:
+            if "metadata" in tvguide:
+                xbmc.log("Error querying TV Guide for %s:%s - %s %s" %
+                         (channel_id, double_id, tvguide['metadata']['code'], tvguide['metadata']['errorMessage']))
+            return []

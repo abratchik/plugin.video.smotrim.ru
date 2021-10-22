@@ -27,6 +27,7 @@ class Page(object):
         self.action = site.action
         self.context = site.context
         self.list_items = []
+        self.context_menu_items = []
         self.offset = 0
         self.limit = 0
         self.pages = 0
@@ -344,9 +345,13 @@ class Page(object):
             list_item.setProperty('IsPlayable', str(category['is_playable']).lower())
 
             if self.cache_enabled:
-                list_item.addContextMenuItems([(self.site.language(30001),
-                                                "ActivateWindow(Videos, %s&refresh=true)" %
-                                                self.get_nav_url(offset=0)), ])
+                self.context_menu_items = [(self.site.language(30001),
+                                            "ActivateWindow(Videos, %s&refresh=true)" %
+                                            self.get_nav_url(offset=0)), ]
+            self.add_context_menu(category)
+
+            if self.context_menu_items:
+                list_item.addContextMenuItems(self.context_menu_items)
 
             if 'info' in category:
                 list_item.setInfo(category['type'] if 'type' in category else "video", category['info'])
@@ -369,6 +374,14 @@ class Page(object):
         @param list_item: ListItem to be enriched
         @param episode: the element, which will be played
         @param brand: the element brand used for enrichment
+        """
+        pass
+
+    def add_context_menu(self, category):
+        """
+        This function can be overriden to add context menu items
+        @param category:
+        @return:
         """
         pass
 
