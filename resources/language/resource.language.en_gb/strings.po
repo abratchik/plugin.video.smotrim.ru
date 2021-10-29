@@ -208,13 +208,25 @@ msgctxt "#30410"
 msgid "Live TV"
 msgstr "Live TV"
 
+msgctxt "#30415"
+msgid "Install IPTV Manager add-on"
+msgstr "Install IPTV Manager add-on"
+
+msgctxt "#30418"
+msgid "IPTV Manager settings…"
+msgstr "IPTV Manager settings…"
+
 msgctxt "#30420"
-msgid "Export live channels to IPTV"
-msgstr "Export live channels to IPTV"
+msgid "Enable IPTV Manager integration"
+msgstr "Enable IPTV Manager integration"
 
 msgctxt "#30430"
-msgid "Export TV Guide to IPTV"
-msgstr "Export TV Guide to IPTV"
+msgid "IPTV playlist"
+msgstr "IPTV playlist"
+
+msgctxt "#30431"
+msgid "EPG"
+msgstr "EPG"
 
 msgctxt "#30435"
 msgid "completed successfully"

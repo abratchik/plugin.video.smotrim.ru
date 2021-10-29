@@ -48,15 +48,5 @@ class Channel(pages.Page):
                         'fanart': self.site.get_media("background.jpg")}
                 }
 
-    def add_context_menu(self, category):
-        self.context_menu_items.append((self.site.language(30420),
-                                        "RunPlugin(%s)" %
-                                        self.site.get_url(action="load",
-                                                          context="extras",
-                                                          forceexport="true",
-                                                          url=self.site.url)))
-
     def set_context_title(self):
         self.site.context_title = self.site.language(30400)
-
-
