@@ -8,8 +8,15 @@
         <setting id="itemsperpage" type="enum" label="30111" values="10|20|30" default="1" />
         <setting id="addhistory" type="bool" label="30112" default="true" />
         <setting id="upnext" type="bool" label="30113" default="true" />
-        <setting id="exportchannels" type="bool" label="30420" default="false" />
-        <setting id="exporttvguide" type="bool" label="30430" default="false" />
-        <setting id="epgshift" type="slider" label="30440" default="-3.0" range="-12.0,0.5,14.0" option="float"/>
+        <setting label="30415" type="action" action="InstallAddon(service.iptv.manager)"
+                 option="close" visible="!System.HasAddon(service.iptv.manager)"/>
+        <setting id="iptv.enabled" label="30420" type="bool" default="true"
+                 visible="System.HasAddon(service.iptv.manager)" />
+        <setting label="30418" type="action" action="Addon.OpenSettings(service.iptv.manager)" enable="eq(-1,true)"
+                 option="close" visible="System.HasAddon(service.iptv.manager)" subsetting="true"/>
+        <setting id="iptv.channels_uri" type="text" label="30430" visible="false"
+                 default="plugin://plugin.video.smotrim.ru?context=extras&amp;action=send_channels" />
+        <setting id="iptv.epg_uri" type="text" label="30431" visible="false"
+                 default="plugin://plugin.video.smotrim.ru?context=extras&amp;action=send_epg" />
     </category>
 </settings>
