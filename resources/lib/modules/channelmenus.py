@@ -85,7 +85,7 @@ class ChannelMenu(pages.Page):
     def get_stream_url_from_double(self, channel_id):
         _, live = self.get_channel_live_double(channel_id)
         try:
-            return live['sources']['m3u8']['auto']
+            return live
         except KeyError:
             xbmc.log("Error in finding live stream for the channel %s" % channel_id)
             return ""
