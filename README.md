@@ -38,6 +38,22 @@ are available only for some channels and may be not accessible outside Russia.
 
 Navigation to the live TV: Channels > [ChannelName] > Live TV. 
 
+### Integration with IPTV Manager
+Starting version 1.1.15, the addon supports ITPV Manager integration. Enabling 
+integration is done as follows:
+
+1. Open the addon Settings, open Interface tab. If the IPTV Manager is not 
+   installed, select the option **Install IPTV Manager** and install it along with 
+   dependencies.
+2. Turn the integration with IPTV manager ON.
+3. Open IPTV manager Settings. Go to IPTV Simple tab and ensure that IPTV Simple
+   is managed automatically by the IPTV Manager
+4. In the TV Channles tab, run the update of TV playlist and EPG. This may take
+   2-3 min, depending on your hardware and network speed
+
+After this you should see the list of channels with EPG under Live TV main menu of
+Kodi.
+
 ## Resolution of video playback issues
 The site smotrim.ru is streaming HD content, which may require additional
 configuration of the Kodi system. If you are experiencing unstable 
