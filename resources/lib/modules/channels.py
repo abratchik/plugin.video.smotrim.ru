@@ -3,10 +3,11 @@
 # Author: Alex Bratchik
 # Created on: 03.04.2021
 # License: GPL v.3 https://www.gnu.org/copyleft/gpl.html
+import os
+
 import xbmc
 
 import resources.lib.modules.pages as pages
-from resources.lib import kodiutils
 
 
 class Channel(pages.Page):
@@ -48,5 +49,15 @@ class Channel(pages.Page):
                         'fanart': self.site.get_media("background.jpg")}
                 }
 
+    def add_context_menu(self, category):
+        self.context_menu_items.append((self.site.language(30405),
+                                        "RunPlugin(%s)" %
+                                        self.site.get_url(action="hide_empty_channels",
+                                                          context="extras",
+                                                          url=self.site.url)))
+
     def set_context_title(self):
         self.site.context_title = self.site.language(30400)
+
+    def get_cache_filename(self):
+        return os.path.join(self.site.data_path, "channels.json")

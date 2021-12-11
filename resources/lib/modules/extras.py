@@ -8,6 +8,7 @@ import os
 from collections import defaultdict
 
 import xbmc
+import xbmcgui
 import xbmcvfs
 
 import resources.lib.modules.channels as channels
@@ -27,13 +28,59 @@ class Extra:
 
         self.icon_path = os.path.join(self.site.path, "icon.png")
 
+    def hide_empty_channels(self):
+
+        ch_live = self.export_channels()
+
+        cd = self.__get_channel_list()
+
+        if "data" in cd:
+            monitor = xbmc.Monitor()
+            xbmc.log("Filtering empty channels from %s found" % len(cd["data"]))
+
+            cd_data = []
+
+            progressDialog = xbmcgui.DialogProgress()
+            progressDialog.create(self.site.language(30405))
+
+            for i, c in enumerate(cd["data"]):
+
+                chm = self.site.request(self.channelmenu.get_load_url_ext(c['id'], 1, 0), output="json")
+
+                if ("data" in chm) and (len(chm["data"]) > 0):
+                    xbmc.log("Channel %s has non-empty menu, keep" % c['id'])
+                    cd_data.append(c)
+                elif (len(ch_live) > 0) and any(ch['ch_id'] == c['id'] for ch in ch_live):
+                    xbmc.log("Channel %s has live stream, keep" % c['id'])
+                    cd_data.append(c)
+                else:
+                    xbmc.log("Channel %s has neither menu nor live stream, hiding" % c['id'])
+
+                progressDialog.update(int(i*100 / len(cd["data"])), self.site.language(30407) % c['title'])
+
+                if monitor.waitForAbort(1) or progressDialog.iscanceled():
+                    break
+
+            if monitor.abortRequested() or progressDialog.iscanceled():
+                xbmc.log("Channel filtering cancelled by user action")
+            else:
+                cd["data"] = cd_data
+                with open(self.channel.get_cache_filename(), "w") as f:
+                    json.dump(cd, f)
+
+            progressDialog.close()
+
+            xbmc.log("Channel filtering complete, %s channels in the active list" % len(cd["data"]))
+        else:
+            xbmc.log("Could not load channel list")
+
     def export_channels(self):
 
         if xbmcvfs.exists(self.ch_playlist) and self.__is_created_today(self.ch_playlist):
             with open(self.ch_playlist, "r") as f:
                 return json.load(f)
 
-        cd = self.site.request(self.channel.get_load_url(), output="json")
+        cd = self.__get_channel_list()
 
         chs = []
 
@@ -47,11 +94,11 @@ class Extra:
                 if url:
 
                     ch = {'id': "smotrim_%sd%s" % (c['id'], doublemap['double_id']),
-                                'ch_id': c['id'],
-                                'double_id': doublemap['double_id'],
-                                'name': c['title'],
-                                'logo': self.channel.get_logo(c, "xxl"),
-                                'stream': url}
+                          'ch_id': c['id'],
+                          'double_id': doublemap['double_id'],
+                          'name': c['title'],
+                          'logo': self.channel.get_logo(c, "xxl"),
+                          'stream': url}
 
                     chs.append(ch)
 
@@ -66,6 +113,7 @@ class Extra:
 
             if monitor.abortRequested():
                 xbmc.log("Channel export cancelled by user action")
+                return []
             else:
                 with open(self.ch_playlist, "w") as f:
                     json.dump(chs, f)
@@ -133,6 +181,14 @@ class Extra:
         xbmc.log("Channel TV guide export complete")
 
         return epgs
+
+    def __get_channel_list(self):
+        channels_cache_file = self.channel.get_cache_filename()
+        if xbmcvfs.exists(channels_cache_file):
+            with open(channels_cache_file, 'r+') as f:
+                return json.load(f)
+        else:
+            return self.site.request(self.channel.get_load_url(), output="json")
 
     def __format_date(self, s):
         return "%s-%s-%sT%s:%s:%s+03:00" % (s[6:10], s[3:5], s[0:2], s[11:13], s[14:16], s[17:19])
