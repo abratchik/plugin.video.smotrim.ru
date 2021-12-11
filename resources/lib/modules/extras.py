@@ -29,8 +29,13 @@ class Extra:
         self.icon_path = os.path.join(self.site.path, "icon.png")
 
     def hide_empty_channels(self):
+        progressDialog = xbmcgui.DialogProgress()
+        progressDialog.create(self.site.language(30405))
 
-        ch_live = self.export_channels()
+        ch_live = self.export_channels(progressDialog, 50)
+
+        if progressDialog.iscanceled():
+            return
 
         cd = self.__get_channel_list()
 
@@ -39,9 +44,6 @@ class Extra:
             xbmc.log("Filtering empty channels from %s found" % len(cd["data"]))
 
             cd_data = []
-
-            progressDialog = xbmcgui.DialogProgress()
-            progressDialog.create(self.site.language(30405))
 
             for i, c in enumerate(cd["data"]):
 
@@ -56,7 +58,7 @@ class Extra:
                 else:
                     xbmc.log("Channel %s has neither menu nor live stream, hiding" % c['id'])
 
-                progressDialog.update(int(i*100 / len(cd["data"])), self.site.language(30407) % c['title'])
+                progressDialog.update(50 + int(i * 50 / len(cd["data"])), self.site.language(30407) % c['title'])
 
                 if monitor.waitForAbort(1) or progressDialog.iscanceled():
                     break
@@ -68,13 +70,13 @@ class Extra:
                 with open(self.channel.get_cache_filename(), "w") as f:
                     json.dump(cd, f)
 
-            progressDialog.close()
-
             xbmc.log("Channel filtering complete, %s channels in the active list" % len(cd["data"]))
         else:
             xbmc.log("Could not load channel list")
 
-    def export_channels(self):
+        progressDialog.close()
+
+    def export_channels(self, progressDialog=None, scale=100):
 
         if xbmcvfs.exists(self.ch_playlist) and self.__is_created_today(self.ch_playlist):
             with open(self.ch_playlist, "r") as f:
@@ -88,7 +90,7 @@ class Extra:
             monitor = xbmc.Monitor()
             xbmc.log("Running export channels")
 
-            for c in cd['data']:
+            for i, c in enumerate(cd['data']):
                 doublemap, url = self.channelmenu.get_channel_live_double(c['id'])
 
                 if url:
@@ -108,10 +110,13 @@ class Extra:
                     xbmc.log("Export channel %s:%s live stream not found, skipping ..." %
                              (c['id'], c['title'].encode('utf-8', 'ignore')))
 
-                if monitor.waitForAbort(1):
+                if not (progressDialog is None):
+                    progressDialog.update(int(i * scale / len(cd["data"])), self.site.language(30408) % c['title'])
+
+                if monitor.waitForAbort(1) or progressDialog.iscanceled():
                     break
 
-            if monitor.abortRequested():
+            if monitor.abortRequested() or (not(progressDialog is None) and progressDialog.iscanceled()):
                 xbmc.log("Channel export cancelled by user action")
                 return []
             else:

@@ -212,6 +212,10 @@ msgctxt "#30407"
 msgid "Check channel %s"
 msgstr "Check channel %s"
 
+msgctxt "#30408"
+msgid "Searching live broadcast on %s"
+msgstr "Searching live broadcast on %s"
+
 msgctxt "#30410"
 msgid "Live TV"
 msgstr "Live TV"
