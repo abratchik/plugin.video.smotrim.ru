@@ -204,6 +204,14 @@ msgctxt "#30400"
 msgid "Channels"
 msgstr "Channels"
 
+msgctxt "#30405"
+msgid "Hide empty channels"
+msgstr "Hide empty channels"
+
+msgctxt "#30407"
+msgid "Check channel %s"
+msgstr "Check channel %s"
+
 msgctxt "#30410"
 msgid "Live TV"
 msgstr "Live TV"

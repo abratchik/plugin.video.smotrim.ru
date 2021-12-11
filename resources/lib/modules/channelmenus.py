@@ -21,9 +21,9 @@ class ChannelMenu(pages.Page):
         self.brand = brands.Brand(site)
         self.cache_enabled = True
 
-        self.vitrina_url = "https://media.mediavitrina.ru"
-        with open(os.path.join(self.site.path, "resources/data/vitrina.json"), "r+") as f:
-            self.VITRINA = json.load(f)
+        # self.vitrina_url = "https://media.mediavitrina.ru"
+        # with open(os.path.join(self.site.path, "resources/data/vitrina.json"), "r+") as f:
+        #     self.VITRINA = json.load(f)
 
     def preload(self):
         spath = self.get_stream_url_from_double(self.params['channels'])
@@ -43,9 +43,12 @@ class ChannelMenu(pages.Page):
         return
 
     def get_load_url(self):
-        return self.site.get_url(self.site.api_url + '/menu/channels/' + self.params['channels'],
-                                 limit=self.limit,
-                                 offset=self.offset)
+        return self.get_load_url_ext(self.params['channels'], self.limit, self.offset)
+
+    def get_load_url_ext(self, ch_id, limit, offset):
+        return self.site.get_url('%s/menu/channels/%s' % (self.site.api_url, str(ch_id)),
+                                 limit=limit,
+                                 offset=offset)
 
     def set_context_title(self):
         self.site.context_title = self.params['title']
@@ -92,8 +95,8 @@ class ChannelMenu(pages.Page):
 
     def get_channel_live_double(self, channel_id):
 
-        if str(channel_id) in self.VITRINA:
-            return self.get_vitrina_live_double(channel_id, self.VITRINA[str(channel_id)])
+        # if str(channel_id) in self.VITRINA:
+        #     return self.get_vitrina_live_double(channel_id, self.VITRINA[str(channel_id)])
 
         doublemap = self.site.request('%s/live-double/channel_id/%s' % (self.site.liveapi_url,
                                                                         channel_id),
@@ -111,32 +114,32 @@ class ChannelMenu(pages.Page):
         else:
             return doublemap, ""
 
-    def get_vitrina_live_double(self, channel_id, vitrina_code):
-        """
-        Get the live stream from Vitrina TV.
-        @param channel_id: ID of the channel on smotrim.ru
-        @param vitrina_code: alphanumeric code of the channel on Vitrina TV
-        @return: channel ID map and a stream URL
-        """
-        doublemap = {"channel_id": str(channel_id),
-                     "double_id": "1",
-                     "vitrina_code": vitrina_code}
-        result = self.site.request('%s/get_token' % self.vitrina_url, output="json")
-        try:
-            token = result['result']['token']
-
-            xbmc.log("Vitrina TV token=%s" % token)
-
-            vitrinalive = self.site.request('%s/api/v2/%s/playlist/%s_as_array.json?token=%s' %
-                                            (self.vitrina_url,
-                                             vitrina_code,
-                                             vitrina_code,
-                                             token),
-                                            output="json")
-
-            return doublemap, vitrinalive['hls'][0]
-        except KeyError:
-            return doublemap, {}
+    # def get_vitrina_live_double(self, channel_id, vitrina_code):
+    #     """
+    #     Get the live stream from Vitrina TV.
+    #     @param channel_id: ID of the channel on smotrim.ru
+    #     @param vitrina_code: alphanumeric code of the channel on Vitrina TV
+    #     @return: channel ID map and a stream URL
+    #     """
+    #     doublemap = {"channel_id": str(channel_id),
+    #                  "double_id": "1",
+    #                  "vitrina_code": vitrina_code}
+    #     result = self.site.request('%s/get_token' % self.vitrina_url, output="json")
+    #     try:
+    #         token = result['result']['token']
+    #
+    #         xbmc.log("Vitrina TV token=%s" % token)
+    #
+    #         vitrinalive = self.site.request('%s/api/v2/%s/playlist/%s_as_array.json?token=%s' %
+    #                                         (self.vitrina_url,
+    #                                          vitrina_code,
+    #                                          vitrina_code,
+    #                                          token),
+    #                                         output="json")
+    #
+    #         return doublemap, vitrinalive['hls'][0]
+    #     except KeyError:
+    #         return doublemap, {}
 
     def get_channel_tvguide(self, channel_id, double_id):
 
