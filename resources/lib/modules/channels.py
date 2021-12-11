@@ -5,8 +5,6 @@
 # License: GPL v.3 https://www.gnu.org/copyleft/gpl.html
 import os
 
-import xbmc
-
 import resources.lib.modules.pages as pages
 
 
