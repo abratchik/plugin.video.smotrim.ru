@@ -113,10 +113,10 @@ class Extra:
                 if not (progressDialog is None):
                     progressDialog.update(int(i * scale / len(cd["data"])), self.site.language(30408) % c['title'])
 
-                if monitor.waitForAbort(1) or progressDialog.iscanceled():
+                if monitor.waitForAbort(1) or (progressDialog and progressDialog.iscanceled()):
                     break
 
-            if monitor.abortRequested() or (not(progressDialog is None) and progressDialog.iscanceled()):
+            if monitor.abortRequested() or (progressDialog and progressDialog.iscanceled()):
                 xbmc.log("Channel export cancelled by user action")
                 return []
             else:
