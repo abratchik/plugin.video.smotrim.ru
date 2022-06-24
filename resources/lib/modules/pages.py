@@ -109,6 +109,7 @@ class Page(object):
                 self.save_brand_to_history(brand)
 
         play_item = xbmcgui.ListItem(path=url)
+        play_item.setProperty("inputstream.adaptive.stream_headers", self.site.user.get_headers(type="str"))
         if '.m3u8' in url:
             play_item.setMimeType('application/x-mpegURL')
             if kodi_version_major() >= 19:

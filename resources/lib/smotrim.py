@@ -37,7 +37,8 @@ class Smotrim:
 
         self.params = {}
 
-        self.api_url = "https://api.smotrim.ru/api/v1"
+        self.api_host = "api.smotrim.ru"
+        self.api_url = "https://%s/api/v1" % self.api_host
         self.liveapi_url = "https://player.vgtrk.com/iframe"
 
         self.language = self.addon.getLocalizedString
@@ -77,7 +78,7 @@ class Smotrim:
         getattr(classes[0](self), self.action)()
 
     def request(self, url, output="text"):
-        response = self.user.session.get(url)
+        response = self.user.get_http(url)
         err = response.status_code != 200
         if err:
             xbmc.log("Query %s returned HTTP error %s" % (url, response.status_code))
@@ -91,7 +92,10 @@ class Smotrim:
     # *** Add-on helpers
     def get_url(self, baseurl=None, **kwargs):
         baseurl_ = baseurl if baseurl else self.url
-        url = '{}?{}'.format(baseurl_, urlencode(kwargs))
+        if kwargs:
+            url = '{}?{}'.format(baseurl_, urlencode(kwargs))
+        else:
+            url = baseurl_
         return url
 
     def get_media(self, file_name):
