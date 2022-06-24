@@ -23,6 +23,8 @@ class User:
         self._site = None
         self.session = None
 
+        self._headers = {}
+
         self._cookies_file = ""
 
     def watch(self, site, context=""):
@@ -40,15 +42,35 @@ class User:
 
         self.session = requests.Session()
 
+        self._headers = {
+            'User-Agent': "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:101.0) Gecko/20100101 Firefox/101.0",
+            'Accept': "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
+            'Accept-Encoding': "gzip, deflate, br",
+            'Accept-Language': "en-US,en;q=0.5",
+            'Connection': "keep-alive",
+            'Sec-Fetch-Dest': "document",
+            'Sec-Fetch-Mode': "navigate",
+            'Sec-Fetch-Site': "none",
+            'Sec-Fetch-User': "?1",
+            'Sec-GPC': "1",
+            'Upgrade-Insecure-Requests': "1"}
+
+        # Load saved cookies
+        self._cookies_file = os.path.join(self._site.data_path, "cookies.dat")
+        self._load_cookies()
+
+        # If UID not in cookies, request it
+        if not ('ngx_uid' in self.session.cookies):
+            xbmc.log("Cookie file not found or missing UID, requesting from %s" % self.domain, xbmc.LOGDEBUG)
+            self.get_http("https://%s" % self.domain)
+            self._save_cookies()
+
         if self._login():
             site.show_to(self, context)
 
         self.session.close()
 
     def _login(self):
-        # Load saved cookies
-        self._cookies_file = os.path.join(self._site.data_path, "cookies.dat")
-        self._load_cookies()
 
         if not self.phone:
             self._logout()
@@ -68,27 +90,33 @@ class User:
         if self._is_login():
             return True
 
-        headers = {'User-agent': "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:88.0) Gecko/20100101 Firefox/88.0",
-                   'Accept-Language': "en-US,en;q=0.5",
-                   'Origin': "https://%s" % self.domain,
-                   'Referer': "https://%s/login" % self.domain,
-                   'Sec-GPC': "1",
-                   'X-Requested-With': "XMLHTTPRequest"}
-
-        # If UID not in cookies, request it
-        if not ('ngx_uid' in self.session.cookies):
-            xbmc.log("Cookie file not found or missing UID, requesting from %s" % self.domain, xbmc.LOGDEBUG)
-            self.session.get("https://%s" % self.domain)
-
-        self.session.cookies.set("isNGX_UID", "true", domain=self.domain, path="/")
+        login_url = "https://" + self.domain + "/personal/login?redirect=%2F"
 
         # Set region
         self.load_geo()
         self.session.cookies.set("region", self.get_region(), expires=NEVER, domain=self.domain, path="/")
         xbmc.log("Region is %s" % self.session.cookies['region'], xbmc.LOGDEBUG)
 
+        # Set headers
+        headers = self._headers.copy()
+        headers.update({'Accept': "*/*",
+                        'Host': self.domain,
+                        'Referer': "https://%s/" % self.domain,
+                        'Sec-Fetch-Dest': "empty",
+                        'Sec-Fetch-Mode': "same-origin",
+                        'Sec-Fetch-Site': "same-origin",
+                        'X-Requested-With': "XMLHTTPRequest"
+                        })
+
         # Try to login
-        self.session.post("https://%s/login" % self.domain,
+        if not ('usid' in self.session.cookies):
+            self.session.get(login_url, headers=headers)
+            self._save_cookies()
+
+        headers.update({'Origin': "https://%s" % self.domain,
+                        'Referer': login_url})
+
+        self.session.post(login_url,
                           files={'phone': (None, self.phone)},
                           headers=headers)
 
@@ -101,14 +129,14 @@ class User:
 
         xbmc.log("Send the code %s for authorization to %s" % (auth_code, self.domain), xbmc.LOGDEBUG)
 
-        self.session.post("https://%s/login" % self.domain,
+        self.session.post(login_url,
                           files={'code': (None, auth_code),
                                  'phone': (None, self.phone)},
                           headers=headers)
 
         if self._is_login():
             xbmc.log("User login SUCCESS, id=%s, usgr=%s" %
-                     (self.session.cookies['sm_id'], self.session.cookies['usgr']), xbmc.LOGDEBUG)
+                     (self.session.cookies['smid'], self.session.cookies['usgr']), xbmc.LOGDEBUG)
             self._save_cookies()
             return True
 
@@ -117,7 +145,7 @@ class User:
     def load_geo(self):
         if not ('data' in self._geo):
             xbmc.log("Loading geo data", xbmc.LOGDEBUG)
-            self._geo = self.session.get(self._site.api_url + '/geo').json()
+            self._geo = self.get_http(self._site.api_url + '/geo').json()
         return self._geo
 
     def get_region(self):
@@ -126,14 +154,31 @@ class User:
         except KeyError:
             return ""
 
+    def get_headers(self, type="dict"):
+        if type == "dict":
+            return self._headers
+        elif type == "str":
+            return "&".join(str(key) + "=" + str(value) for key, value in self._headers.items())
+        else:
+            return ""
+
+    def get_http(self, url):
+        self._set_host(url)
+        xbmc.log(str(self._headers), xbmc.LOGDEBUG)
+        return self.session.get(url, headers=self._headers)
+
+    def _set_host(self, url):
+        host = url.split("://")[1].split("/")[0]
+        self._headers.update({'Host': host})
+
     def _logout(self):
-        if 'sm_id' in self.session.cookies:
-            self.session.cookies.clear(domain=self.domain, path="/", name="sm_id")
+        if 'smid' in self.session.cookies:
+            self.session.cookies.clear(domain=self.domain, path="/", name="smid")
         if 'usgr' in self.session.cookies:
             self.session.cookies.clear(domain=self.domain, path="/", name="usgr")
 
     def _is_login(self):
-        return ('sm_id' in self.session.cookies) and ('usgr' in self.session.cookies)
+        return ('smid' in self.session.cookies) and ('usgr' in self.session.cookies)
 
     def _save_cookies(self):
         with open(self._cookies_file, "wb") as f:
