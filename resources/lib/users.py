@@ -4,6 +4,7 @@
 # Created on: 03.04.2021
 # License: GPL v.3 https://www.gnu.org/copyleft/gpl.html
 import os
+import re
 import pickle
 
 import requests
@@ -12,6 +13,8 @@ import xbmc
 import xbmcgui
 
 NEVER = 100 * 1000 * 60 * 60 * 24
+
+USER_AGENT = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:101.0) Gecko/20100101 Firefox/101.0"
 
 
 class User:
@@ -43,7 +46,7 @@ class User:
         self.session = requests.Session()
 
         self._headers = {
-            'User-Agent': "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:101.0) Gecko/20100101 Firefox/101.0",
+            'User-Agent': USER_AGENT,
             'Accept': "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
             'Accept-Encoding': "gzip, deflate, br",
             'Accept-Language': "en-US,en;q=0.5",
@@ -98,26 +101,45 @@ class User:
         xbmc.log("Region is %s" % self.session.cookies['region'], xbmc.LOGDEBUG)
 
         # Set headers
-        headers = self._headers.copy()
-        headers.update({'Accept': "*/*",
-                        'Host': self.domain,
-                        'Referer': "https://%s/" % self.domain,
-                        'Sec-Fetch-Dest': "empty",
-                        'Sec-Fetch-Mode': "same-origin",
-                        'Sec-Fetch-Site': "same-origin",
-                        'X-Requested-With': "XMLHTTPRequest"
-                        })
+        headers = ({'User-Agent': USER_AGENT,
+                    'Accept': "*/*",
+                    'Accept-Encoding': "gzip, deflate, br",
+                    'Accept-Language': "en-US,en;q=0.5",
+                    'Connection': "keep-alive",
+                    'Host': self.domain,
+                    'Referer': "https://%s/" % self.domain,
+                    'Sec-Fetch-Dest': "empty",
+                    'Sec-Fetch-Mode': "same-origin",
+                    'Sec-Fetch-Site': "same-origin",
+                    'Sec-GPC': "1",
+                    'X-Requested-With': "XMLHTTPRequest"
+                    })
 
-        # Try to login
-        if not ('usid' in self.session.cookies):
-            self.session.get(login_url, headers=headers)
+        # Try to login - first load the form
+        resp = self.session.get(login_url, headers=headers)
+        if resp.status_code != 200:
+            xbmc.log("Couldn't load the login page %s, error %a" % (login_url, resp.status_code), xbmc.LOGDEBUG)
+            self._logout()
             self._save_cookies()
+            return False
+
+        self._save_cookies()
+
+        # Read the token
+        token = self._get_token(resp.text)
+        if token == "":
+            xbmc.log("Failed to retrieve the secure token from the login page %s" % login_url)
+            self._logout()
+            return False
+
+        xbmc.log("Token retrieved successfully: % s" % token)
 
         headers.update({'Origin': "https://%s" % self.domain,
                         'Referer': login_url})
 
         self.session.post(login_url,
-                          files={'phone': (None, self.phone)},
+                          files={'phone': (None, self.phone),
+                                 '_token': (None, token)},
                           headers=headers)
 
         auth_code = xbmcgui.Dialog().numeric(0, self._site.language(30500), "")
@@ -189,4 +211,15 @@ class User:
             with open(self._cookies_file, 'rb') as f:
                 cj = pickle.load(f)
                 for c in cj:
+                    xbmc.log("ck %s " % str(c), xbmc.LOGDEBUG)
                     self.session.cookies.set_cookie(c)
+
+    def _get_token(self, html_text):
+        # xbmc.log(html_text, xbmc.LOGDEBUG)
+        input_match = re.search(r"<input.*\"_token\".*>", html_text)
+        if input_match:
+            # xbmc.log("Found token field %s" % input_match.group(0), xbmc.LOGDEBUG)
+            token_match = re.search(r"(value\s*=\s*\")(.+)(\">)", input_match.group(0))
+            if token_match and (len(token_match.group()) > 1):
+                return token_match.group(2)
+        return ""
