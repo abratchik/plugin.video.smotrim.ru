@@ -13,8 +13,10 @@ import xbmc
 import xbmcgui
 import xbmcplugin
 
+from urllib import quote as encode4url
 from ..kodiutils import remove_files_by_pattern, upnext_signal, kodi_version_major
 import resources.lib.kodiplayer as kodiplayer
+from resources.lib.users import USER_AGENT
 from ..kodiutils import clean_html
 
 
@@ -108,7 +110,17 @@ class Page(object):
             if self.site.addon.getSettingBool("addhistory"):
                 self.save_brand_to_history(brand)
 
-        play_item = xbmcgui.ListItem(path=url)
+        play_item = xbmcgui.ListItem(path="|".join([url,
+                                                    "&".join(
+                                                        ["User-Agent=%s" % encode4url(USER_AGENT),
+                                                         "Origin=%s" % encode4url("https://player.smotrim.ru"),
+                                                         "Referer=%s" % encode4url("https://player.smotrim.ru/"),
+                                                         "Sec-Fetch-Dest=empty",
+                                                         "Sec-Fetch-Mode=cors",
+                                                         "Sec-Fetch-Site=cross-site",
+                                                         "Sec-GPC=1",
+                                                         "Connection=keep-alive"])
+                                                    ]))
 
         if '.m3u8' in url:
             play_item.setMimeType('application/x-mpegURL')
