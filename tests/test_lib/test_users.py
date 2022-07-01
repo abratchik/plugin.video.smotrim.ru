@@ -18,7 +18,9 @@ from resources.lib.users import User
 from resources.lib.smotrim import Smotrim
 
 cwd = os.path.dirname(os.path.abspath(__file__))
-web_api_url = "https://cdnapi.smotrim.ru/api/v1"
+web_api_url = "https://api.smotrim.ru/api/v1"
+web_cdnapi_url = "https://cdnapi.smotrim.ru/api/v1"
+
 
 
 def get_project_folder(fld, plugin_name):
@@ -72,7 +74,10 @@ class UsersTestCase(unittest.TestCase):
         user = User()
         self.assertIsNotNone(user, "Constructor User() failed!")
         smotrim = Smotrim()
+        smotrim.api_host = "api.smotrim.ru"
+        smotrim.cdnapi_host = "cdnapi.smotrim.ru"
         smotrim.api_url = web_api_url
+        smotrim.cdnapi_url = web_cdnapi_url
         self.project_dir = get_project_folder(cwd, smotrim.id)
 
         smotrim.path = self.project_dir

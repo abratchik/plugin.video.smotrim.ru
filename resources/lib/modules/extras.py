@@ -99,7 +99,7 @@ class Extra:
                           'ch_id': c['id'],
                           'double_id': doublemap['double_id'],
                           'name': c['title'],
-                          'logo': self.channel.get_logo(c, "xxl"),
+                          'logo': self.channel.get_pic_from_id(c['picId'], "lw"),
                           'stream': url}
 
                     chs.append(ch)

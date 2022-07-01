@@ -38,8 +38,11 @@ class Smotrim:
 
         self.params = {}
 
+        self.domain = "smotrim.ru"
         self.api_host = "api.smotrim.ru"
+        self.cdnapi_host = "cdnapi.smotrim.ru"
         self.api_url = "https://%s/api/v1" % self.api_host
+        self.cdnapi_url = "https://%s/api/v1" % self.cdnapi_host
         self.liveapi_url = "https://player.vgtrk.com/iframe"
 
         self.language = self.addon.getLocalizedString
