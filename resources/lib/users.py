@@ -41,7 +41,7 @@ class User:
         self._site = site
 
         self.phone = site.addon.getSetting("phone")
-        self.domain = site.addon.getSetting("domain")
+        self.domain = site.domain
 
         self.session = requests.Session()
 

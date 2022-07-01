@@ -43,8 +43,10 @@ class Channel(pages.Page):
                                          content="files",
                                          url=self.site.url),
                 'info': {'plot': element['title']},
-                'art': {'icon': self.get_logo(element, res="xxl"),
-                        'fanart': self.site.get_media("background.jpg")}
+                'art': {'thumb': self.get_pic_from_id(element['picId'], "lw"),
+                        'icon': self.get_pic_from_id(element['picId'], "lw"),
+                        'fanart': self.get_pic_from_id(element['picId'], "hd"),
+                        'poster': self.get_pic_from_id(element['picId'], "vhdr")}
                 }
 
     def add_context_menu(self, category):

@@ -115,10 +115,10 @@ class Page(object):
                                                         ["User-Agent=%s" % encode4url(USER_AGENT),
                                                          "Origin=%s" % encode4url("https://player.smotrim.ru"),
                                                          "Referer=%s" % encode4url("https://player.smotrim.ru/"),
-                                                         "Sec-Fetch-Dest=empty",
-                                                         "Sec-Fetch-Mode=cors",
-                                                         "Sec-Fetch-Site=cross-site",
-                                                         "Sec-GPC=1",
+                                                         "!Sec-Fetch-Dest=empty",
+                                                         "!Sec-Fetch-Mode=cors",
+                                                         "!Sec-Fetch-Site=cross-site",
+                                                         "!Sec-GPC=1",
                                                          "Connection=keep-alive"])
                                                     ]))
 
@@ -285,7 +285,7 @@ class Page(object):
         try:
             ep_pics = plist[0]['sizes'] if type(plist) is list else plist['sizes']
             pic = next(p for p in ep_pics if p['preset'] == res)
-            return pic['url']
+            return "|".join([pic['url'], "User-Agent=%s" % encode4url(USER_AGENT)])
         except StopIteration:
             return ""
         except IndexError:
@@ -298,6 +298,16 @@ class Page(object):
             return self.get_pic_from_plist(element['pictures'], res)
         except KeyError:
             return ""
+
+    def get_pic_from_id(self, pic_id, res="lw"):
+        if pic_id:
+            return "|".join(["%s/pictures/%s/%s/redirect" % (self.site.cdnapi_url, pic_id, res),
+                             "User-Agent=%s" % encode4url(USER_AGENT)])
+        else:
+            if res == "hd":
+                return self.site.get_media("background.jpg")
+            else:
+                return ""
 
     @staticmethod
     def format_date(s):

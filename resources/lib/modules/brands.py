@@ -198,10 +198,10 @@ class Brand(pages.Page):
                              'rating': element['rank'],
                              'dateadded': self.format_date(element['dateRec'])
                              },
-                    'art': {'thumb': "%s/pictures/%s/lw/redirect" % (self.site.api_url, element['picId']),
-                            'icon': "%s/pictures/%s/lw/redirect" % (self.site.api_url, element['picId']),
-                            'fanart': "%s/pictures/%s/hd/redirect" % (self.site.api_url, element['picId']),
-                            'poster': "%s/pictures/%s/vhdr/redirect" % (self.site.api_url, element['picId'])
+                    'art': {'thumb': self.get_pic_from_id(element['picId'], "lw"),
+                            'icon': self.get_pic_from_id(element['picId'], "lw"),
+                            'fanart': self.get_pic_from_id(element['picId'], "hd"),
+                            'poster': self.get_pic_from_id(element['picId'], "vhdr")
                             }
                     }
 
