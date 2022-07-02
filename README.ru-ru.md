@@ -2,7 +2,7 @@
 [![en](https://img.shields.io/badge/lang-en-green.svg)](https://github.com/abratchik/plugin.video.smotrim.ru/blob/master/README.md)
 [![ru-ru](https://img.shields.io/badge/lang-ru--ru-red.svg)](https://github.com/abratchik/plugin.video.smotrim.ru/blob/master/README.ru-ru.md)
 
-Это плагин Kodi предназначен для просмотра видео с сайта
+Этот плагин Kodi предназначен для просмотра видео с сайта
 [Smotrim.ru](https://Smotrim.ru). 
 
 Если у вас есть какие-либо вопросы либо пожелания по работе плагина,
