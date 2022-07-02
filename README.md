@@ -1,4 +1,7 @@
 # KODI addon for Smotrim.ru
+[![en](https://img.shields.io/badge/lang-en-red.svg)](https://github.com/abratchik/kodi.repository/blob/master/README.md)
+[![ru-ru](https://img.shields.io/badge/lang-ru--ru-green.svg)](https://github.com/abratchik/kodi.repository/blob/master/README.ru-ru.md)
+
 
 This is Kodi video addon for viewing video from the site
 [Smotrim.ru](https://Smotrim.ru). 
@@ -7,7 +10,7 @@ If you have any questions of feedback please post in on the
 forum XBMC.ru [here](http://xbmc.ru/forum/showthread.php?t=23431).
 
 ## Compatibility
-The addon as been tested on 
+The addon has been tested on 
 - Kodi Leia under Ubuntu 18.04 LTS.
 - Kodi Matrix under Ubuntu 20.04 LTS
 - Kodi Matrix on Android v9 Pie
