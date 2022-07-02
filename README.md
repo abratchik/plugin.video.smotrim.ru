@@ -1,6 +1,6 @@
 # KODI addon for Smotrim.ru
-[![en](https://img.shields.io/badge/lang-en-red.svg)](https://github.com/abratchik/kodi.repository/blob/master/README.md)
-[![ru-ru](https://img.shields.io/badge/lang-ru--ru-green.svg)](https://github.com/abratchik/kodi.repository/blob/master/README.ru-ru.md)
+[![en](https://img.shields.io/badge/lang-en-red.svg)](https://github.com/abratchik/plugin.video.smotrim.ru/blob/master/README.md)
+[![ru-ru](https://img.shields.io/badge/lang-ru--ru-green.svg)](https://github.com/abratchik/plugin.video.smotrim.ru/blob/master/README.ru-ru.md)
 
 
 This is Kodi video addon for viewing video from the site
