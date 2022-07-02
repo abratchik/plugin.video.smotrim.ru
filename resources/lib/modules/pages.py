@@ -144,7 +144,7 @@ class Page(object):
 
             play_item.setProperty('IsPlayable', 'true')
 
-            play_item.addStreamInfo(stream_type, {'duration': self.get_dict_value(this_episode, 'duration')})
+            play_item.addStreamInfo(stream_type, {'duration': this_episode.get('duration')})
 
         xbmcplugin.setResolvedUrl(self.site.handle, True, listitem=play_item)
 
@@ -434,22 +434,23 @@ class Page(object):
     def get_cache_filename_prefix(self):
         return self.context
 
-    def parse_body(self, body):
+    def parse_body(self, element):
         result = {}
+        if 'body' in element:
+            body = element['body']
+            body_parts = clean_html(body).splitlines() if body else []
+            delimiter = re.compile(r',|;')
+            for key in self.KEYWORDS:
+                if len(body_parts) > 0:
+                    lbgroups = ["(%s)" % kw for kw in self.KEYWORDS[key]]
+                    pattern = re.compile(r"(?:%s)(?P<text>.*)" % '|'.join(lbgroups), re.UNICODE)
+                    for part in body_parts:
+                        m = pattern.search(part)
+                        if m:
+                            result[key] = [x.strip() for x in delimiter.split(m.group('text'))]
+                if not (key in result):
+                    result[key] = []
 
-        body_parts = clean_html(body).splitlines() if body else []
-        delimiter = re.compile(r',|;')
-        for key in self.KEYWORDS:
-            if len(body_parts) > 0:
-                lbgroups = ["(%s)" % kw for kw in self.KEYWORDS[key]]
-                pattern = re.compile(r"(?:%s)(?P<text>.*)" % '|'.join(lbgroups), re.UNICODE)
-                for part in body_parts:
-                    m = pattern.search(part)
-                    if m:
-                        result[key] = [x.strip() for x in delimiter.split(m.group('text'))]
-            if not (key in result):
-                result[key] = []
-
-        result['plot'] = "\r\n".join(body_parts)
+            result['plot'] = "\r\n".join(body_parts)
 
         return result
