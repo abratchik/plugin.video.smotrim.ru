@@ -58,10 +58,10 @@ class Audio(pages.Page):
     def enrich_info_tag(self, list_item, episode, brand):
         list_item.setInfo("music", {"title": episode['combinedTitle'],
                                     "mediatype": "musicvideo",
-                                    "plot": episode['anons'],
-                                    "year": self.get_dict_value(brand, 'productionYearStart'),
-                                    "genre": self.get_dict_value(brand, 'genre'),
-                                    "rating": self.get_dict_value(brand, 'rank')})
+                                    "plot": episode.get('anons'),
+                                    "year": brand.get('productionYearStart'),
+                                    "genre": brand.get('genre'),
+                                    "rating": brand.get('rank')})
 
     def play(self):
         spath = self.params['spath']

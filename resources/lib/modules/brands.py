@@ -133,8 +133,8 @@ class Brand(pages.Page):
 
     def get_load_url(self):
         if self.action == "search" and self.search_text:
-            return self.site.get_url(self.site.api_url + '/brands',
-                                     search=self.search_text,
+            return self.site.get_url(self.site.api_url + '/msearch',
+                                     q=self.search_text,
                                      limit=self.limit,
                                      offset=self.offset)
         elif self.action == "search_by_tag" and self.search_tag:
@@ -151,7 +151,7 @@ class Brand(pages.Page):
 
         videos = self.site.request(self.site.get_url(self.site.api_url + '/videos', brands=self.params['brands']),
                                    output="json")
-        if len(videos['data']) > 0:
+        if len(videos.get('data', [])) > 0:
             spath = videos['data'][0]['sources']['m3u8']['auto']
 
             self.play_url(spath, videos['data'][0])
@@ -161,10 +161,17 @@ class Brand(pages.Page):
         if 'has_children' in self.params and self.params['has_children'] == "True":
             return super(Brand, self).create_element_li(element)
         else:
-            is_folder = element['countVideos'] > 1 or element['countAudioEpisodes'] > 1
-            is_music_folder = is_folder and element['countAudioEpisodes'] == element['countVideos']
+
+            is_folder, is_music_folder = self.is_folder(element)
             label = self.get_label(element)
-            bp = self.parse_body(element['body'])
+            bp = self.parse_body(element)
+            if 'picId' in element:
+                picId = element.get('picId')
+            elif 'picIds' in element:
+                picId = element.get('picIds')[0] if len(element.get('picIds')) > 0 else ""
+            else:
+                picId = ""
+
             return {'id': element['id'],
                     'is_folder': is_folder,
                     'is_playable': not is_folder,
@@ -181,43 +188,43 @@ class Brand(pages.Page):
                                            context="brands",
                                            brands=element['id'],
                                            url=self.site.url),
-                    'info': {'title': element['title'],
-                             'sorttitle': element['title'],
-                             'originaltitle': element['titleOrig'],
-                             'genre': element['genre'],
+                    'info': {'title': element.get('title'),
+                             'sorttitle': element.get('title'),
+                             'originaltitle': element.get('titleOrig', element.get('title')),
+                             'genre': element.get('genre'),
                              'mediatype': "tvshow" if is_folder else "movie",
-                             'year': element['productionYearStart'],
-                             'country': self.get_country(element['countries']),
-                             'mpaa': self.get_mpaa(element['ageRestrictions']),
-                             'plot': bp['plot'],
-                             'artist': bp['cast'],
-                             'cast': bp['cast'],
-                             'director': bp['director'],
-                             'writer': bp['writer'],
-                             'plotoutline': element['anons'],
-                             'rating': element['rank'],
-                             'dateadded': self.format_date(element['dateRec'])
+                             'year': element.get('productionYearStart'),
+                             'country': self.get_country(element.get('countries')),
+                             'mpaa': self.get_mpaa(element.get('ageRestrictions')),
+                             'plot': bp.get('plot', element.get('anons')),
+                             'artist': bp.get('cast',[]),
+                             'cast': bp.get('cast',[]),
+                             'director': bp.get('director'),
+                             'writer': bp.get('writer'),
+                             'plotoutline': element.get('anons'),
+                             'rating': element.get('rank'),
+                             'dateadded': self.format_date(element.get('dateRec'))
                              },
-                    'art': {'thumb': self.get_pic_from_id(element['picId'], "lw"),
-                            'icon': self.get_pic_from_id(element['picId'], "lw"),
-                            'fanart': self.get_pic_from_id(element['picId'], "hd"),
-                            'poster': self.get_pic_from_id(element['picId'], "vhdr")
+                    'art': {'thumb': self.get_pic_from_id(picId, "lw"),
+                            'icon': self.get_pic_from_id(picId, "lw"),
+                            'fanart': self.get_pic_from_id(picId, "hd"),
+                            'poster': self.get_pic_from_id(picId, "vhdr")
                             }
                     }
 
     def enrich_info_tag(self, list_item, episode, brand):
-        bp = self.parse_body(brand['body'])
-        list_item.setInfo("video", {"title": episode['combinedTitle'],
+        bp = self.parse_body(brand)
+        list_item.setInfo("video", {"title": episode.get('combinedTitle'),
                                     "mediatype": "movie",
-                                    "plot": episode['anons'] if episode['anons'] else bp['plot'],
-                                    "year": self.get_dict_value(brand, 'productionYearStart'),
-                                    "country": self.get_country(self.get_dict_value(brand, 'countries')),
-                                    "genre": self.get_dict_value(brand, 'genre'),
-                                    "mpaa": self.get_mpaa(self.get_dict_value(brand, 'ageRestrictions')),
-                                    "cast": bp['cast'],
-                                    "director": bp['director'],
-                                    "writer": bp['writer'],
-                                    "rating": self.get_dict_value(brand, 'rank')})
+                                    "plot": episode.get('anons', bp.get('plot')),
+                                    "year": brand.get('productionYearStart'),
+                                    "country": self.get_country(brand.get('countries')),
+                                    "genre": brand.get('genre'),
+                                    "mpaa": self.get_mpaa(brand.get('ageRestrictions')),
+                                    "cast": bp.get('cast',[]),
+                                    "director": bp.get('director'),
+                                    "writer": bp.get('writer'),
+                                    "rating": brand.get('rank')})
         list_item.setCast(self.get_cast(brand['id']))
 
     def get_tag_by_id(self, tags, tag):
@@ -232,9 +239,28 @@ class Brand(pages.Page):
 
     @staticmethod
     def get_label(brand):
-        rank = brand['rank']
-        if rank:
-            color = "FF00FF00" if rank >= 7.0 else "yellow" if (7.0 > rank >= 5.0) else "red"
-            return "[COLOR %s][%s][/COLOR] %s" % (color, rank, brand['title'])
+        if 'rank' in brand:
+            rank = brand['rank']
+            if rank:
+                color = "FF00FF00" if rank >= 7.0 else "yellow" if (7.0 > rank >= 5.0) else "red"
+                return "[COLOR %s][%s][/COLOR] %s" % (color, rank, brand['title'])
+            else:
+                return brand['title']
         else:
             return brand['title']
+
+    @staticmethod
+    def is_folder(element):
+
+        if 'countVideos' in element or 'countAudioEpisodes' in element:
+            is_folder = element['countVideos'] > 1 or element['countAudioEpisodes'] > 1
+            is_music_folder = is_folder and element['countAudioEpisodes'] == element['countVideos']
+        elif 'videos' in element:
+            is_folder = len(element['videos']) > 1
+            is_music_folder = False
+        else:
+            is_folder = False
+            is_music_folder = False
+
+        return is_folder, is_music_folder
+

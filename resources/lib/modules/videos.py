@@ -58,24 +58,24 @@ class Video(pages.Page):
                 }
 
     def enrich_info_tag(self, list_item, episode, brand):
-        bp = self.parse_body(brand['body'])
-        list_item.setInfo("video", {"title": episode['combinedTitle'],
+        bp = self.parse_body(brand)
+        list_item.setInfo("video", {"title": episode.get('combinedTitle'),
                                     "mediatype": "episode",
-                                    "plot": episode['anons'] if episode['anons'] else bp['plot'],
-                                    "year": self.get_dict_value(brand, 'productionYearStart'),
-                                    "country": self.get_country(self.get_dict_value(brand, 'countries')),
-                                    "genre": self.get_dict_value(brand, 'genre'),
-                                    "mpaa": self.get_mpaa(self.get_dict_value(brand, 'ageRestrictions')),
-                                    "cast": bp['cast'],
-                                    "director": bp['director'],
-                                    "writer": bp['writer'],
-                                    "rating": self.get_dict_value(brand, 'rank')})
+                                    "plot": episode.get('anons', bp.get('plot')),
+                                    "year": brand.get('productionYearStart'),
+                                    "country": self.get_country(brand.get('countries')),
+                                    "genre": brand.get('genre'),
+                                    "mpaa": self.get_mpaa(brand.get('ageRestrictions')),
+                                    "cast": bp.get('cast', []),
+                                    "director": bp.get('director'),
+                                    "writer": bp.get('writer'),
+                                    "rating": brand.get('rank')})
 
     def get_play_url(self, element):
         return self.site.get_url(self.site.url,
                                  action="play",
                                  context="videos",
-                                 brands=element['brandId'],
+                                 brands=element.get('brandId'),
                                  videos=element['id'],
                                  offset=self.offset,
                                  limit=self.limit,
