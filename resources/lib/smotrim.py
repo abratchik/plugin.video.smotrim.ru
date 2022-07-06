@@ -81,8 +81,8 @@ class Smotrim:
         classes = [cls for _, cls in inspect.getmembers(mod, inspect.isclass(mod))]
         getattr(classes[0](self), self.action)()
 
-    def request(self, url, output="text"):
-        response = self.user.get_http(url)
+    def request(self, url, output="text", headers=None):
+        response = self.user.get_http(url, headers=headers)
         err = response.status_code != 200
         if err:
             xbmc.log("Query %s returned HTTP error %s" % (url, response.status_code))

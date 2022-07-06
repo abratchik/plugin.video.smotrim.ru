@@ -229,6 +229,12 @@ class Brand(pages.Page):
                                     "rating": brand.get('rank')})
         list_item.setCast(self.get_cast(brand['id']))
 
+    def add_context_menu(self, category):
+        pass
+        # if category.get("type", "video") == "video":
+        #     self.context_menu_items.append(("Set quality",
+        #                                     "ActivateWindow(Dialog.OK)" ))
+
     def get_tag_by_id(self, tags, tag):
         for t in tags:
             if t['tag'] == tag:
@@ -260,6 +266,9 @@ class Brand(pages.Page):
         elif 'videos' in element:
             is_folder = len(element['videos']) > 1
             is_music_folder = False
+        elif 'audios' in element:
+            is_folder = True
+            is_music_folder = len(element['audios']) > 1
         else:
             is_folder = False
             is_music_folder = False
