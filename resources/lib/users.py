@@ -184,10 +184,12 @@ class User:
         else:
             return ""
 
-    def get_http(self, url):
+    def get_http(self, url, headers=None):
         self._set_host(url)
-        xbmc.log(str(self._headers), xbmc.LOGDEBUG)
-        return self.session.get(url, headers=self._headers)
+        if headers is None:
+            headers = self._headers
+        xbmc.log(str(headers), xbmc.LOGDEBUG)
+        return self.session.get(url, headers=headers)
 
     def _set_host(self, url):
         host = url.split("://")[1].split("/")[0]
@@ -211,7 +213,7 @@ class User:
             with open(self._cookies_file, 'rb') as f:
                 cj = pickle.load(f)
                 for c in cj:
-                    xbmc.log("ck %s " % str(c), xbmc.LOGDEBUG)
+                    xbmc.log(str(c), xbmc.LOGDEBUG)
                     self.session.cookies.set_cookie(c)
 
     def _get_token(self, html_text):

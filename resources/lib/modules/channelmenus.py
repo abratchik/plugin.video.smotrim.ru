@@ -5,6 +5,7 @@
 # License: GPL v.3 https://www.gnu.org/copyleft/gpl.html
 import json
 import os
+import sys
 
 import xbmc
 
@@ -86,11 +87,11 @@ class ChannelMenu(pages.Page):
         self.play_url(spath)
 
     def get_stream_url_from_double(self, channel_id):
-        _, live = self.get_channel_live_double(channel_id)
         try:
+            _, live = self.get_channel_live_double(channel_id)
             return live
-        except KeyError:
-            xbmc.log("Error in finding live stream for the channel %s" % channel_id)
+        except:
+            xbmc.log("Error in finding live stream for the channel %s" % channel_id, xbmc.LOGERROR)
             return ""
 
     def get_channel_live_double(self, channel_id):
@@ -98,15 +99,19 @@ class ChannelMenu(pages.Page):
         # if str(channel_id) in self.VITRINA:
         #     return self.get_vitrina_live_double(channel_id, self.VITRINA[str(channel_id)])
 
+        headers = self.site.user.get_headers().copy()
+
+        headers['Sec-Fetch-Site'] = "cross-site"
+
         doublemap = self.site.request('%s/live-double/channel_id/%s' % (self.site.liveapi_url,
                                                                         channel_id),
-                                      output="json")
+                                      output="json", headers=headers)
 
-        if "live_id" in doublemap and doublemap['live_id']:
+        if doublemap.get('live_id'):
             try:
                 datalive = self.site.request('%s/datalive/id/%s' % (self.site.liveapi_url,
                                                                     doublemap['live_id']),
-                                             output="json")
+                                             output="json", headers=headers)
                 medialist = datalive['data']['playlist']['medialist'][0]
                 return doublemap, medialist['sources']['m3u8']['auto']
             except KeyError:
