@@ -262,11 +262,12 @@ class Brand(pages.Page):
             is_folder = element['countVideos'] > 1 or element['countAudioEpisodes'] > 1
             is_music_folder = is_folder and element['countAudioEpisodes'] == element['countVideos']
         elif 'videos' in element:
-            is_folder = len(element['videos']) > 1
-            is_music_folder = False
-        elif 'audios' in element:
-            is_folder = True
-            is_music_folder = len(element['audios']) > 1
+            if len(element['videos']) >= 1:
+                is_folder = len(element['videos']) > 1
+                is_music_folder = False
+            else:
+                is_folder = True
+                is_music_folder = True
         else:
             is_folder = False
             is_music_folder = False
