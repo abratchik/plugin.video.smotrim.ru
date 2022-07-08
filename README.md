@@ -75,6 +75,17 @@ which you can install from the [same repository](https://abratchik.github.io/kod
 Once installed, please go to **Cache** section, change the parameters, save
 and restart Kodi. After that the video playback shall be smoother.
 
+Some videos may not play correctly in the "auto" mode of video quality selection. In this
+case it is recommended to set the video quality explicitly, corresponding to the resolution
+of your monitor, and the Internet connection speed:
+
+- fhd-wide (1920x1080)
+- hd-wide (1280x720)
+- high-wide (960x540)
+- medium-wide (640x360)
+- low-wide (416x243)
+
+
 ## Disclaimer
 This is a non-commercial community-supported addon for the Smotrim.ru web site.
 It has been created for watching Russian programs on the TV screen, just for fun and has no relation
