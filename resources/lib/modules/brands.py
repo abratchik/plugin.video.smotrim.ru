@@ -55,7 +55,7 @@ class Brand(pages.Page):
         @param tagicon: tag icon
         @param content: content type in the context of this tag. Can be one of the following: videos (default),
         files, songs, musicvideos, tvshows, episodes, movies
-        @param has_children: if true the eliement is interpreted as tag group (like submenu)
+        @param has_children: if true the element is interpreted as tag group (like submenu)
         @param cache_expire: number of seconds for cache to expire. Default is "0" meaning cache will never expire
         @return:
         """
@@ -152,7 +152,7 @@ class Brand(pages.Page):
         videos = self.site.request(self.site.get_url(self.site.api_url + '/videos', brands=self.params['brands']),
                                    output="json")
         if len(videos.get('data', [])) > 0:
-            spath = videos['data'][0]['sources']['m3u8']['auto']
+            spath = self.get_video_url(videos['data'][0]['sources'])
 
             self.play_url(spath, videos['data'][0])
 
@@ -197,8 +197,8 @@ class Brand(pages.Page):
                              'country': self.get_country(element.get('countries')),
                              'mpaa': self.get_mpaa(element.get('ageRestrictions')),
                              'plot': bp.get('plot', element.get('anons')),
-                             'artist': bp.get('cast',[]),
-                             'cast': bp.get('cast',[]),
+                             'artist': bp.get('cast', []),
+                             'cast': bp.get('cast', []),
                              'director': bp.get('director'),
                              'writer': bp.get('writer'),
                              'plotoutline': element.get('anons'),
@@ -221,7 +221,7 @@ class Brand(pages.Page):
                                     "country": self.get_country(brand.get('countries')),
                                     "genre": brand.get('genre'),
                                     "mpaa": self.get_mpaa(brand.get('ageRestrictions')),
-                                    "cast": bp.get('cast',[]),
+                                    "cast": bp.get('cast', []),
                                     "director": bp.get('director'),
                                     "writer": bp.get('writer'),
                                     "rating": brand.get('rank')})
@@ -272,4 +272,3 @@ class Brand(pages.Page):
             is_music_folder = False
 
         return is_folder, is_music_folder
-

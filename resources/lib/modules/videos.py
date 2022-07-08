@@ -79,7 +79,7 @@ class Video(pages.Page):
                                  videos=element['id'],
                                  offset=self.offset,
                                  limit=self.limit,
-                                 spath=element['sources']['m3u8']['auto'],
+                                 spath=self.get_video_url(element['sources']),
                                  url=self.site.url)
 
     def play(self):
