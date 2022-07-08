@@ -61,5 +61,5 @@ class Article(pages.Page):
                                      output="json")
         xbmcgui.Dialog().textviewer(articles['data']['title'], clean_html(articles['data']['body']))
         if articles['data']['videos']:
-            spath = articles['data']['videos'][0]['sources']['m3u8']['auto']
+            spath = self.get_video_url(articles['data']['videos'][0]['sources'])
             self.play_url(spath)

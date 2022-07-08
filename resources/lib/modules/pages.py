@@ -42,6 +42,8 @@ class Page(object):
         with open(os.path.join(self.site.path, "resources/data/keywords.json"), "r+") as f:
             self.KEYWORDS = json.load(f)
 
+        self.VQUALITY = ["auto", "fhd-wide", "hd-wide", "high-wide", "medium-wide", "low-wide"]
+
     def load(self):
 
         self.offset = self.params['offset'] if 'offset' in self.params else 0
@@ -99,6 +101,9 @@ class Page(object):
         pass
 
     def play_url(self, url, this_episode=None, next_episode=None, stream_type="video"):
+
+        xbmc.log("Play url: %s" % url, xbmc.LOGDEBUG)
+
         if next_episode is None:
             next_episode = {}
 
@@ -122,8 +127,8 @@ class Page(object):
                                                          "Connection=keep-alive"])
                                                     ]))
 
+        play_item.setMimeType('application/x-mpegURL')
         if '.m3u8' in url:
-            play_item.setMimeType('application/x-mpegURL')
             if kodi_version_major() >= 19:
                 play_item.setProperty('inputstream', 'inputstream.adaptive')
             else:
@@ -433,6 +438,18 @@ class Page(object):
 
     def get_cache_filename_prefix(self):
         return self.context
+
+    def get_video_url(self, sources):
+        vquality = int(self.site.addon.getSetting("vquality"))
+
+        xbmc.log("Quality = %s" % vquality)
+
+        if vquality > 0 and 'mp4' in sources:
+            for vq in self.VQUALITY[vquality:]:
+                if vq in sources['mp4']:
+                    return sources['mp4'].get(vq)
+
+        return sources['m3u8'].get('auto')
 
     def parse_body(self, element):
         result = {}
