@@ -36,17 +36,17 @@ class Page(object):
 
         self.cache_enabled = False
         self.cache_file = ""
-        self.cache_expire = int(self.params['cache_expire']) if 'cache_expire' in self.params else 0
+        self.cache_expire = int(self.params.get('cache_expire', 0))
 
         self.KEYWORDS = []
         with open(os.path.join(self.site.path, "resources/data/keywords.json"), "r+") as f:
             self.KEYWORDS = json.load(f)
 
-        self.VQUALITY = ["auto", "fhd-wide", "hd-wide", "high-wide", "medium-wide", "low-wide"]
+        self.VQUALITY = ["auto", "fhd-wide", "hd-wide", "high-wide", "high", "medium-wide", "medium", "low-wide", "low"]
 
     def load(self):
 
-        self.offset = self.params['offset'] if 'offset' in self.params else 0
+        self.offset = self.params.get('offset', 0)
         self.limit = self.get_limit_setting()
 
         xbmc.log("Items per page: %s" % self.limit, xbmc.LOGDEBUG)
@@ -248,9 +248,10 @@ class Page(object):
         if is_refresh:
             remove_files_by_pattern(os.path.join(self.site.data_path, "%s*.json" % self.get_cache_filename_prefix()))
 
-        if not is_refresh and self.cache_enabled and \
+        if (not is_refresh) and self.cache_enabled and \
                 os.path.exists(self.cache_file) and not (self.is_cache_expired()):
             with open(self.cache_file, 'r+') as f:
+                xbmc.log("Loading from cache file: %s" % self.cache_file, xbmc.LOGDEBUG)
                 return json.load(f)
         else:
             return self.site.request(self.get_load_url(), output="json")
@@ -263,9 +264,8 @@ class Page(object):
 
         mod_time = os.path.getmtime(self.cache_file)
         now = time.time()
-        delta = now - mod_time
 
-        return delta > self.cache_expire
+        return int(now - mod_time) > self.cache_expire
 
     def get_nav_url(self, offset=0):
         return self.site.get_url(self.site.url,

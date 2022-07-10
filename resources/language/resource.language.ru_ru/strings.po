@@ -112,13 +112,25 @@ msgctxt "#30125"
 msgid "high-wide"
 msgstr "960x540"
 
+msgctxt "#30128"
+msgid "high"
+msgstr "800x600"
+
 msgctxt "#30126"
 msgid "medium-wide"
 msgstr "640x360"
 
+msgctxt "#30129"
+msgid "medium"
+msgstr "640x480"
+
 msgctxt "#30127"
 msgid "low-wide"
 msgstr "416x243"
+
+msgctxt "#30130"
+msgid "low"
+msgstr "320x240"
 
 msgctxt "#30200"
 msgid "Premieres"
