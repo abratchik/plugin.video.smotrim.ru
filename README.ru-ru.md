@@ -1,6 +1,6 @@
 # Плагин к KODI для Smotrim.ru
-[![en](https://img.shields.io/badge/lang-en-green.svg)](https://github.com/abratchik/plugin.video.smotrim.ru/blob/master/README.md)
-[![ru-ru](https://img.shields.io/badge/lang-ru--ru-red.svg)](https://github.com/abratchik/plugin.video.smotrim.ru/blob/master/README.ru-ru.md)
+[![en](https://img.shields.io/badge/lang-en-green.svg)](./README.md)
+[![ru-ru](https://img.shields.io/badge/lang-ru--ru-red.svg)](./README.ru-ru.md)
 
 Этот плагин Kodi предназначен для просмотра видео с сайта
 [Smotrim.ru](https://Smotrim.ru). 

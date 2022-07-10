@@ -1,6 +1,6 @@
 # KODI addon for Smotrim.ru
-[![en](https://img.shields.io/badge/lang-en-red.svg)](https://github.com/abratchik/plugin.video.smotrim.ru/blob/master/README.md)
-[![ru-ru](https://img.shields.io/badge/lang-ru--ru-green.svg)](https://github.com/abratchik/plugin.video.smotrim.ru/blob/master/README.ru-ru.md)
+[![en](https://img.shields.io/badge/lang-en-red.svg)](./README.md)
+[![ru-ru](https://img.shields.io/badge/lang-ru--ru-green.svg)](./README.ru-ru.md)
 
 
 This is Kodi video addon for viewing video from the site
@@ -82,8 +82,11 @@ of your monitor, and the Internet connection speed:
 - fhd-wide (1920x1080)
 - hd-wide (1280x720)
 - high-wide (960x540)
+- high (800x600)  
 - medium-wide (640x360)
+- medium (640x480)  
 - low-wide (416x243)
+- low (320x240)
 
 
 ## Disclaimer
