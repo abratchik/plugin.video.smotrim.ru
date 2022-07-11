@@ -82,6 +82,7 @@ class Smotrim:
         getattr(classes[0](self), self.action)()
 
     def request(self, url, output="text", headers=None):
+        xbmc.log("Query site url: %s" % url, xbmc.LOGDEBUG)
         response = self.user.get_http(url, headers=headers)
         err = response.status_code != 200
         if err:

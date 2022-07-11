@@ -451,10 +451,10 @@ class Page(object):
 
         return sources['m3u8'].get('auto')
 
-    def parse_body(self, element):
+    def parse_body(self, element, tag='body'):
         result = {}
-        if 'body' in element:
-            body = element['body']
+        if tag in element:
+            body = element[tag]
             body_parts = clean_html(body).splitlines() if body else []
             delimiter = re.compile(r',|;')
             for key in self.KEYWORDS:

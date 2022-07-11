@@ -24,6 +24,7 @@ class Channel(pages.Page):
                 'url': self.site.get_url(self.site.url, action="load",
                                          context="channels",
                                          content="files",
+                                         cache_expire="0",
                                          url=self.site.url),
                 'info': {'plot': self.site.language(30400)},
                 'art': {'icon': self.site.get_media("channels.png"),
@@ -39,6 +40,7 @@ class Channel(pages.Page):
                                          action="load",
                                          context="channelmenus",
                                          channels=element['id'],
+                                         cache_expire="0",
                                          title=element['title'].encode('utf-8', 'ignore'),
                                          content="files",
                                          url=self.site.url),
@@ -46,7 +48,7 @@ class Channel(pages.Page):
                 'art': {'thumb': self.get_pic_from_id(element['picId'], "lw"),
                         'icon': self.get_pic_from_id(element['picId'], "lw"),
                         'fanart': self.get_pic_from_id(element['picId'], "hd"),
-                        'poster': self.get_pic_from_id(element['picId'], "vhdr")}
+                        'poster': self.get_pic_from_id(element['picId'], "it")}
                 }
 
     def add_context_menu(self, category):

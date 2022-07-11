@@ -64,6 +64,10 @@ msgctxt "#30060"
 msgid "Playback error"
 msgstr "Playback error"
 
+msgctxt "#30070"
+msgid "Podcasts"
+msgstr "Podcasts"
+
 msgctxt "#30100"
 msgid "Account"
 msgstr "Account"

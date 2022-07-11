@@ -46,13 +46,21 @@ class ChannelMenu(pages.Page):
     def get_load_url(self):
         return self.get_load_url_ext(self.params['channels'], self.limit, self.offset)
 
+    def get_nav_url(self, offset=0):
+        return self.site.get_url(self.site.url,
+                                 action="load",
+                                 context=self.site.context,
+                                 channels=self.params.get('channels'),
+                                 title=self.params.get('title'),
+                                 limit=self.limit, offset=offset, url=self.site.url)
+
     def get_load_url_ext(self, ch_id, limit, offset):
         return self.site.get_url('%s/menu/channels/%s' % (self.site.api_url, str(ch_id)),
                                  limit=limit,
                                  offset=offset)
 
     def set_context_title(self):
-        self.site.context_title = self.params['title']
+        self.site.context_title = self.params.get('title')
 
     def create_element_li(self, element):
         if len(element['tags']) > 0:

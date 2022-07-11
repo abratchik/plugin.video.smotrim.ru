@@ -6,6 +6,7 @@
 
 import resources.lib.modules.pages as pages
 import resources.lib.modules.searches as searches
+import resources.lib.modules.podcasts as podcasts
 import resources.lib.modules.brands as brands
 import resources.lib.modules.articles as articles
 import resources.lib.modules.channels as channels
@@ -17,13 +18,15 @@ class Home(pages.Page):
     def get_data_query(self):
         search = searches.Search(self.site)
         brand = brands.Brand(self.site)
+        podcast = podcasts.Podcast(self.site)
         article = articles.Article(self.site)
         channel = channels.Channel(self.site)
         history = histories.History(self.site)
 
         home_menu = [search.create_root_li(),
                      article.create_root_li(),
-                     channel.create_root_li()]
+                     channel.create_root_li(),
+                     podcast.create_root_li()]
 
         home_menu.extend(list(brand.create_search_by_tag_lis()))
 
