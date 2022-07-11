@@ -102,6 +102,7 @@ class Brand(pages.Page):
             return self.site.get_url(self.site.url, action=self.action,
                                      context="brands",
                                      search=self.search_text,
+                                     cache_expire=str(self.cache_expire),
                                      offset=offset,
                                      limit=self.limit,
                                      url=self.site.url)
@@ -109,9 +110,10 @@ class Brand(pages.Page):
             return self.site.get_url(self.site.url, action=self.action,
                                      context="brands",
                                      tags=self.search_tag,
-                                     tagname=self.params['tagname'],
-                                     has_children=self.params['has_children'],
-                                     content=self.params['content'],
+                                     tagname=self.params.get('tagname'),
+                                     has_children=self.params.get('has_children'),
+                                     content=self.params.get('content'),
+                                     cache_expire=str(self.cache_expire),
                                      offset=offset,
                                      limit=self.limit,
                                      url=self.site.url)
@@ -119,6 +121,7 @@ class Brand(pages.Page):
             return self.site.get_url(self.site.url, action=self.action,
                                      context="brands",
                                      offset=offset,
+                                     cache_expire=str(self.cache_expire),
                                      limit=self.limit,
                                      url=self.site.url)
 
