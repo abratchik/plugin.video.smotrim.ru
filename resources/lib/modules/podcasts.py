@@ -76,4 +76,4 @@ class Podcast(pages.Page):
                                  url=self.site.url)
 
     def get_cache_filename_prefix(self):
-        return "%s_%s_%s" % (self.context, self.offset, self.limit)
+        return self.context
