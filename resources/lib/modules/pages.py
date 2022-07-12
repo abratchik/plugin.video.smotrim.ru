@@ -115,17 +115,7 @@ class Page(object):
             if self.site.addon.getSettingBool("addhistory"):
                 self.save_brand_to_history(brand)
 
-        play_item = xbmcgui.ListItem(path="|".join([url,
-                                                    "&".join(
-                                                        ["User-Agent=%s" % encode4url(USER_AGENT),
-                                                         "Origin=%s" % encode4url("https://player.smotrim.ru"),
-                                                         "Referer=%s" % encode4url("https://player.smotrim.ru/"),
-                                                         "!Sec-Fetch-Dest=empty",
-                                                         "!Sec-Fetch-Mode=cors",
-                                                         "!Sec-Fetch-Site=cross-site",
-                                                         "!Sec-GPC=1",
-                                                         "Connection=keep-alive"])
-                                                    ]))
+        play_item = xbmcgui.ListItem(path=self.site.prepare_url(url))
 
         play_item.setMimeType('application/x-mpegURL')
         if '.m3u8' in url:
@@ -287,16 +277,18 @@ class Page(object):
 
     @staticmethod
     def get_pic_from_plist(plist, res):
-        try:
-            ep_pics = plist[0]['sizes'] if type(plist) is list else plist['sizes']
-            pic = next(p for p in ep_pics if p['preset'] == res)
-            return "|".join([pic['url'], "User-Agent=%s" % encode4url(USER_AGENT)])
-        except StopIteration:
-            return ""
-        except IndexError:
-            return ""
-        except KeyError:
-            return ""
+        if plist:
+            ep_pics = None
+            if 'sizes' in plist:
+                ep_pics = plist.get('sizes')
+            elif len(plist) > 0:
+                ep_pics = plist[0].get('sizes')
+
+            if ep_pics:
+                pic = next(p for p in ep_pics if p['preset'] == res)
+                return "|".join([pic['url'], "User-Agent=%s" % encode4url(USER_AGENT)])
+
+        return ""
 
     def get_pic_from_element(self, element, res):
         try:

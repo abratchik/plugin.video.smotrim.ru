@@ -100,7 +100,8 @@ class Extra:
                           'double_id': doublemap['double_id'],
                           'name': c['title'],
                           'logo': self.channel.get_pic_from_id(c['picId'], "lw"),
-                          'stream': url}
+                          'stream': "|".join(self.site.prepare_url(url))
+                          }
 
                     chs.append(ch)
 
@@ -155,8 +156,8 @@ class Extra:
                 try:
                     pdesc = ""
                     if p['brand']:
-                        ptitle = p['brand']['title']
-                        pdesc = p['brand']['anons']
+                        ptitle = p['brand'].get('title' "")
+                        pdesc = p['brand'].get('anons', "")
                     else:
                         ptitle = p['title']
 
