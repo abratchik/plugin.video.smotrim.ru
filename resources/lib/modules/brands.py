@@ -25,6 +25,7 @@ class Brand(pages.Page):
                 import resources.lib.modules.searches as searches
                 search = searches.Search(self.site)
                 search.save_to_history(self.search_text)
+                self.params['search'] = self.search_text
         else:
             self.search_text = self.params['search']
 
@@ -33,17 +34,6 @@ class Brand(pages.Page):
     def search_by_tag(self):
         self.search_tag = self.params['tags'] if 'tags' in self.params else ""
         self.load()
-
-    def create_search_li(self):
-        return {'id': "search",
-                'label': "[COLOR=FF00FF00][B]%s[/B][/COLOR]" % self.site.language(30010),
-                'is_folder': True,
-                'is_playable': False,
-                'url': self.site.get_url(self.site.url, action="search", context="brands", url=self.site.url),
-                'info': {'plot': self.site.language(30011)},
-                'art': {'icon': self.site.get_media("search.png"),
-                        'fanart': self.site.get_media("background.jpg")}
-                }
 
     def create_search_by_tag_li(self, tag, tagname, taginfo=None, tagicon="DefaultAddonsSearch.png",
                                 content="videos", has_children=False, cache_expire="0"):

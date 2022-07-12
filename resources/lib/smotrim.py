@@ -11,6 +11,7 @@ import inspect
 from importlib import import_module
 
 from urllib import urlencode
+from urllib import quote as encode4url
 from urlparse import parse_qsl
 
 import xbmc
@@ -18,6 +19,7 @@ import xbmcaddon
 import xbmcvfs
 
 from . import kodiutils
+from resources.lib.users import USER_AGENT
 
 
 class Smotrim:
@@ -117,3 +119,17 @@ class Smotrim:
             keyword = kbd.getText()
 
         return keyword
+
+    @staticmethod
+    def prepare_url(url):
+        return "|".join([url,
+                         "&".join(
+                             ["User-Agent=%s" % encode4url(USER_AGENT),
+                              "Origin=%s" % encode4url("https://player.smotrim.ru"),
+                              "Referer=%s" % encode4url("https://player.smotrim.ru/"),
+                              "!Sec-Fetch-Dest=empty",
+                              "!Sec-Fetch-Mode=cors",
+                              "!Sec-Fetch-Site=cross-site",
+                              "!Sec-GPC=1",
+                              "Connection=keep-alive"])
+                         ])

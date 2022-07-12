@@ -6,6 +6,8 @@
 import json
 import os
 
+import xbmc
+
 import resources.lib.modules.pages as pages
 
 

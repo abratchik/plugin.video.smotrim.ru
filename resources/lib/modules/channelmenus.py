@@ -91,7 +91,7 @@ class ChannelMenu(pages.Page):
         return "channel_menu_%s" % self.params['channels']
 
     def play(self):
-        spath = self.get_stream_url_from_double(self.params["channels"])
+        spath = self.get_stream_url_from_double(self.params.get("channels"))
         self.play_url(spath)
 
     def get_stream_url_from_double(self, channel_id):
@@ -121,7 +121,7 @@ class ChannelMenu(pages.Page):
                                                                     doublemap['live_id']),
                                              output="json", headers=headers)
                 medialist = datalive['data']['playlist']['medialist'][0]
-                return doublemap, medialist['sources']['m3u8']['auto']
+                return doublemap,  self.get_video_url(medialist.get('sources'))
             except KeyError:
                 return doublemap, ""
         else:

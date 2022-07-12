@@ -100,7 +100,8 @@ class Extra:
                           'double_id': doublemap['double_id'],
                           'name': c['title'],
                           'logo': self.channel.get_pic_from_id(c['picId'], "lw"),
-                          'stream': url}
+                          'stream': "|".join(self.site.prepare_url(url))
+                          }
 
                     chs.append(ch)
 
@@ -116,7 +117,7 @@ class Extra:
                 if monitor.waitForAbort(1) or (progressDialog and progressDialog.iscanceled()):
                     break
 
-            if monitor.abortRequested() or (not(progressDialog is None) and progressDialog.iscanceled()):
+            if monitor.abortRequested() or (progressDialog and progressDialog.iscanceled()):
                 xbmc.log("Channel export cancelled by user action")
                 return []
             else:
@@ -155,8 +156,8 @@ class Extra:
                 try:
                     pdesc = ""
                     if p['brand']:
-                        ptitle = p['brand']['title']
-                        pdesc = p['brand']['anons']
+                        ptitle = p['brand'].get('title' "")
+                        pdesc = p['brand'].get('anons', "")
                     else:
                         ptitle = p['title']
 
