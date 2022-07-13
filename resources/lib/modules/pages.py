@@ -55,6 +55,8 @@ class Page(object):
 
         self.cache_file = self.get_cache_filename()
 
+        xbmc.log("Cache file name: %s" % self.cache_file)
+
         self.data = self.get_data_query()
 
         self.set_context_title()
@@ -233,18 +235,23 @@ class Page(object):
         self.site.context_title = self.context.title()
 
     def get_data_query(self):
-        is_refresh = 'refresh' in self.params and self.params['refresh'] == "true"
 
-        if is_refresh:
-            remove_files_by_pattern(os.path.join(self.site.data_path, "%s*.json" % self.get_cache_filename_prefix()))
-
-        if (not is_refresh) and self.cache_enabled and \
-                os.path.exists(self.cache_file) and not (self.is_cache_expired()):
-            with open(self.cache_file, 'r+') as f:
-                xbmc.log("Loading from cache file: %s" % self.cache_file, xbmc.LOGDEBUG)
-                return json.load(f)
+        if self.is_cache_available():
+            return self.get_data_from_cache()
         else:
             return self.site.request(self.get_load_url(), output="json")
+
+    def is_cache_available(self):
+        is_refresh = 'refresh' in self.params and self.params['refresh'] == "true"
+        if is_refresh:
+            remove_files_by_pattern(os.path.join(self.site.data_path, "%s*.json" % self.get_cache_filename_prefix()))
+        return (not is_refresh) and self.cache_enabled and \
+               os.path.exists(self.cache_file) and not (self.is_cache_expired())
+
+    def get_data_from_cache(self):
+        with open(self.cache_file, 'r+') as f:
+            xbmc.log("Loading from cache file: %s" % self.cache_file, xbmc.LOGDEBUG)
+            return json.load(f)
 
     def is_cache_expired(self):
 

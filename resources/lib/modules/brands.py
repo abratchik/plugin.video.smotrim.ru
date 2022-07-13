@@ -15,6 +15,7 @@ class Brand(pages.Page):
     def __init__(self, site):
         self.search_text = ""
         self.search_tag = ""
+        self.search_person = ""
         super(Brand, self).__init__(site)
         self.TAGS = []
         with open(os.path.join(self.site.path, "resources/data/tags.json"), "r+") as f:
@@ -38,7 +39,12 @@ class Brand(pages.Page):
         self.load()
 
     def search_by_tag(self):
-        self.search_tag = self.params['tags'] if 'tags' in self.params else ""
+        self.search_tag = self.params.get('tags', "")
+        self.load()
+
+    def search_by_person(self):
+        self.search_person = self.params.get('persons', "")
+        self.cache_enabled = True
         self.load()
 
     def create_search_by_tag_li(self, tag, tagname, taginfo=None, tagicon="DefaultAddonsSearch.png",
@@ -113,6 +119,14 @@ class Brand(pages.Page):
                                      offset=offset,
                                      limit=self.limit,
                                      url=self.site.url)
+        elif self.action == "search_by_person" and self.search_person:
+            return self.site.get_url(self.site.url, action=self.action,
+                                     context="brands",
+                                     persons=self.search_person,
+                                     cache_expire=str(self.cache_expire),
+                                     offset=offset,
+                                     limit=self.limit,
+                                     url=self.site.url)
         else:
             return self.site.get_url(self.site.url, action=self.action,
                                      context="brands",
@@ -122,13 +136,33 @@ class Brand(pages.Page):
                                      url=self.site.url)
 
     def get_data_query(self):
-        if 'has_children' in self.params and self.params['has_children'] == "True":
-            tag_dict = self.get_tag_by_id(self.TAGS, int(self.params['tags']))
-            if 'tags' in tag_dict:
-                return {'data': list(self.create_search_by_tag_lis(tag_dict['tags']))}
-            return {}
+        action = self.params.get('action', "")
+        if action == "search_by_tag":
+            if self.params.get('has_children', "False") == "True":
+                tag_dict = self.get_tag_by_id(self.TAGS, int(self.params['tags']))
+                if 'tags' in tag_dict:
+                    return {'data': list(self.create_search_by_tag_lis(tag_dict['tags']))}
+                return {}
+        elif action == "search_by_person":
+            if self.is_cache_available():
+                return self.get_data_from_cache()
+            else:
+                person = self.site.request(self.get_load_url(), "json")
+                roles = person['data'].get('brands', None)
+                brands = {'data': []}
+                if roles:
+                    for r in roles:
+                        brand = self.site.request(self.site.get_url(self.site.api_url + '/brands/' + str(r['id'])), "json")
+                        brands['data'].append(brand['data'])
+
+                return brands
+        return super(Brand, self).get_data_query()
+
+    def get_cache_filename(self):
+        if "persons" in self.params:
+            return os.path.join(self.site.data_path, "person_brands_%s.json" % self.params['persons'])
         else:
-            return super(Brand, self).get_data_query()
+            return super(Brand, self).get_cache_filename()
 
     def get_load_url(self):
         if self.action == "search" and self.search_text:
@@ -141,10 +175,41 @@ class Brand(pages.Page):
                                      tags=self.search_tag,
                                      limit=self.limit,
                                      offset=self.offset)
+        elif self.action == "search_by_person" and self.search_person:
+            return self.site.get_url(self.site.api_url + '/persons/' + self.search_person)
         else:
             return self.site.get_url(self.site.api_url + '/brands',
                                      limit=self.limit,
                                      offset=self.offset)
+
+    def get_element_url(self, element, is_folder, is_music_folder):
+        url_params = {'action': "play" if not is_folder else "load",
+                      'url': self.site.url}
+
+        if url_params['action'] == "play":
+            url_params['context'] = "brands"
+            url_params['brands'] = element['id']
+        else:
+            url_params['cache_expire'] = str(self.cache_expire)
+            if is_music_folder:
+                url_params['context'] = "audios"
+                url_params['content'] = "musicvideos"
+                if element.get('type', "") == "podcast":
+                    url_params['rubrics'] = element['id']
+                else:
+                    url_params['brands'] = element['id']
+            else:
+                if element.get('type', "") == "person":
+                    url_params['action'] = "search_by_person"
+                    url_params['context'] = "brands"
+                    url_params['content'] = "videos"
+                    url_params['persons'] = element['id']
+                else:
+                    url_params['context'] = "videos"
+                    url_params['content'] = "episodes"
+                    url_params['brands'] = element['id']
+
+        return self.site.get_url(self.site.url, **url_params)
 
     def play(self):
 
@@ -175,18 +240,7 @@ class Brand(pages.Page):
                     'is_folder': is_folder,
                     'is_playable': not is_folder,
                     'label': "[B]%s[/B]" % label if is_folder else label,
-                    'url': self.site.get_url(self.site.url,
-                                             action="load",
-                                             context="audios" if is_music_folder else "videos",
-                                             content="musicvideos" if is_music_folder else "episodes",
-                                             brands=element['id'],
-                                             cache_expire=str(self.cache_expire),
-                                             url=self.site.url) if is_folder
-                    else self.site.get_url(self.site.url,
-                                           action="play",
-                                           context="brands",
-                                           brands=element['id'],
-                                           url=self.site.url),
+                    'url': self.get_element_url(element, is_folder, is_music_folder),
                     'info': {'title': element.get('title'),
                              'sorttitle': element.get('title'),
                              'originaltitle': element.get('titleOrig', element.get('title')),
@@ -267,6 +321,12 @@ class Brand(pages.Page):
             else:
                 is_folder = True
                 is_music_folder = True
+        elif element.get('type', "") == "person":
+            is_folder = True
+            is_music_folder = False
+        elif element.get('type', "") == "podcast":
+            is_folder = True
+            is_music_folder = True
         else:
             is_folder = False
             is_music_folder = False
