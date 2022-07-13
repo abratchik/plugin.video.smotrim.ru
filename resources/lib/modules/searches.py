@@ -32,7 +32,7 @@ class Search(pages.Page):
     def create_element_li(self, element):
         return {'id': element['id'],
                 'label': "[B]%s[/B]" % element['title'],
-                'is_folder': True,
+                'is_folder': element['is_new'] != "true",
                 'is_playable': False,
                 'url': self.site.get_url(self.site.url,
                                          action="search",
