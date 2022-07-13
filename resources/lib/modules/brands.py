@@ -6,6 +6,8 @@
 import json
 import os
 
+import xbmc
+
 import resources.lib.modules.pages as pages
 
 
@@ -25,7 +27,11 @@ class Brand(pages.Page):
                 import resources.lib.modules.searches as searches
                 search = searches.Search(self.site)
                 search.save_to_history(self.search_text)
-                self.params['search'] = self.search_text
+
+                url = self.get_nav_url(offset=0)
+
+                xbmc.executebuiltin("Container.Update(%s)" % url)
+                return
         else:
             self.search_text = self.params['search']
 

@@ -270,10 +270,10 @@ class Page(object):
         return (self.site.addon.getSettingInt('itemsperpage') + 1) * 10
 
     def set_limit_offset_pages(self):
-        if 'pagination' in self.data:
-            self.offset = self.data['pagination']['offset'] if 'offset' in self.data['pagination'] else 0
-            self.limit = self.data['pagination']['limit'] if 'limit' in self.data['pagination'] else 0
-            self.pages = self.data['pagination']['pages'] if 'pages' in self.data['pagination'] else 0
+        if self.data.get('pagination', None):
+            self.offset = self.data['pagination'].get('offset', 0)
+            self.limit = self.data['pagination'].get('limit', 0)
+            self.pages = self.data['pagination'].get('pages', 0)
 
     @staticmethod
     def get_pic_from_plist(plist, res):
