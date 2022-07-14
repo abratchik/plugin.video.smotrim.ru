@@ -3,6 +3,7 @@
 # Author: Alex Bratchik
 # Created on: 03.04.2021
 # License: GPL v.3 https://www.gnu.org/copyleft/gpl.html
+import xbmc
 
 import resources.lib.modules.pages as pages
 import resources.lib.modules.searches as searches
@@ -40,12 +41,15 @@ class Home(pages.Page):
         self.site.context_title = self.site.language(30300)
 
     def create_fav_li(self):
-        return {'id': "podcasts",
+        return {'id': "favorites",
                 'label': "[COLOR=FF00FF00][B]%s[/B][/COLOR]" % self.site.language(30023),
                 'is_folder': False,
                 'is_playable': False,
-                'url': "ActivateWindow(Favorites)",
+                'url': self.site.get_url(self.site.url, action="favorites", context="home", url=self.site.url),
                 'info': {'plot': self.site.language(30023)},
                 'art': {'icon': self.site.get_media("favorites.png"),
                         'fanart': self.site.get_media("background.jpg")}
                 }
+
+    def favorites(self):
+        xbmc.executebuiltin("ActivateWindow(Favourites)")

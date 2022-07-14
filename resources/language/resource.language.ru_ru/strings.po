@@ -42,7 +42,7 @@ msgstr "Смотрим"
 
 msgctxt "#30023"
 msgid "Favorites"
-msgstr "Закладки"
+msgstr "Избранное"
 
 msgctxt "#30030"
 msgid "Next page"
