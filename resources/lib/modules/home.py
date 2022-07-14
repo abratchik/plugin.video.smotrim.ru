@@ -24,6 +24,7 @@ class Home(pages.Page):
         history = histories.History(self.site)
 
         home_menu = [search.create_root_li(),
+                     self.create_fav_li(),
                      article.create_root_li(),
                      channel.create_root_li(),
                      podcast.create_root_li()]
@@ -37,3 +38,14 @@ class Home(pages.Page):
 
     def set_context_title(self):
         self.site.context_title = self.site.language(30300)
+
+    def create_fav_li(self):
+        return {'id': "podcasts",
+                'label': "[COLOR=FF00FF00][B]%s[/B][/COLOR]" % self.site.language(30023),
+                'is_folder': False,
+                'is_playable': False,
+                'url': "ActivateWindow(Favorites)",
+                'info': {'plot': self.site.language(30023)},
+                'art': {'icon': self.site.get_media("favorites.png"),
+                        'fanart': self.site.get_media("background.jpg")}
+                }
