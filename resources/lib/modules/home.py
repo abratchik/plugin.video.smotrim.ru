@@ -41,7 +41,7 @@ class Home(pages.Page):
         self.site.context_title = self.site.language(30300)
 
     def create_fav_li(self):
-        return {'id': "podcasts",
+        return {'id': "favorites",
                 'label': "[COLOR=FF00FF00][B]%s[/B][/COLOR]" % self.site.language(30023),
                 'is_folder': False,
                 'is_playable': False,
