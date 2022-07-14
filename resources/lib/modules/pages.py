@@ -439,16 +439,16 @@ class Page(object):
         return self.context
 
     def get_video_url(self, sources):
-        vquality = int(self.site.addon.getSetting("vquality"))
+        if sources:
+            vquality = int(self.site.addon.getSetting("vquality"))
+            xbmc.log("Quality = %s" % vquality)
+            if vquality > 0 and 'mp4' in sources:
+                for vq in self.VQUALITY[vquality:]:
+                    if vq in sources['mp4']:
+                        return sources['mp4'].get(vq)
 
-        xbmc.log("Quality = %s" % vquality)
-
-        if vquality > 0 and 'mp4' in sources:
-            for vq in self.VQUALITY[vquality:]:
-                if vq in sources['mp4']:
-                    return sources['mp4'].get(vq)
-
-        return sources['m3u8'].get('auto')
+            return sources['m3u8'].get('auto')
+        return ""
 
     def parse_body(self, element, tag='body'):
         result = {}
