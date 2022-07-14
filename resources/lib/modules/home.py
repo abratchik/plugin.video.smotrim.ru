@@ -3,6 +3,7 @@
 # Author: Alex Bratchik
 # Created on: 03.04.2021
 # License: GPL v.3 https://www.gnu.org/copyleft/gpl.html
+import xbmc
 
 import resources.lib.modules.pages as pages
 import resources.lib.modules.searches as searches
@@ -24,6 +25,7 @@ class Home(pages.Page):
         history = histories.History(self.site)
 
         home_menu = [search.create_root_li(),
+                     self.create_fav_li(),
                      article.create_root_li(),
                      channel.create_root_li(),
                      podcast.create_root_li()]
@@ -37,3 +39,17 @@ class Home(pages.Page):
 
     def set_context_title(self):
         self.site.context_title = self.site.language(30300)
+
+    def create_fav_li(self):
+        return {'id': "podcasts",
+                'label': "[COLOR=FF00FF00][B]%s[/B][/COLOR]" % self.site.language(30023),
+                'is_folder': False,
+                'is_playable': False,
+                'url': self.site.get_url(self.site.url, action="favorites", context="home", url=self.site.url),
+                'info': {'plot': self.site.language(30023)},
+                'art': {'icon': self.site.get_media("favorites.png"),
+                        'fanart': self.site.get_media("background.jpg")}
+                }
+
+    def favorites(self):
+        xbmc.executebuiltin("ActivateWindow(Favourites)")

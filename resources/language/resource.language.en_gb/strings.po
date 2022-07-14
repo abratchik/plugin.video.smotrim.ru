@@ -40,6 +40,10 @@ msgctxt "#30022"
 msgid "Smotrim.ru"
 msgstr "Smotrim.ru"
 
+msgctxt "#30023"
+msgid "Favorites"
+msgstr "Favorites"
+
 msgctxt "#30030"
 msgid "Next page"
 msgstr "Next page"

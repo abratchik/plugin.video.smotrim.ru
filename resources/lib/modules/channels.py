@@ -5,6 +5,8 @@
 # License: GPL v.3 https://www.gnu.org/copyleft/gpl.html
 import os
 
+import xbmc
+
 import resources.lib.modules.pages as pages
 
 
@@ -12,6 +14,24 @@ class Channel(pages.Page):
     def __init__(self, site):
         super(Channel, self).__init__(site)
         self.cache_enabled = True
+
+    def preload(self):
+        if self.site.addon.getSettingBool("iptv.enabled"):
+            self.list_items.append({'id': "livetv",
+                                    'label': "[COLOR=FF00FF00][B]%s[/B][/COLOR]" % self.site.language(30410),
+                                    'is_folder': False,
+                                    'is_playable': False,
+                                    'url': self.site.get_url(self.site.url,
+                                                             action="tvguide",
+                                                             context="channels",
+                                                             url=self.site.url),
+                                    'info': {'plot': self.site.language(30410)},
+                                    'art': {'icon': self.site.get_media("lives.png")}
+                                    })
+        return
+
+    def tvguide(self):
+        xbmc.executebuiltin("ActivateWindow(TVGuide)")
 
     def get_load_url(self):
         return self.site.get_url(self.site.api_url + '/channels')
