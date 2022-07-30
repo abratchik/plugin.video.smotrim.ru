@@ -33,7 +33,7 @@ class Person(pages.Page):
                        limit=CONTEXT_LIMIT)
 
     def download_brand_persons(self):
-        brand_id = self.params.get('brand_id', "")
+        brand_id = self.params.get('brands', "")
         xbmc.log("Smotrim: start downloading actor thumbnails (%s)" % brand_id)
 
         self.cache_file = get_brand_persons_file_name(brand_id)
@@ -73,7 +73,7 @@ def get_brand_persons_from_cache(brand_id) -> list:
 
         if not os.path.exists(fname):
             site = smotrim.Smotrim()
-            site.params['brand_id'] = brand_id
+            site.params['brands'] = brand_id
             site.user = users.User()
             site.user.init_session(site)
             person = Person(site)
