@@ -93,7 +93,8 @@ class Search(pages.Page):
     def add_context_menu(self, category):
         self.context_menu_items.append((self.site.language(30350),
                                         "RunPlugin(%s)" %
-                                        get_url(action="clear_history",
+                                        get_url(self.site.url,
+                                                action="clear_history",
                                                 context="searches",
                                                 url=self.site.url)))
 

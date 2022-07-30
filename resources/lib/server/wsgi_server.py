@@ -7,31 +7,32 @@
 WSGI server for Smotrim.ru addon
 """
 
-from wsgiref.simple_server import make_server
+from wsgiref.simple_server import WSGIServer
 
-from resources.lib.server.wsgi_app import default_app
-
-# Our callable object which is intentionally not compliant to the
-# standard, so the validator is going to break
 import xbmc
 
-from resources.lib.smotrim import SERVER_PORT
 
+class SmotrimWsgiServer(WSGIServer):
+    monitor = None
+    m_process = None
 
-class SmotrimWsgiServer:
+    def start(self):
+        self.monitor = xbmc.Monitor()
 
-    def __init__(self):
-        self.port = SERVER_PORT
-        self.httpd = None
-        self.http_app = None
+        try:
+            self.serve_forever()
+        except StopIteration:
+            xbmc.log("SmotrimWsgiServer - shutdown complete!", xbmc.LOGDEBUG)
 
-    def start(self, timeout=0):
-        xbmc.log("Starting wsgi on port %s...." % str(self.port))
-        self.http_app = default_app
-        self.httpd = make_server('', self.port, self.http_app)
-        self.httpd.serve_forever()
+    def service_actions(self) -> None:
+        if self.monitor.abortRequested():
+            xbmc.log("SmotrimWsgiServer - abortRequested!", xbmc.LOGDEBUG)
+            raise StopIteration
 
-    def stop(self):
-        xbmc.log("Shutdown wsgi on port %s...." % str(self.port))
-        self.httpd.server_close()
-
+# class SmotrimMonitor(xbmc.Monitor):
+#     def __init__(self, wsgi: SmotrimWsgiServer):
+#         self.wsgi = wsgi
+#         super(SmotrimMonitor,self).__init__()
+#
+#     def onNotification(self, sender: str, method: str, data: str) -> None:
+#         xbmc.log("Notification received: %s %s" % (sender, method), xbmc.LOGDEBUG)
