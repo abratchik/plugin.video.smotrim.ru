@@ -5,6 +5,7 @@
 # License: GPL v.3 https://www.gnu.org/copyleft/gpl.html
 
 import resources.lib.modules.pages as pages
+from resources.lib.kodiutils import get_url
 
 
 class Audio(pages.Page):
@@ -14,22 +15,22 @@ class Audio(pages.Page):
 
     def get_load_url(self):
         if 'brands' in self.params:
-            return self.site.get_url(self.site.api_url + '/audios',
-                                     brands=self.params.get('brands'),
-                                     limit=self.limit,
-                                     offset=self.offset,
-                                     sort="dasc")
+            return get_url(self.site.api_url + '/audios',
+                           brands=self.params.get('brands'),
+                           limit=self.limit,
+                           offset=self.offset,
+                           sort="dasc")
         elif 'rubrics' in self.params:
-            return self.site.get_url(self.site.api_url + '/audios',
-                                     rubrics=self.params.get('rubrics'),
-                                     limit=self.limit,
-                                     offset=self.offset,
-                                     sort="dasc")
+            return get_url(self.site.api_url + '/audios',
+                           rubrics=self.params.get('rubrics'),
+                           limit=self.limit,
+                           offset=self.offset,
+                           sort="dasc")
         else:
-            return self.site.get_url(self.site.api_url + '/audios',
-                                     limit=self.limit,
-                                     offset=self.offset,
-                                     sort="dasc")
+            return get_url(self.site.api_url + '/audios',
+                           limit=self.limit,
+                           offset=self.offset,
+                           sort="dasc")
 
     def set_context_title(self):
         if 'data' in self.data:
@@ -38,28 +39,28 @@ class Audio(pages.Page):
 
     def get_nav_url(self, offset=0):
         if 'brands' in self.params:
-            return self.site.get_url(self.site.url,
-                                     action="load",
-                                     context="audios",
-                                     content=self.params['content'],
-                                     brands=self.params['brands'],
-                                     cache_expire=str(self.cache_expire),
-                                     limit=self.limit, offset=offset, url=self.site.url)
+            return get_url(self.site.url,
+                           action="load",
+                           context="audios",
+                           content=self.params['content'],
+                           brands=self.params['brands'],
+                           cache_expire=str(self.cache_expire),
+                           limit=self.limit, offset=offset, url=self.site.url)
         elif 'rubrics' in self.params:
-            return self.site.get_url(self.site.url,
-                                     action="load",
-                                     context="audios",
-                                     content=self.params['content'],
-                                     rubrics=self.params['rubrics'],
-                                     cache_expire=str(self.cache_expire),
-                                     limit=self.limit, offset=offset, url=self.site.url)
+            return get_url(self.site.url,
+                           action="load",
+                           context="audios",
+                           content=self.params['content'],
+                           rubrics=self.params['rubrics'],
+                           cache_expire=str(self.cache_expire),
+                           limit=self.limit, offset=offset, url=self.site.url)
         else:
-            return self.site.get_url(self.site.url,
-                                     action="load",
-                                     context="audios",
-                                     content=self.params['content'],
-                                     cache_expire=str(self.cache_expire),
-                                     limit=self.limit, offset=offset, url=self.site.url)
+            return get_url(self.site.url,
+                           action="load",
+                           context="audios",
+                           content=self.params['content'],
+                           cache_expire=str(self.cache_expire),
+                           limit=self.limit, offset=offset, url=self.site.url)
 
     def create_element_li(self, element):
         return {'id': element['id'],
@@ -77,10 +78,10 @@ class Audio(pages.Page):
                          'dateadded': self.format_date(element['datePub']),
                          'duration': element['duration'],
                          'plot': "%s[CR]%s" % (element['title'], element['anons'])},
-                'art': {'fanart': self.get_pic_from_element(element, 'hd'),
-                        'icon': self.get_pic_from_element(element, 'lw'),
-                        'thumb': self.get_pic_from_element(element, 'lw'),
-                        'poster': self.get_pic_from_element(element, 'vhdr')
+                'art': {'fanart': pages.get_pic_from_element(element, 'hd'),
+                        'icon': pages.get_pic_from_element(element, 'lw'),
+                        'thumb': pages.get_pic_from_element(element, 'lw'),
+                        'poster': pages.get_pic_from_element(element, 'vhdr')
                         }
                 }
 
@@ -100,19 +101,19 @@ class Audio(pages.Page):
         self.play_url(spath, this_audio, next_audio, stream_type="audio")
 
     def get_play_url(self, element):
-        spath=""
+        spath = ""
         sources = element.get('sources')
         if sources:
             spath = sources.get('mp3', "")
-        return self.site.get_url(self.site.url,
-                                 action="play",
-                                 context="audios",
-                                 brands=element.get('brandId'),
-                                 audios=element['id'],
-                                 offset=self.offset,
-                                 limit=self.limit,
-                                 spath=spath,
-                                 url=self.site.url)
+        return get_url(self.site.url,
+                       action="play",
+                       context="audios",
+                       brands=element.get('brandId'),
+                       audios=element['id'],
+                       offset=self.offset,
+                       limit=self.limit,
+                       spath=spath,
+                       url=self.site.url)
 
     def get_cache_filename_prefix(self):
         if 'brands' in self.params:

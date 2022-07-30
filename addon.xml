@@ -10,6 +10,7 @@
     <extension point="xbmc.python.pluginsource" library="main.py">
         <provides>video</provides>
     </extension>
+    <extension point="xbmc.service" library="service.py" />
     <extension point="xbmc.addon.metadata">
         <news>Added Favorites and TV Guide menu in Channels if IPTV export is enabled</news>
         <summary lang="en_GB">Smotrim.ru Kodi Video Addon</summary>

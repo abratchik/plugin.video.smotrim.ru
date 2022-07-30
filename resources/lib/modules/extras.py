@@ -11,6 +11,7 @@ import xbmc
 import xbmcgui
 import xbmcvfs
 
+import resources.lib.modules.pages as pages
 import resources.lib.modules.channels as channels
 import resources.lib.modules.channelmenus as channelmenus
 from resources.lib import kodiutils, iptvmanager
@@ -165,7 +166,7 @@ class Extra:
                                            'stop': self.__format_date(p['realDateEnd']),
                                            'title': ptitle,
                                            'description': pdesc,
-                                           'image': self.channel.get_pic_from_element(p, "lw"),
+                                           'image': pages.get_pic_from_element(p, "lw"),
                                            'subtitle': p['episode']['title'] if p['episode'] else ""
                                            })
 

@@ -14,9 +14,8 @@ from resources.lib.users import User
 from resources.lib.smotrim import Smotrim
 
 cwd = os.path.dirname(os.path.abspath(__file__))
-web_api_url = "https://api.smotrim.ru/api/v1"
+web_api_url = "https://test-api.smotrim.ru/api/v1"
 web_cdnapi_url = "https://cdnapi.smotrim.ru/api/v1"
-
 
 
 def get_project_folder(fld, plugin_name):

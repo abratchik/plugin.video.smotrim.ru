@@ -12,11 +12,12 @@ import re
 import xbmc
 import xbmcgui
 import xbmcplugin
+import hashlib
 
 from urllib.parse import quote as encode4url
-from ..kodiutils import remove_files_by_pattern, upnext_signal, kodi_version_major
+from ..kodiutils import remove_files_by_pattern, upnext_signal, kodi_version_major, get_url
 import resources.lib.kodiplayer as kodiplayer
-from resources.lib.users import USER_AGENT
+from ..smotrim import USER_AGENT
 from ..kodiutils import clean_html
 
 
@@ -67,10 +68,7 @@ class Page(object):
             for element in self.data['data']:
                 self.append_li_for_element(element)
 
-            if self.cache_enabled and len(self.data['data']) > 0 and \
-                    not (os.path.exists(self.cache_file) and not self.is_cache_expired()):
-                with open(self.cache_file, 'w+') as f:
-                    json.dump(self.data, f)
+            self.cache_data()
 
         if self.pages > 1:
             self.list_items.append({'id': "home",
@@ -90,11 +88,20 @@ class Page(object):
                                         'info': {'plot': self.site.language(30031) % (self.offset + 1, self.pages)},
                                         'art': {'icon': self.site.get_media("next.png")}
                                         })
+        self.postload()
+
         self.show_list_items()
 
     def preload(self):
         """
-        Override this function if it is necessary to perform some actions before loading the list items
+        Override this function if it is necessary to perform some actions before preparing the list items
+        @return:
+        """
+        pass
+
+    def postload(self):
+        """
+        Override this function if it is necessary to perform some actions after preparing the list items
         @return:
         """
         pass
@@ -126,17 +133,16 @@ class Page(object):
             else:
                 play_item.setProperty('inputstreamaddon', 'inputstream.adaptive')
             play_item.setProperty('inputstream.adaptive.manifest_type', 'hls')
-            # play_item.setProperty("inputstream.adaptive.stream_headers", self.site.user.get_headers(type="str"))
 
         if this_episode:
             play_item.setLabel(this_episode['combinedTitle'])
 
             self.enrich_info_tag(play_item, this_episode, brand)
 
-            play_item.setArt({'fanart': self.get_pic_from_element(this_episode, 'hd'),
-                              'icon': self.get_pic_from_element(this_episode, 'lw'),
-                              'thumb': self.get_pic_from_element(this_episode, 'lw'),
-                              'poster': self.get_pic_from_element(this_episode, 'vhdr')
+            play_item.setArt({'fanart': get_pic_from_element(this_episode, 'hd'),
+                              'icon': get_pic_from_element(this_episode, 'lw'),
+                              'thumb': get_pic_from_element(this_episode, 'lw'),
+                              'poster': get_pic_from_element(this_episode, 'vhdr')
                               })
 
             play_item.setProperty('IsPlayable', 'true')
@@ -195,10 +201,10 @@ class Page(object):
         return {'episodeid': episode['id'],
                 'tvshowid': self.params['brands'],
                 'title': episode['episodeTitle'],
-                'art': {'thumb': self.get_pic_from_element(episode, 'lw'),
-                        'fanart': self.get_pic_from_element(episode, 'hd'),
-                        'icon': self.get_pic_from_element(episode, 'lw'),
-                        'poster': self.get_pic_from_element(episode, 'vhdr')
+                'art': {'thumb': get_pic_from_element(episode, 'lw'),
+                        'fanart': get_pic_from_element(episode, 'hd'),
+                        'icon': get_pic_from_element(episode, 'lw'),
+                        'poster': get_pic_from_element(episode, 'vhdr')
                         },
                 'episode': episode['series'],
                 'showtitle': episode['brandTitle'],
@@ -265,10 +271,10 @@ class Page(object):
         return int(now - mod_time) > self.cache_expire
 
     def get_nav_url(self, offset=0):
-        return self.site.get_url(self.site.url,
-                                 action=self.site.action,
-                                 context=self.site.context,
-                                 limit=self.limit, offset=offset, url=self.site.url)
+        return get_url(self.site.url,
+                       action=self.site.action,
+                       context=self.site.context,
+                       limit=self.limit, offset=offset, url=self.site.url)
 
     def append_li_for_element(self, element):
         self.list_items.append(self.create_element_li(element))
@@ -281,27 +287,6 @@ class Page(object):
             self.offset = self.data['pagination'].get('offset', 0)
             self.limit = self.data['pagination'].get('limit', 0)
             self.pages = self.data['pagination'].get('pages', 0)
-
-    @staticmethod
-    def get_pic_from_plist(plist, res):
-        if plist:
-            ep_pics = None
-            if 'sizes' in plist:
-                ep_pics = plist.get('sizes')
-            elif len(plist) > 0:
-                ep_pics = plist[0].get('sizes')
-
-            if ep_pics:
-                pic = next(p for p in ep_pics if p['preset'] == res)
-                return "|".join([pic['url'], "User-Agent=%s" % encode4url(USER_AGENT)])
-
-        return ""
-
-    def get_pic_from_element(self, element, res):
-        try:
-            return self.get_pic_from_plist(element['pictures'], res)
-        except KeyError:
-            return ""
 
     def get_pic_from_id(self, pic_id, res="lw"):
         if pic_id:
@@ -349,9 +334,9 @@ class Page(object):
         except KeyError:
             return ""
 
-    @staticmethod
-    def get_dict_value(dct, name):
-        return dct[name] if name in dct else ""
+    def get_person_thumbnail(self, name):
+        name_hash = hashlib.md5(name.encode())
+        return "%s/p%s.jpg" % (self.site.thumb_path, name_hash.hexdigest())
 
     def show_list_items(self):
 
@@ -376,6 +361,9 @@ class Page(object):
                 self.context_menu_items = [(self.site.language(30001),
                                             "ActivateWindow(Videos, %s&refresh=true)" %
                                             self.get_nav_url(offset=0)), ]
+            else:
+                self.context_menu_items.clear()
+
             self.add_context_menu(category)
 
             if self.context_menu_items:
@@ -388,7 +376,6 @@ class Page(object):
                 list_item.setArt(category['art'])
 
             if 'cast' in category:
-                print(category['cast'])
                 list_item.setCast(category['cast'])
 
             xbmcplugin.addDirectoryItem(self.site.handle, url, list_item, is_folder)
@@ -398,7 +385,8 @@ class Page(object):
 
     def enrich_info_tag(self, list_item, episode, brand):
         """
-        This function can be overriden to enrich the information available on the list item before passing to the player
+        This function can be overridden to enrich the information available on the list item before passing to the
+        player
         @param list_item: ListItem to be enriched
         @param episode: the element, which will be played
         @param brand: the element brand used for enrichment
@@ -413,21 +401,15 @@ class Page(object):
         """
         pass
 
-    def get_cast(self, brand_id):
-        actors = []
-
-        persons = self.site.request("%s/persons?brands=%s&offset=0&limit=20" %
-                                    (self.site.api_url, brand_id), output="json")
-        if 'data' in persons:
-            for person in persons['data']:
-                actor = {'name': "%s %s" % (person['name'], person['surname']),
-                         'thumbnail': self.get_pic_from_element(person, 'bp')}
-                actors.append(actor)
-        return actors
-
     def save_brand_to_history(self, brand):
         with open(os.path.join(self.site.history_path, "brand_%s.json" % brand['id']), 'w+') as f:
             json.dump(brand, f)
+
+    def cache_data(self):
+        if self.cache_enabled and len(self.data.get('data', [])) > 0 and \
+                not (os.path.exists(self.cache_file) and not self.is_cache_expired()):
+            with open(self.cache_file, 'w+') as f:
+                json.dump(self.data, f)
 
     def get_cache_filename(self):
         return os.path.join(self.site.data_path,
@@ -470,3 +452,28 @@ class Page(object):
             result['plot'] = "\r\n".join(body_parts)
 
         return result
+
+
+def get_pic_from_plist(plist, res, append_headers=True):
+    if plist:
+        ep_pics = None
+        if 'sizes' in plist:
+            ep_pics = plist.get('sizes')
+        elif len(plist) > 0:
+            ep_pics = plist[0].get('sizes')
+
+        if ep_pics:
+            pic = next(p for p in ep_pics if p['preset'] == res)
+            if append_headers:
+                return "|".join([pic.get('url', ""), "User-Agent=%s" % encode4url(USER_AGENT)])
+            else:
+                return pic.get('url', "")
+
+    return ""
+
+
+def get_pic_from_element(element, res, append_headers=True):
+    try:
+        return get_pic_from_plist(element['pictures'], res, append_headers)
+    except KeyError:
+        return ""

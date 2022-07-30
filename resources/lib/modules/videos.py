@@ -8,6 +8,7 @@ import os
 import time
 
 import resources.lib.modules.pages as pages
+from resources.lib.kodiutils import get_url
 
 
 class Video(pages.Page):
@@ -17,10 +18,10 @@ class Video(pages.Page):
         self.cache_enabled = True
 
     def get_load_url(self):
-        return self.site.get_url(self.site.api_url + '/videos/',
-                                 brands=self.params['brands'],
-                                 limit=self.limit,
-                                 offset=self.offset)
+        return get_url(self.site.api_url + '/videos/',
+                       brands=self.params['brands'],
+                       limit=self.limit,
+                       offset=self.offset)
 
     def set_context_title(self):
         if 'data' in self.data:
@@ -28,12 +29,12 @@ class Video(pages.Page):
                 if len(self.data['data']) > 0 else self.site.language(30040)
 
     def get_nav_url(self, offset=0):
-        return self.site.get_url(self.site.url,
-                                 action="load",
-                                 context="videos",
-                                 content=self.params['content'],
-                                 brands=self.params['brands'],
-                                 limit=self.limit, offset=offset, url=self.site.url)
+        return get_url(self.site.url,
+                       action="load",
+                       context="videos",
+                       content=self.params['content'],
+                       brands=self.params['brands'],
+                       limit=self.limit, offset=offset, url=self.site.url)
 
     def create_element_li(self, element):
         return {'id': element['id'],
@@ -50,10 +51,10 @@ class Video(pages.Page):
                          'duration': element['duration'],
                          'dateadded': self.format_date(element['dateRec']),
                          },
-                'art': {'fanart': self.get_pic_from_element(element, 'hd'),
-                        'icon': self.get_pic_from_element(element, 'lw'),
-                        'thumb': self.get_pic_from_element(element, 'lw'),
-                        'poster': self.get_pic_from_element(element, 'vhdr')
+                'art': {'fanart': pages.get_pic_from_element(element, 'hd'),
+                        'icon': pages.get_pic_from_element(element, 'lw'),
+                        'thumb': pages.get_pic_from_element(element, 'lw'),
+                        'poster': pages.get_pic_from_element(element, 'vhdr')
                         }
                 }
 
@@ -72,18 +73,17 @@ class Video(pages.Page):
                                     "rating": brand.get('rank')})
 
     def get_play_url(self, element):
-        return self.site.get_url(self.site.url,
-                                 action="play",
-                                 context="videos",
-                                 brands=element.get('brandId'),
-                                 videos=element['id'],
-                                 offset=self.offset,
-                                 limit=self.limit,
-                                 spath=self.get_video_url(element['sources']),
-                                 url=self.site.url)
+        return get_url(self.site.url,
+                       action="play",
+                       context="videos",
+                       brands=element.get('brandId'),
+                       videos=element['id'],
+                       offset=self.offset,
+                       limit=self.limit,
+                       spath=self.get_video_url(element['sources']),
+                       url=self.site.url)
 
     def play(self):
-
         spath = self.params['spath']
 
         this_video, next_video = self.get_this_and_next_episode(self.params['videos'])
@@ -91,4 +91,3 @@ class Video(pages.Page):
 
     def get_cache_filename_prefix(self):
         return "brand_videos_%s" % self.params['brands']
-

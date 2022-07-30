@@ -14,6 +14,8 @@ import resources.lib.modules.brands as brands
 
 import xbmc
 
+from resources.lib.kodiutils import get_url
+
 
 class History(pages.Page):
     def __init__(self, site):
@@ -44,7 +46,7 @@ class History(pages.Page):
                 'label': "[COLOR=FF00FF00][B]%s[/B][/COLOR]" % self.site.language(30050),
                 'is_folder': True,
                 'is_playable': False,
-                'url': self.site.get_url(self.site.url, action="load", context="history", url=self.site.url),
+                'url': get_url(self.site.url, action="load", context="history", url=self.site.url),
                 'info': {'plot': self.site.language(30051)},
                 'art': {'icon': self.site.get_media("history.png"),
                         'fanart': self.site.get_media("background.jpg")}

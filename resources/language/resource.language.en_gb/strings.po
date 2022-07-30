@@ -252,6 +252,10 @@ msgctxt "#30302"
 msgid "(Video)"
 msgstr "(Video)"
 
+msgctxt "#30350"
+msgid "Clear search history"
+msgstr "Clear search history"
+
 msgctxt "#30400"
 msgid "Channels"
 msgstr "Channels"

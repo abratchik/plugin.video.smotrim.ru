@@ -12,9 +12,9 @@ import requests
 import xbmc
 import xbmcgui
 
-NEVER = 100 * 1000 * 60 * 60 * 24
+from resources.lib.smotrim import USER_AGENT
 
-USER_AGENT = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:101.0) Gecko/20100101 Firefox/101.0"
+NEVER = 100 * 1000 * 60 * 60 * 24
 
 
 class User:
@@ -30,14 +30,7 @@ class User:
 
         self._cookies_file = ""
 
-    def watch(self, site, context=""):
-        """
-
-        :param site: Smotrim
-        :return:
-        @param site: assumed Smotrim class
-        @param context: context to load. If empty then site will use CLI arguments
-        """
+    def init_session(self, site):
         self._site = site
 
         self.phone = site.addon.getSetting("phone")
@@ -67,6 +60,16 @@ class User:
             xbmc.log("Cookie file not found or missing UID, requesting from %s" % self.domain, xbmc.LOGDEBUG)
             self.get_http("https://%s" % self.domain)
             self._save_cookies()
+
+    def watch(self, site, context=""):
+        """
+
+        :param site: Smotrim
+        :return:
+        @param site: assumed Smotrim class
+        @param context: context to load. If empty then site will use CLI arguments
+        """
+        self.init_session(site)
 
         if self._login():
             site.show_to(self, context)
@@ -184,12 +187,15 @@ class User:
         else:
             return ""
 
-    def get_http(self, url, headers=None):
+    def get_http(self, url, headers=None, stream=False):
         self._set_host(url)
         if headers is None:
             headers = self._headers
         xbmc.log(str(headers), xbmc.LOGDEBUG)
-        return self.session.get(url, headers=headers)
+        if stream:
+            return self.session.get(url, headers=headers, stream=True)
+        else:
+            return self.session.get(url, headers=headers)
 
     def _set_host(self, url):
         host = url.split("://")[1].split("/")[0]
