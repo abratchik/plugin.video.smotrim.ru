@@ -96,6 +96,10 @@ msgctxt "#30113"
 msgid "Auto play next episode"
 msgstr "Auto play next episode"
 
+msgctxt "#30114"
+msgid "Enable extended info service"
+msgstr "Enable extended info on movies and series"
+
 msgctxt "#30120"
 msgid "Video"
 msgstr "Video"

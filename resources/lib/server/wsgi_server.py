@@ -29,10 +29,3 @@ class SmotrimWsgiServer(WSGIServer):
             xbmc.log("SmotrimWsgiServer - abortRequested!", xbmc.LOGDEBUG)
             raise StopIteration
 
-# class SmotrimMonitor(xbmc.Monitor):
-#     def __init__(self, wsgi: SmotrimWsgiServer):
-#         self.wsgi = wsgi
-#         super(SmotrimMonitor,self).__init__()
-#
-#     def onNotification(self, sender: str, method: str, data: str) -> None:
-#         xbmc.log("Notification received: %s %s" % (sender, method), xbmc.LOGDEBUG)

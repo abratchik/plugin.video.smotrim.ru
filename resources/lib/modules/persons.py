@@ -107,4 +107,6 @@ def get_person_remote_thumbnail_url(brand_id, person_name) -> str:
 
 
 def get_person_thumbnail(brand_id, person_name) -> str:
-    return get_url("http://localhost:%s/brands/%s" % (smotrim.SERVER_PORT, brand_id), person_name=person_name)
+    return get_url("http://%s:%s/brands/%s" % (smotrim.SERVER_ADDR,
+                                               smotrim.SERVER_PORT,
+                                               brand_id), person_name=person_name)

@@ -11,33 +11,29 @@ import xbmc
 from urllib.parse import unquote
 
 import resources.lib.modules.persons as persons
+from resources.lib.smotrim import SERVER_ADDR
 
 
 def default_app(environ, start_response):
-    status = '200 OK'
-
     params = parse_params(environ)
 
-    if params['brand_id'] and params['person_name']:
+    if params['brand_id'] and params['person_name'] and environ.get("REMOTE_ADDR") == SERVER_ADDR:
         image_url = persons.get_person_remote_thumbnail_url(params['brand_id'], params['person_name'])
         if image_url:
-            xbmc.log("WsgiApp found image %s" % image_url, xbmc.LOGDEBUG)
             status = '302 Found'
             headers = [('Location', image_url)]
             start_response(status, headers)
             return [image_url.encode("utf-8")]
         else:
-            xbmc.log("WsgiApp not found image", xbmc.LOGDEBUG)
             status = '404 Not Found'
             headers = [('Content-type', 'text/plain; charset=utf-8')]
             start_response(status, headers)
-            return [b"File not found"]
-    else:
-        headers = [('Content-type', 'text/plain; charset=utf-8')]
-        start_response(status, headers)
-        ret = [("%s: %s\n" % (key, value)).encode("utf-8")
-               for key, value in environ.items()]
-        return ret
+            return [status.encode('utf-8')]
+
+    status = '400 Bad Request'
+    headers = [('Content-type', 'text/plain; charset=utf-8')]
+    start_response(status, headers)
+    return [status.encode('utf-8')]
 
 
 def parse_params(environ):

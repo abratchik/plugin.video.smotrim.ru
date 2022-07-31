@@ -20,7 +20,8 @@ import xbmcvfs
 from . import kodiutils
 
 ADDON_ID = "plugin.video.smotrim.ru"
-SERVER_PORT = 8000
+SERVER_ADDR = "127.0.0.1"
+SERVER_PORT = 47122
 USER_AGENT = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:101.0) Gecko/20100101 Firefox/101.0"
 
 
@@ -34,7 +35,6 @@ class Smotrim:
         self.media_path = os.path.join(self.path, "resources", "media")
         self.data_path = get_data_path(self.addon)
         self.history_path = kodiutils.create_folder(os.path.join(self.data_path, 'history'))
-        self.thumb_path = kodiutils.create_folder(os.path.join(self.data_path, 'thumbnails'))
 
         self.user = None
 

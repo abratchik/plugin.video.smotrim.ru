@@ -18,7 +18,11 @@ class Daemon:
         self.wsgi = None
 
     def load(self):
-        xbmc.log("Starting wsgi on port %s...." % str(self.site.server_port), xbmc.LOGDEBUG)
+        if not self.site.addon.getSettingBool("infoservice"):
+            xbmc.log("Smotrim.ru extended info service disabled, skipped", xbmc.LOGDEBUG)
+            return
+
+        xbmc.log("Starting Smotrim.ru extended info service on port %s ..." % str(self.site.server_port), xbmc.LOGDEBUG)
         self.wsgi = make_server('',
                                 port=self.site.server_port,
                                 app=wsgi_app.default_app,
