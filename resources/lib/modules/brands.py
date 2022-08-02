@@ -9,6 +9,9 @@ import os
 import xbmc
 
 import resources.lib.modules.pages as pages
+import resources.lib.modules.persons as persons
+
+from resources.lib.kodiutils import notify, get_url
 
 
 class Brand(pages.Page):
@@ -65,15 +68,15 @@ class Brand(pages.Page):
                 'label': "[B]%s[/B]" % tagname,
                 'is_folder': True,
                 'is_playable': False,
-                'url': self.site.get_url(self.site.url,
-                                         action="search_by_tag",
-                                         context="brands",
-                                         tags=tag,
-                                         tagname=tagname,
-                                         has_children=has_children,
-                                         content=content,
-                                         cache_expire=cache_expire,
-                                         url=self.site.url),
+                'url': get_url(self.site.url,
+                               action="search_by_tag",
+                               context="brands",
+                               tags=tag,
+                               tagname=tagname,
+                               has_children=has_children,
+                               content=content,
+                               cache_expire=cache_expire,
+                               url=self.site.url),
                 'info': {'plot': taginfo if taginfo else tagname},
                 'art': {'icon': tagicon,
                         'fanart': self.site.get_media("background.jpg")}
@@ -103,39 +106,39 @@ class Brand(pages.Page):
 
     def get_nav_url(self, offset=0):
         if self.action == "search" and self.search_text:
-            return self.site.get_url(self.site.url, action=self.action,
-                                     context="brands",
-                                     search=self.search_text,
-                                     cache_expire=str(self.cache_expire),
-                                     offset=offset,
-                                     limit=self.limit,
-                                     url=self.site.url)
+            return get_url(self.site.url, action=self.action,
+                           context="brands",
+                           search=self.search_text,
+                           cache_expire=str(self.cache_expire),
+                           offset=offset,
+                           limit=self.limit,
+                           url=self.site.url)
         elif self.action == "search_by_tag" and self.search_tag:
-            return self.site.get_url(self.site.url, action=self.action,
-                                     context="brands",
-                                     tags=self.search_tag,
-                                     tagname=self.params.get('tagname'),
-                                     has_children=self.params.get('has_children'),
-                                     content=self.params.get('content'),
-                                     cache_expire=str(self.cache_expire),
-                                     offset=offset,
-                                     limit=self.limit,
-                                     url=self.site.url)
+            return get_url(self.site.url, action=self.action,
+                           context="brands",
+                           tags=self.search_tag,
+                           tagname=self.params.get('tagname'),
+                           has_children=self.params.get('has_children'),
+                           content=self.params.get('content'),
+                           cache_expire=str(self.cache_expire),
+                           offset=offset,
+                           limit=self.limit,
+                           url=self.site.url)
         elif self.action == "search_by_person" and self.search_person:
-            return self.site.get_url(self.site.url, action=self.action,
-                                     context="brands",
-                                     persons=self.search_person,
-                                     cache_expire=str(self.cache_expire),
-                                     offset=offset,
-                                     limit=self.limit,
-                                     url=self.site.url)
+            return get_url(self.site.url, action=self.action,
+                           context="brands",
+                           persons=self.search_person,
+                           cache_expire=str(self.cache_expire),
+                           offset=offset,
+                           limit=self.limit,
+                           url=self.site.url)
         else:
-            return self.site.get_url(self.site.url, action=self.action,
-                                     context="brands",
-                                     offset=offset,
-                                     cache_expire=str(self.cache_expire),
-                                     limit=self.limit,
-                                     url=self.site.url)
+            return get_url(self.site.url, action=self.action,
+                           context="brands",
+                           offset=offset,
+                           cache_expire=str(self.cache_expire),
+                           limit=self.limit,
+                           url=self.site.url)
 
     def get_data_query(self):
         action = self.params.get('action', "")
@@ -154,7 +157,7 @@ class Brand(pages.Page):
                 brands = {'data': []}
                 if roles:
                     for r in roles:
-                        brand = self.site.request(self.site.get_url(self.site.api_url + '/brands/' + str(r['id'])), "json")
+                        brand = self.site.request(get_url(self.site.api_url + '/brands/' + str(r['id'])), "json")
                         brands['data'].append(brand['data'])
 
                 return brands
@@ -168,21 +171,21 @@ class Brand(pages.Page):
 
     def get_load_url(self):
         if self.action == "search" and self.search_text:
-            return self.site.get_url(self.site.api_url + '/msearch',
-                                     q=self.search_text,
-                                     limit=self.limit,
-                                     offset=self.offset)
+            return get_url(self.site.api_url + '/msearch',
+                           q=self.search_text,
+                           limit=self.limit,
+                           offset=self.offset)
         elif self.action == "search_by_tag" and self.search_tag:
-            return self.site.get_url(self.site.api_url + '/brands',
-                                     tags=self.search_tag,
-                                     limit=self.limit,
-                                     offset=self.offset)
+            return get_url(self.site.api_url + '/brands',
+                           tags=self.search_tag,
+                           limit=self.limit,
+                           offset=self.offset)
         elif self.action == "search_by_person" and self.search_person:
-            return self.site.get_url(self.site.api_url + '/persons/' + self.search_person)
+            return get_url(self.site.api_url + '/persons/' + self.search_person)
         else:
-            return self.site.get_url(self.site.api_url + '/brands',
-                                     limit=self.limit,
-                                     offset=self.offset)
+            return get_url(self.site.api_url + '/brands',
+                           limit=self.limit,
+                           offset=self.offset)
 
     def get_element_url(self, element, is_folder, is_music_folder):
         url_params = {'action': "play" if not is_folder else "load",
@@ -211,11 +214,11 @@ class Brand(pages.Page):
                     url_params['content'] = "episodes"
                     url_params['brands'] = element['id']
 
-        return self.site.get_url(self.site.url, **url_params)
+        return get_url(self.site.url, **url_params)
 
     def play(self):
 
-        videos = self.site.request(self.site.get_url(self.site.api_url + '/videos', brands=self.params['brands']),
+        videos = self.site.request(get_url(self.site.api_url + '/videos', brands=self.params['brands']),
                                    output="json")
         if len(videos.get('data', [])) > 0:
             spath = self.get_video_url(videos['data'][0]['sources'])
@@ -253,7 +256,6 @@ class Brand(pages.Page):
                              'mpaa': self.get_mpaa(element.get('ageRestrictions')),
                              'plot': bp.get('plot', element.get('anons')),
                              'artist': bp.get('cast', []),
-                             'cast': bp.get('cast', []),
                              'director': bp.get('director'),
                              'writer': bp.get('writer'),
                              'plotoutline': element.get('anons'),
@@ -264,7 +266,8 @@ class Brand(pages.Page):
                             'icon': self.get_pic_from_id(picId, "lw"),
                             'fanart': self.get_pic_from_id(picId, "hd"),
                             'poster': self.get_pic_from_id(picId, "vhdr")
-                            }
+                            },
+                    'cast': self.get_cast(element['id'], bp.get('cast', []))
                     }
 
     def enrich_info_tag(self, list_item, episode, brand):
@@ -276,11 +279,20 @@ class Brand(pages.Page):
                                     "country": self.get_country(brand.get('countries')),
                                     "genre": brand.get('genre'),
                                     "mpaa": self.get_mpaa(brand.get('ageRestrictions')),
-                                    "cast": bp.get('cast', []),
                                     "director": bp.get('director'),
                                     "writer": bp.get('writer'),
                                     "rating": brand.get('rank')})
-        list_item.setCast(self.get_cast(brand['id']))
+
+        list_item.setCast(self.get_cast(brand['id'], bp.get('cast', [])))
+
+    def get_cast(self, brand_id, person_list):
+
+        actors = []
+        for person_name in person_list:
+            actors.append({'name': person_name,
+                           'thumbnail': persons.get_person_thumbnail(brand_id, person_name)})
+
+        return actors
 
     def add_context_menu(self, category):
         pass

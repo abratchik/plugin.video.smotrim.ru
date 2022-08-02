@@ -11,7 +11,7 @@ import re
 import json
 import time
 from datetime import datetime
-
+from urllib import urlencode
 from base64 import b64encode
 from json import dumps
 
@@ -84,7 +84,7 @@ def notify(sender, message, data):
         data=data,
     ))
     if result.get('result') != 'OK':
-        xbmc.log('Failed to send notification: ' + result.get('error').get('message'), 4)
+        xbmc.log('Failed to send notification: ' + result.get('error').get('message'), xbmc.LOGDEBUG)
         return False
     return True
 
@@ -104,3 +104,10 @@ def to_unicode(text, encoding='utf-8', errors='strict'):
     if isinstance(text, bytes):
         return text.decode(encoding, errors=errors)
     return text
+
+
+def get_url(baseurl, **kwargs):
+    if kwargs:
+        return '{}?{}'.format(baseurl, urlencode(kwargs))
+    else:
+        return baseurl

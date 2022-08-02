@@ -14,6 +14,7 @@ import resources.lib.modules.pages as pages
 import resources.lib.modules.brands as brands
 
 from resources.lib import kodiutils
+from resources.lib.kodiutils import get_url
 
 
 class ChannelMenu(pages.Page):
@@ -33,11 +34,11 @@ class ChannelMenu(pages.Page):
                                     'label': "[COLOR=FF00FF00][B]%s[/B][/COLOR]" % self.site.language(30410),
                                     'is_folder': False,
                                     'is_playable': True,
-                                    'url': self.site.get_url(self.site.url,
-                                                             action="play",
-                                                             context="channelmenus",
-                                                             channels=self.params['channels'],
-                                                             url=self.site.url),
+                                    'url': get_url(self.site.url,
+                                                   action="play",
+                                                   context="channelmenus",
+                                                   channels=self.params['channels'],
+                                                   url=self.site.url),
                                     'info': {'plot': self.site.language(30410)},
                                     'art': {'icon': self.site.get_media("lives.png")}
                                     })
@@ -47,17 +48,17 @@ class ChannelMenu(pages.Page):
         return self.get_load_url_ext(self.params['channels'], self.limit, self.offset)
 
     def get_nav_url(self, offset=0):
-        return self.site.get_url(self.site.url,
-                                 action="load",
-                                 context=self.site.context,
-                                 channels=self.params.get('channels'),
-                                 title=self.params.get('title'),
-                                 limit=self.limit, offset=offset, url=self.site.url)
+        return get_url(self.site.url,
+                       action="load",
+                       context=self.site.context,
+                       channels=self.params.get('channels'),
+                       title=self.params.get('title'),
+                       limit=self.limit, offset=offset, url=self.site.url)
 
     def get_load_url_ext(self, ch_id, limit, offset):
-        return self.site.get_url('%s/menu/channels/%s' % (self.site.api_url, str(ch_id)),
-                                 limit=limit,
-                                 offset=offset)
+        return get_url('%s/menu/channels/%s' % (self.site.api_url, str(ch_id)),
+                       limit=limit,
+                       offset=offset)
 
     def set_context_title(self):
         self.site.context_title = self.params.get('title')
@@ -76,12 +77,12 @@ class ChannelMenu(pages.Page):
                     'label': "[B]%s[/B]" % element['title'],
                     'is_folder': True,
                     'is_playable': False,
-                    'url': self.site.get_url(self.site.url,
-                                             action="search",
-                                             context="brands",
-                                             search=element['title'].encode('utf-8', 'ignore'),
-                                             cache_expire="86400",
-                                             url=self.site.url),
+                    'url': get_url(self.site.url,
+                                   action="search",
+                                   context="brands",
+                                   search=element['title'].encode('utf-8', 'ignore'),
+                                   cache_expire="86400",
+                                   url=self.site.url),
                     'info': {'plot': "%s [%s]" % (self.site.language(30010), element['title'])},
                     'art': {'icon': self.site.get_media("search.png"),
                             'fanart': self.site.get_media("background.jpg")}
@@ -121,7 +122,7 @@ class ChannelMenu(pages.Page):
                                                                     doublemap['live_id']),
                                              output="json", headers=headers)
                 medialist = datalive['data']['playlist']['medialist'][0]
-                return doublemap,  self.get_video_url(medialist.get('sources'))
+                return doublemap, self.get_video_url(medialist.get('sources'))
             except KeyError:
                 return doublemap, ""
         else:

@@ -6,7 +6,10 @@
 import json
 import os
 
+import xbmc
+
 import resources.lib.modules.pages as pages
+from resources.lib.kodiutils import get_url
 
 
 class Search(pages.Page):
@@ -34,18 +37,18 @@ class Search(pages.Page):
                 'label': "[B]%s[/B]" % element['title'],
                 'is_folder': element['is_new'] != "true",
                 'is_playable': False,
-                'url': self.site.get_url(self.site.url,
-                                         action="search",
-                                         context="brands",
-                                         url=self.site.url)
-                if element['is_new'] == "true" else
-                self.site.get_url(self.site.url,
-                                  action="search",
-                                  context="brands",
-                                  search=element['title'].encode('utf-8', 'ignore'),
-                                  url=self.site.url),
+                'url': get_url(self.site.url,
+                               action="search",
+                               context="brands",
+                               url=self.site.url)
+                if element['is_new'] == "true"
+                else get_url(self.site.url,
+                             action="search",
+                             context="brands",
+                             search=element['title'].encode('utf-8', 'ignore'),
+                             url=self.site.url),
                 'info': {'plot': element['title'] if element['is_new'] == "true" else
-                                 "%s [%s]" % (self.site.language(30010), element['title'])},
+                "%s [%s]" % (self.site.language(30010), element['title'])},
                 'art': {'icon': self.site.get_media("search.png"),
                         'fanart': self.site.get_media("background.jpg")}
                 }
@@ -85,4 +88,18 @@ class Search(pages.Page):
             return []
 
     def get_nav_url(self, offset=0):
-        return self.site.get_url(self.site.url, action="load", context="searches", url=self.site.url)
+        return get_url(self.site.url, action="load", context="searches", url=self.site.url)
+
+    def add_context_menu(self, category):
+        self.context_menu_items.append((self.site.language(30350),
+                                        "RunPlugin(%s)" %
+                                        get_url(self.site.url,
+                                                action="clear_history",
+                                                context="searches",
+                                                url=self.site.url)))
+
+    def clear_history(self):
+        if os.path.exists(self.search_history_file):
+            os.remove(self.search_history_file)
+            url = self.get_nav_url(offset=0)
+            xbmc.executebuiltin("Container.Update(%s)" % url)

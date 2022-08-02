@@ -4,11 +4,14 @@
         <setting id="phone" type="text" label="30101" default="" />
     </category>
     <category id="video" label="30120">
-        <setting id="vquality" type="select" label="30121" lvalues="30122|30123|30124|30125|30128|30126|30129|30127|30130" default="1" />
+        <setting id="vquality" type="select" label="30121"
+                 lvalues="30122|30123|30124|30125|30128|30126|30129|30127|30130"
+                 default="1" />
     </category>
     <category id="interface" label="30110">
         <setting id="itemsperpage" type="enum" label="30111" values="10|20|30" default="1" />
         <setting id="addhistory" type="bool" label="30112" default="true" />
+        <setting id="infoservice" type="bool" label="30114" default="true" />
         <setting id="upnext" type="bool" label="30113" default="true" />
         <setting label="30415" type="action" action="InstallAddon(service.iptv.manager)"
                  option="close" visible="!System.HasAddon(service.iptv.manager)"/>

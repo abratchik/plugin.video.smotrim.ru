@@ -1,0 +1,31 @@
+# -*- coding: utf-8 -*-
+# Module: wsgi_server
+# Author: Alex Bratchik
+# Created on: 03.04.2021
+# License: GPL v.3 https://www.gnu.org/copyleft/gpl.html
+"""
+WSGI server for Smotrim.ru addon
+"""
+
+from wsgiref.simple_server import WSGIServer
+
+import xbmc
+
+
+class SmotrimWsgiServer(WSGIServer):
+    monitor = None
+    m_process = None
+
+    def start(self):
+        self.monitor = xbmc.Monitor()
+
+        try:
+            self.serve_forever()
+        except StopIteration:
+            xbmc.log("SmotrimWsgiServer - shutdown complete!", xbmc.LOGDEBUG)
+
+    def service_actions(self):
+        if self.monitor.abortRequested():
+            xbmc.log("SmotrimWsgiServer - abortRequested!", xbmc.LOGDEBUG)
+            raise StopIteration
+

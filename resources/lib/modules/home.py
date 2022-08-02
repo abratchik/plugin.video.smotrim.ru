@@ -12,6 +12,7 @@ import resources.lib.modules.brands as brands
 import resources.lib.modules.articles as articles
 import resources.lib.modules.channels as channels
 import resources.lib.modules.history as histories
+from resources.lib.kodiutils import get_url
 
 
 class Home(pages.Page):
@@ -45,7 +46,7 @@ class Home(pages.Page):
                 'label': "[COLOR=FF00FF00][B]%s[/B][/COLOR]" % self.site.language(30023),
                 'is_folder': False,
                 'is_playable': False,
-                'url': self.site.get_url(self.site.url, action="favorites", context="home", url=self.site.url),
+                'url': get_url(self.site.url, action="favorites", context="home", url=self.site.url),
                 'info': {'plot': self.site.language(30023)},
                 'art': {'icon': self.site.get_media("favorites.png"),
                         'fanart': self.site.get_media("background.jpg")}

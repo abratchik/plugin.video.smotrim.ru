@@ -16,21 +16,24 @@ from urlparse import parse_qsl
 
 import xbmc
 import xbmcaddon
-import xbmcvfs
 
 from . import kodiutils
-from resources.lib.users import USER_AGENT
+
+ADDON_ID = "plugin.video.smotrim.ru"
+SERVER_ADDR = "127.0.0.1"
+SERVER_PORT = 47122
+USER_AGENT = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:101.0) Gecko/20100101 Firefox/101.0"
 
 
 class Smotrim:
 
     def __init__(self):
-        self.id = "plugin.video.smotrim.ru"
+        self.id = ADDON_ID
+        self.server_port = SERVER_PORT
         self.addon = xbmcaddon.Addon(self.id)
         self.path = self.addon.getAddonInfo('path').decode('utf-8')
         self.media_path = os.path.join(self.path, "resources", "media")
-        self.data_path = kodiutils.create_folder(os.path.join(xbmc.translatePath(self.addon.getAddonInfo('profile')),
-                                                          'data'))
+        self.data_path = get_data_path(self.addon)
         self.history_path = kodiutils.create_folder(os.path.join(self.data_path, 'history'))
 
         self.user = None
@@ -85,7 +88,8 @@ class Smotrim:
 
     def request(self, url, output="text", headers=None):
         xbmc.log("Query site url: %s" % url, xbmc.LOGDEBUG)
-        response = self.user.get_http(url, headers=headers)
+        is_stream = (output == "stream")
+        response = self.user.get_http(url, headers=headers, stream=is_stream)
         err = response.status_code != 200
         if err:
             xbmc.log("Query %s returned HTTP error %s" % (url, response.status_code))
@@ -97,13 +101,6 @@ class Smotrim:
             return response
 
     # *** Add-on helpers
-    def get_url(self, baseurl=None, **kwargs):
-        baseurl_ = baseurl if baseurl else self.url
-        if kwargs:
-            url = '{}?{}'.format(baseurl_, urlencode(kwargs))
-        else:
-            url = baseurl_
-        return url
 
     def get_media(self, file_name):
         return os.path.join(self.media_path, file_name)
@@ -133,3 +130,11 @@ class Smotrim:
                               "!Sec-GPC=1",
                               "Connection=keep-alive"])
                          ])
+
+
+def get_data_path(addon):
+    if addon is None:
+        addon = xbmcaddon.Addon(ADDON_ID)
+    return kodiutils.create_folder(os.path.join(xbmc.translatePath(addon.getAddonInfo('profile')), 'data'))
+
+
