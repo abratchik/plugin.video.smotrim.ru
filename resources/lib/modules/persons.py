@@ -100,8 +100,8 @@ def get_person_remote_thumbnail_url(brand_id, person_name):
         xbmc.log("persons.get_person_remote_thumbnail_url found %s persons" % len(persons),
                  xbmc.LOGDEBUG)
         try:
-            sp = filter(lambda p: p.get('name', '').encode('utf-8') == first_name and
-                                  p.get('surname', '').encode('utf-8') == last_name, persons)
+            sp = list(filter(lambda p: p.get('name', '') == first_name and
+                                  p.get('surname', '') == last_name, persons))
 
             if sp:
                 return pages.get_pic_from_element(sp[0], "bq", append_headers=False)
