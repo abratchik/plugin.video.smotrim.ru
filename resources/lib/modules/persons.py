@@ -16,7 +16,7 @@ from resources.lib import kodiutils
 from resources.lib.kodiutils import get_url
 
 CONTEXT = "persons"
-CONTEXT_LIMIT = 20
+CONTEXT_LIMIT = 30
 
 
 class Person(pages.Page):
@@ -34,13 +34,15 @@ class Person(pages.Page):
 
     def download_brand_persons(self):
         brand_id = self.params.get('brands', "")
-        xbmc.log("Smotrim: start downloading actor thumbnails (%s)" % brand_id)
+        xbmc.log("Smotrim: start downloading actor thumbnails (%s)" % brand_id, xbmc.LOGDEBUG)
 
         self.cache_file = get_brand_persons_file_name(brand_id)
         self.data = self.get_data_query()
-        self.cache_data()
-
-        xbmc.log("Smotrim: thumbnails downloaded")
+        if 'data' in self.data:
+            self.cache_data()
+            xbmc.log("Smotrim: thumbnails downloaded", xbmc.LOGDEBUG)
+        else:
+            xbmc.log("Smotrim: thumbnails failed to download", xbmc.LOGDEBUG)
 
     def cache_data(self):
         if self.cache_enabled and not os.path.exists(self.cache_file):
@@ -98,11 +100,13 @@ def get_person_remote_thumbnail_url(brand_id, person_name) -> str:
         xbmc.log("persons.get_person_remote_thumbnail_url found %s persons" % len(persons),
                  xbmc.LOGDEBUG)
         try:
-            person = next(p for p in persons if p.get('name', "") == first_name and p.get('surname', "") == last_name )
-            xbmc.log("persons.get_person_remote_thumbnail_url found %s %s" % (person.get('name', ""),
-                                                                              person.get('surname', "")), xbmc.LOGDEBUG)
-            return pages.get_pic_from_element(person, "bq", append_headers=False)
-        except StopIteration:
+            sp = filter(lambda p: p.get('name', '').encode('utf-8') == first_name and
+                                  p.get('surname', '').encode('utf-8') == last_name, persons)
+
+            if sp:
+                return pages.get_pic_from_element(sp[0], "bq", append_headers=False)
+            return ""
+        except IndexError:
             return ""
 
 
