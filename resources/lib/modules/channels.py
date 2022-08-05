@@ -29,7 +29,7 @@ class Channel(pages.Page):
                                     'info': {'plot': self.site.language(30410)},
                                     'art': {'icon': self.site.get_media("lives.png")}
                                     })
-        return
+        self.cache_expire = 0
 
     def tvguide(self):
         xbmc.executebuiltin("ActivateWindow(TVGuide)")
