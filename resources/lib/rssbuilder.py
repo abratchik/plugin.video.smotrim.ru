@@ -10,8 +10,10 @@ from xml.dom import minidom
 import xbmc
 import xbmcvfs
 
+from resources.lib.smotrim import SERVER_ADDR
+
 RSSFEEDS = "RssFeeds.xml"
-RSSUPDATEINTERVAL = 20
+RSSUPDATEINTERVAL = 30
 
 
 class RSSBuilder():
@@ -27,7 +29,6 @@ class RSSBuilder():
         return ET.tostring(self.et)
 
     def create_channel(self, title, url="", description=""):
-        xbmc.log("create_channel '%s', '%s', '%s'" % (title, url, description))
         ch = self._add_element("channel", self.et)
         self._add_element("title", ch, title)
         self._add_element("link", ch, url)
@@ -46,7 +47,7 @@ class RSSBuilder():
 
     def add_news_to_rss(self, site, feed):
         rssfeeds = os.path.join(xbmc.translatePath("special://userdata"), RSSFEEDS)
-        rssurl = "http://127.0.0.1:%s/articles" % site.server_port
+        rssurl = "http://%s:%s/articles" % (SERVER_ADDR, site.server_port)
         rssfeedsxml = self._load_xml_from_file(rssfeeds)
 
         if feed:

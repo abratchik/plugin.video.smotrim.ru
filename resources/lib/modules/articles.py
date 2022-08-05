@@ -78,7 +78,7 @@ def get_RSS():
     site.user = users.User()
     site.user.init_session(site)
     article = Article(site)
-    article.limit = 100
+    article.limit = 30
     article.data = article.get_data_query()
     site.user.session.close()
     ch = rb.create_channel(site.language(30022), url="https://%s" % site.domain)
