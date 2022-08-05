@@ -11,7 +11,7 @@ import xbmc
 import resources.lib.modules.pages as pages
 import resources.lib.modules.persons as persons
 
-from resources.lib.kodiutils import notify, get_url
+from resources.lib.kodiutils import get_url
 
 
 class Brand(pages.Page):

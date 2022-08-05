@@ -100,6 +100,10 @@ msgctxt "#30114"
 msgid "Enable extended info service"
 msgstr "Доп. информация о кино и сериалах"
 
+msgctxt "#30115"
+msgid "Add News feed to RSS"
+msgstr "Добавить ленту новостей в RSS"
+
 msgctxt "#30120"
 msgid "Video"
 msgstr "Видео"
