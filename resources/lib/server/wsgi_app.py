@@ -7,49 +7,57 @@
 WSGI application for Smotrim.ru addon
 """
 import re
-import xbmc
 from urllib import unquote
+from urlparse import parse_qsl
 
 import resources.lib.modules.persons as persons
+import resources.lib.modules.articles as articles
+
 from resources.lib.smotrim import SERVER_ADDR
 
 
 def default_app(environ, start_response):
     params = parse_params(environ)
 
-    if params['brand_id'] and params['person_name'] and environ.get("REMOTE_ADDR") == SERVER_ADDR:
-        image_url = persons.get_person_remote_thumbnail_url(params['brand_id'], params['person_name'])
-        if image_url:
-            status = '302 Found'
-            headers = [('Location', image_url)]
+    if environ.get("REMOTE_ADDR") == SERVER_ADDR:
+        if params.get('brand_id', "") and params.get('person_name', ""):
+            image_url = persons.get_person_remote_thumbnail_url(params['brand_id'], params['person_name'])
+            if image_url:
+                status = '302 Found'
+                headers = [('Location', image_url)]
+                start_response(status, headers)
+                return [image_url.encode("utf-8")]
+            else:
+                return http_response('404 Not Found', start_response)
+        elif params.get('articles', ""):
+            rss = articles.get_RSS()
+            status = '200 OK'
+            headers = [('Content-type', 'text/xml; charset=utf-8')]
             start_response(status, headers)
-            return [image_url.encode("utf-8")]
-        else:
-            status = '404 Not Found'
-            headers = [('Content-type', 'text/plain; charset=utf-8')]
-            start_response(status, headers)
-            return [status.encode('utf-8')]
+            return [rss]
 
-    status = '400 Bad Request'
+        return http_response('400 Bad Request', start_response)
+    else:
+        return http_response('403 Forbidden', start_response)
+
+
+def http_response(status, start_response):
     headers = [('Content-type', 'text/plain; charset=utf-8')]
     start_response(status, headers)
     return [status.encode('utf-8')]
 
 
 def parse_params(environ):
-    path_info = environ.get("PATH_INFO", "")
-    query_string = environ.get("QUERY_STRING", "")
+    ret = {}
 
-    brand_id = ""
-    m1 = re.match(r'\/brands\/(\d+)', path_info)
+    m1 = re.match(r'\/brands\/(\d+)', environ.get("PATH_INFO", ""))
     if m1:
-        brand_id = m1.group(1)
+        ret['brand_id'] = m1.group(1)
+    else:
+        m1 = re.match(r'\/articles', environ.get("PATH_INFO", ""))
+        if m1:
+            ret['articles'] = True
 
-    person_name = ""
-    m2 = re.match(r'(\?|\&|)person_name=(.+)([\&]|\b)', query_string)
-    if m2:
-        person_name = unquote(m2.group(2))
+    ret.update(dict(parse_qsl(environ.get("QUERY_STRING", ""))))
 
-    xbmc.log("brand_id=%s, person_name=%s" % (brand_id, person_name))
-
-    return {'brand_id': brand_id, 'person_name': person_name}
+    return ret

@@ -8,6 +8,7 @@
 import xbmc
 import resources.lib.server.wsgi_app as wsgi_app
 import resources.lib.server.wsgi_server as wsgi_server
+import resources.lib.rssbuilder as rssbuilder
 from wsgiref.simple_server import make_server
 
 
@@ -16,11 +17,15 @@ class Daemon:
     def __init__(self, site):
         self.site = site
         self.wsgi = None
+        self.rb = None
 
     def load(self):
         if not self.site.addon.getSettingBool("infoservice"):
             xbmc.log("Smotrim.ru extended info service disabled, skipped", xbmc.LOGDEBUG)
             return
+
+        self.rb = rssbuilder.RSSBuilder()
+        self.rb.add_news_to_rss(self.site, self.site.addon.getSettingBool("addnewstorss"))
 
         xbmc.log("Starting Smotrim.ru extended info service on port %s ..." % str(self.site.server_port), xbmc.LOGDEBUG)
         self.wsgi = make_server('',

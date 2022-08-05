@@ -10,7 +10,6 @@ import inspect
 
 from importlib import import_module
 
-from urllib import urlencode
 from urllib import quote as encode4url
 from urlparse import parse_qsl
 
