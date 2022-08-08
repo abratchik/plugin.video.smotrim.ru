@@ -38,7 +38,7 @@ class Extra:
         if progressDialog.iscanceled():
             return
 
-        cd = self.__get_channel_list()
+        cd = self.channel.get_data_query()
 
         if "data" in cd:
             monitor = xbmc.Monitor()
@@ -83,7 +83,7 @@ class Extra:
             with open(self.ch_playlist, "r") as f:
                 return json.load(f)
 
-        cd = self.__get_channel_list()
+        cd = self.channel.get_data_query()
 
         chs = []
 
@@ -101,7 +101,8 @@ class Extra:
                           'double_id': doublemap['double_id'],
                           'name': c['title'],
                           'logo': self.channel.get_pic_from_id(c['picId'], "lw"),
-                          'stream': self.site.prepare_url(url)
+                          'stream': self.site.prepare_url(url),
+                          'radio': c['type'] == "audio"
                           }
 
                     chs.append(ch)
@@ -189,13 +190,13 @@ class Extra:
 
         return epgs
 
-    def __get_channel_list(self):
-        channels_cache_file = self.channel.get_cache_filename()
-        if xbmcvfs.exists(channels_cache_file):
-            with open(channels_cache_file, 'r+') as f:
-                return json.load(f)
-        else:
-            return self.site.request(self.channel.get_load_url(), output="json")
+    # def __get_channel_list(self):
+    #     channels_cache_file = self.channel.get_cache_filename()
+    #     if xbmcvfs.exists(channels_cache_file):
+    #         with open(channels_cache_file, 'r+') as f:
+    #             return json.load(f)
+    #     else:
+    #         return self.site.request(self.channel.get_load_url(), output="json")
 
     def __format_date(self, s):
         return "%s-%s-%sT%s:%s:%s+03:00" % (s[6:10], s[3:5], s[0:2], s[11:13], s[14:16], s[17:19])

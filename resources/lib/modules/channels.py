@@ -35,7 +35,16 @@ class Channel(pages.Page):
         xbmc.executebuiltin("ActivateWindow(TVGuide)")
 
     def get_load_url(self):
-        return get_url(self.site.api_url + '/channels')
+        return get_url(self.site.api_url + '/geo')
+
+    def get_data_query(self):
+        if self.is_cache_available():
+            return self.get_data_from_cache()
+        else:
+            geo = self.site.request(self.get_load_url(), output="json")
+
+            return {'metadata': geo.get('metadata', {}),
+                    'data': geo['data'].get('channels', [])}
 
     def create_root_li(self):
         return {'id': "channels",

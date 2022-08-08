@@ -10,7 +10,7 @@ import sys
 import xbmc
 
 import resources.lib.modules.pages as pages
-
+import resources.lib.modules.channels as channels
 import resources.lib.modules.brands as brands
 
 from resources.lib import kodiutils
@@ -105,55 +105,73 @@ class ChannelMenu(pages.Page):
 
     def get_channel_live_double(self, channel_id):
 
-        # if str(channel_id) in self.VITRINA:
-        #     return self.get_vitrina_live_double(channel_id, self.VITRINA[str(channel_id)])
+        doublemap = {'channel_id': str(channel_id)}
 
-        headers = self.site.user.get_headers().copy()
+        chls = channels.Channel(self.site).get_data_query()
 
-        headers['Sec-Fetch-Site'] = "cross-site"
+        if 'data' in chls:
+            ch_lookup = list(filter(lambda ch: str(ch['id']) == str(channel_id), chls['data']))
+            if ch_lookup:
+                doublemap['double_id'] = ch_lookup[0].get('doubleId')
+                doublemap['live_id'] = ch_lookup[0].get('liveId')
 
-        doublemap = self.site.request('%s/live-double/channel_id/%s' % (self.site.liveapi_url,
-                                                                        channel_id),
-                                      output="json", headers=headers)
+                headers = self.site.user.get_headers().copy()
 
-        if doublemap.get('live_id'):
-            try:
-                datalive = self.site.request('%s/datalive/id/%s' % (self.site.liveapi_url,
-                                                                    doublemap['live_id']),
-                                             output="json", headers=headers)
-                medialist = datalive['data']['playlist']['medialist'][0]
-                return doublemap, self.get_video_url(medialist.get('sources'))
-            except KeyError:
-                return doublemap, ""
+                headers['Sec-Fetch-Site'] = "cross-site"
+
+                if ch_lookup[0].get('type') == "vitrina":
+                    xbmc.log("Getting live stream for channel %s from Vitrina TV" % ch_lookup[0].get('title', '').encode('utf-8'),
+                             xbmc.LOGDEBUG)
+                    return doublemap, self.get_vitrina_live_url(ch_lookup[0], headers)
+                elif ch_lookup[0].get('type') == "video":
+                    xbmc.log("Getting live stream for channel %s from Smotrim.ru" % ch_lookup[0].get('title', '').encode('utf-8'),
+                             xbmc.LOGDEBUG)
+                    if doublemap.get('live_id'):
+                        try:
+                            headers['Host'] = self.site.liveapi_host
+                            headers['Sec-Fetch-Site'] = "none"
+                            datalive = self.site.request('https://%s/iframe/datalive/id/%s/' % (self.site.liveapi_host,
+                                                                                                doublemap['live_id']),
+                                                         output="json", headers=headers)
+                            # xbmc.log(json.dumps(datalive), xbmc.LOGDEBUG)
+                            medialist = datalive['data']['playlist']['medialist'][0]
+                            return doublemap, self.get_video_url(medialist.get('sources'))
+                        except KeyError:
+                            xbmc.log("Getting live stream from Smotrim.ru failed", xbmc.LOGDEBUG)
+                            return doublemap, ""
+                elif ch_lookup[0].get('type') == "audio":
+                    xbmc.log("Getting live stream for radio %s from Smotrim.ru" % ch_lookup[0].get('title', '').encode('utf-8'),
+                             xbmc.LOGDEBUG)
+                    return doublemap, ch_lookup[0].get('streamUrl')
+            else:
+                xbmc.log("Channel id %s not found in channel data" % channel_id, xbmc.LOGDEBUG)
         else:
-            return doublemap, ""
+            xbmc.log("Getting channel data failed", xbmc.LOGDEBUG)
 
-    # def get_vitrina_live_double(self, channel_id, vitrina_code):
-    #     """
-    #     Get the live stream from Vitrina TV.
-    #     @param channel_id: ID of the channel on smotrim.ru
-    #     @param vitrina_code: alphanumeric code of the channel on Vitrina TV
-    #     @return: channel ID map and a stream URL
-    #     """
-    #     doublemap = {"channel_id": str(channel_id),
-    #                  "double_id": "1",
-    #                  "vitrina_code": vitrina_code}
-    #     result = self.site.request('%s/get_token' % self.vitrina_url, output="json")
-    #     try:
-    #         token = result['result']['token']
-    #
-    #         xbmc.log("Vitrina TV token=%s" % token)
-    #
-    #         vitrinalive = self.site.request('%s/api/v2/%s/playlist/%s_as_array.json?token=%s' %
-    #                                         (self.vitrina_url,
-    #                                          vitrina_code,
-    #                                          vitrina_code,
-    #                                          token),
-    #                                         output="json")
-    #
-    #         return doublemap, vitrinalive['hls'][0]
-    #     except KeyError:
-    #         return doublemap, {}
+        return doublemap, ""
+
+    def get_vitrina_live_url(self, channel, headers):
+        """
+        Get the live stream from Vitrina TV.
+        @param channel: dict of the channel on smotrim.ru
+        @return: channel stream URL
+        """
+
+        try:
+            headers['Host'] = "player.mediavitrina.ru"
+            sdk = self.site.request(channel['sources']['webos'], output="json", headers=headers)
+            # xbmc.log(json.dumps(sdk), xbmc.LOGDEBUG)
+
+            xbmc.log("Vitrina TV SDK API version %s" % sdk['result']['sdk_config']['api_version'], xbmc.LOGDEBUG)
+
+            vitrinalive = self.site.request(sdk['result']['sdk_config']['streams_api_url'],
+                                            output="json",
+                                            headers=headers)
+            # xbmc.log(json.dumps(vitrinalive), xbmc.LOGDEBUG)
+            return vitrinalive['hls'][0]
+        except KeyError:
+            xbmc.log("Getting live stream from Vitrina TV failed", xbmc.LOGDEBUG)
+            return ""
 
     def get_channel_tvguide(self, channel_id, double_id):
 

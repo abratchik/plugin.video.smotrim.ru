@@ -47,7 +47,8 @@ class Smotrim:
         self.cdnapi_host = "cdnapi.smotrim.ru"
         self.api_url = "https://%s/api/v1" % self.api_host
         self.cdnapi_url = "https://%s/api/v1" % self.cdnapi_host
-        self.liveapi_url = "https://player.vgtrk.com/iframe"
+        self.liveapi_host = "player.smotrim.ru"
+        self.liveapi_url = "https://%s" % self.liveapi_host
 
         self.language = self.addon.getLocalizedString
 
