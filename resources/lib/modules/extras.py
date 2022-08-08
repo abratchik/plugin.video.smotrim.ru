@@ -158,15 +158,15 @@ class Extra:
                 try:
                     pdesc = ""
                     if p['brand']:
-                        ptitle = str(p['brand'].get('title' ""))
-                        pdesc = str(p['brand'].get('anons', ""))
+                        ptitle = p['brand'].get('title' "")
+                        pdesc = p['brand'].get('anons', "")
                     else:
                         ptitle = p['title']
 
                     epgs[ch['id']].append({'start': self.__format_date(p['realDateStart']),
                                            'stop': self.__format_date(p['realDateEnd']),
-                                           'title': ptitle,
-                                           'description': pdesc,
+                                           'title': str(ptitle),
+                                           'description': str(pdesc),
                                            'image': pages.get_pic_from_element(p, "lw"),
                                            'subtitle': p['episode']['title'] if p['episode'] else ""
                                            })
