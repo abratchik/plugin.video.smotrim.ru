@@ -97,8 +97,8 @@ class Extra:
                 if url:
 
                     ch = {'id': "smotrim_%sd%s" % (c['id'], doublemap['double_id']),
-                          'ch_id': c['id'],
-                          'double_id': doublemap['double_id'],
+                          'ch_id': str(c['id']),
+                          'double_id': str(doublemap['double_id']),
                           'name': c['title'],
                           'logo': self.channel.get_pic_from_id(c['picId'], "lw"),
                           'stream': self.site.prepare_url(url),
@@ -158,8 +158,8 @@ class Extra:
                 try:
                     pdesc = ""
                     if p['brand']:
-                        ptitle = p['brand'].get('title' "")
-                        pdesc = p['brand'].get('anons', "")
+                        ptitle = str(p['brand'].get('title' ""))
+                        pdesc = str(p['brand'].get('anons', ""))
                     else:
                         ptitle = p['title']
 

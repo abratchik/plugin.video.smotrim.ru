@@ -140,7 +140,8 @@ class ChannelMenu(pages.Page):
                             xbmc.log("Getting live stream from Smotrim.ru failed", xbmc.LOGDEBUG)
                             return doublemap, ""
                 elif ch_lookup[0].get('type') == "audio":
-                    xbmc.log("Getting live stream for radio %s from Smotrim.ru" % ch_lookup[0].get('title', ''))
+                    xbmc.log("Getting live stream for radio %s from Smotrim.ru" % ch_lookup[0].get('title', ''),
+                             xbmc.LOGDEBUG)
                     return doublemap, ch_lookup[0].get('streamUrl')
             else:
                 xbmc.log("Channel id %s not found in channel data" % channel_id, xbmc.LOGDEBUG)
