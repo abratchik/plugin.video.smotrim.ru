@@ -51,13 +51,13 @@ class Extra:
                 chm = self.site.request(self.channelmenu.get_load_url_ext(c['id'], 1, 0), output="json")
 
                 if ("data" in chm) and (len(chm["data"]) > 0):
-                    xbmc.log("Channel %s has non-empty menu, keep" % c['id'])
+                    xbmc.log("Channel %s has non-empty menu, keep" % c['id'], xbmc.LOGDEBUG)
                     cd_data.append(c)
                 elif (len(ch_live) > 0) and any(ch['ch_id'] == c['id'] for ch in ch_live):
-                    xbmc.log("Channel %s has live stream, keep" % c['id'])
+                    xbmc.log("Channel %s has live stream, keep" % c['id'], xbmc.LOGDEBUG)
                     cd_data.append(c)
                 else:
-                    xbmc.log("Channel %s has neither menu nor live stream, hiding" % c['id'])
+                    xbmc.log("Channel %s has neither menu nor live stream, hiding" % c['id'], xbmc.LOGDEBUG)
 
                 progressDialog.update(50 + int(i * 50 / len(cd["data"])), self.site.language(30407) % c['title'])
 
@@ -97,8 +97,8 @@ class Extra:
                 if url:
 
                     ch = {'id': "smotrim_%sd%s" % (c['id'], doublemap['double_id']),
-                          'ch_id': str(c['id']),
-                          'double_id': str(doublemap['double_id']),
+                          'ch_id': c['id'],
+                          'double_id': doublemap['double_id'],
                           'name': c['title'],
                           'logo': self.channel.get_pic_from_id(c['picId'], "lw"),
                           'stream': self.site.prepare_url(url),
