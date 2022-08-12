@@ -30,7 +30,7 @@ msgstr "Новый поиск"
 
 msgctxt "#30020"
 msgid "Home"
-msgstr "В начало"
+msgstr "На Главную"
 
 msgctxt "#30021"
 msgid "Return to Home page"
@@ -45,12 +45,24 @@ msgid "Favorites"
 msgstr "Избранное"
 
 msgctxt "#30030"
-msgid "Next page"
+msgid "Next"
 msgstr "Вперед"
 
 msgctxt "#30031"
 msgid "Page %s of %s"
 msgstr "Страница %s из %s"
+
+msgctxt "#30032"
+msgid "Previous"
+msgstr "Назад"
+
+msgctxt "#30033"
+msgid "First"
+msgstr "В начало"
+
+msgctxt "#30034"
+msgid "Last"
+msgstr "В конец"
 
 msgctxt "#30040"
 msgid "Episodes"

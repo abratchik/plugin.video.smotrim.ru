@@ -20,6 +20,8 @@ import resources.lib.kodiplayer as kodiplayer
 from ..smotrim import USER_AGENT
 from ..kodiutils import clean_html
 
+MAXRECORDS = 9999
+
 
 class Page(object):
 
@@ -64,6 +66,23 @@ class Page(object):
 
         self.set_limit_offset_pages()
 
+        if self.pages > 1:
+            if self.offset > 0:
+                self.list_items.append(self.create_menu_li("previous",
+                                                           label=30032, is_folder=True, is_playable=False,
+                                                           url=self.get_nav_url(offset=self.offset - 1),
+                                                           info={'plot': self.site.language(30031) %
+                                                                         (self.offset + 1, self.pages)}))
+            if self.offset > 1:
+                self.list_items.append(self.create_menu_li("first", label=30033, is_folder=True, is_playable=False,
+                                                           url=self.get_nav_url(offset=0),
+                                                           info={'plot': self.site.language(30031) %
+                                                                         (self.offset + 1, self.pages)}))
+
+            self.list_items.append(self.create_menu_li("home", label=30020, is_folder=True, is_playable=False,
+                                                       url=self.site.url,
+                                                       info={'plot': self.site.language(30021)}))
+
         if 'data' in self.data:
             for element in self.data['data']:
                 self.append_li_for_element(element)
@@ -71,23 +90,16 @@ class Page(object):
             self.cache_data()
 
         if self.pages > 1:
-            self.list_items.append({'id': "home",
-                                    'label': "[COLOR=FF00FF00][B]%s[/B][/COLOR]" % self.site.language(30020),
-                                    'is_folder': True,
-                                    'is_playable': False,
-                                    'url': self.site.url,
-                                    'info': {'plot': self.site.language(30021)},
-                                    'art': {'icon': self.site.get_media("home.png")}
-                                    })
             if self.offset < self.pages - 1:
-                self.list_items.append({'id': "forward",
-                                        'label': "[COLOR=FF00FF00][B]%s[/B][/COLOR]" % self.site.language(30030),
-                                        'is_folder': True,
-                                        'is_playable': False,
-                                        'url': self.get_nav_url(offset=self.offset + 1),
-                                        'info': {'plot': self.site.language(30031) % (self.offset + 1, self.pages)},
-                                        'art': {'icon': self.site.get_media("next.png")}
-                                        })
+                self.list_items.append(self.create_menu_li("last", label=30034, is_folder=True, is_playable=False,
+                                                           url=self.get_nav_url(offset=self.pages - 1),
+                                                           info={'plot': self.site.language(30031) % (
+                                                           self.offset + 1, self.pages)}))
+                self.list_items.append(self.create_menu_li("next", label=30030, is_folder=True, is_playable=False,
+                                                           url=self.get_nav_url(offset=self.offset + 1),
+                                                           info={'plot': self.site.language(30031) % (
+                                                           self.offset + 1, self.pages)}))
+
         self.postload()
 
         self.show_list_items()
@@ -283,10 +295,24 @@ class Page(object):
         return (self.site.addon.getSettingInt('itemsperpage') + 1) * 10
 
     def set_limit_offset_pages(self):
-        if self.data.get('pagination', None):
+        if self.data.get('pagination'):
             self.offset = self.data['pagination'].get('offset', 0)
             self.limit = self.data['pagination'].get('limit', 0)
             self.pages = self.data['pagination'].get('pages', 0)
+
+            if self.pages * self.limit >= MAXRECORDS:
+                self.pages = int(MAXRECORDS / self.limit)
+                xbmc.log("Max page limited to %d" % self.pages, xbmc.LOGDEBUG)
+
+    def create_menu_li(self, label_id, label, is_folder, is_playable, url,
+                       info=None, art=None,
+                       lbl_format="[COLOR=FF00FF00][B]%s[/B][/COLOR]"):
+        label_text = label if type(label) == str else self.site.language(label)
+        return {'id': label_id, 'label': lbl_format % label_text, 'is_folder': is_folder, 'is_playable': is_playable,
+                'url': url,
+                'info': {'plot': label_text} if info is None else info,
+                'art': {'icon': self.site.get_media("%s.png" % label_id),
+                        'fanart': self.site.get_media("background.jpg")} if art is None else art}
 
     def get_pic_from_id(self, pic_id, res="lw"):
         if pic_id:
