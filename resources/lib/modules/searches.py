@@ -19,15 +19,17 @@ class Search(pages.Page):
         self.search_history_file = os.path.join(self.site.data_path, "search_history.json")
 
     def create_root_li(self):
-        return {'id': "search",
-                'label': "[COLOR=FF00FF00][B]%s[/B][/COLOR]" % self.site.language(30010),
-                'is_folder': True,
-                'is_playable': False,
-                'url': self.get_nav_url(),
-                'info': {'plot': self.site.language(30011)},
-                'art': {'icon': self.site.get_media("search.png"),
-                        'fanart': self.site.get_media("background.jpg")}
-                }
+        return self.create_menu_li("search", 30010, is_folder=True, is_playable=False,
+                                   url=self.get_nav_url(),
+                                   info={'plot': self.site.language(30011)})
+
+    def preload(self):
+        self.list_items.append(self.create_menu_li("search", 30012,
+                                                   is_folder=False, is_playable=False,
+                                                   url=get_url(self.site.url,
+                                                               action="search",
+                                                               context="brands",
+                                                               url=self.site.url)))
 
     def set_context_title(self):
         self.site.context_title = self.site.language(30010)
@@ -35,28 +37,26 @@ class Search(pages.Page):
     def create_element_li(self, element):
         return {'id': element['id'],
                 'label': "[B]%s[/B]" % element['title'],
-                'is_folder': element['is_new'] != "true",
+                'is_folder': True,
                 'is_playable': False,
                 'url': get_url(self.site.url,
                                action="search",
                                context="brands",
-                               url=self.site.url)
-                if element['is_new'] == "true"
-                else get_url(self.site.url,
-                             action="search",
-                             context="brands",
-                             search=element['title'].encode('utf-8', 'ignore'),
-                             url=self.site.url),
-                'info': {'plot': element['title'] if element['is_new'] == "true" else
-                "%s [%s]" % (self.site.language(30010), element['title'])},
+                               search=element['title'].encode('utf-8', 'ignore'),
+                               url=self.site.url),
+                'info': {'plot': "%s [%s]" % (self.site.language(30010), element['title'])},
                 'art': {'icon': self.site.get_media("search.png"),
                         'fanart': self.site.get_media("background.jpg")}
                 }
 
     def get_data_query(self):
-        data = {'data': [self.create_new_search_element()]}
-        data['data'].extend(self.load_from_history())
-        return data
+        if os.path.exists(self.search_history_file):
+            self.limit = self.get_limit_setting()
+            with open(self.search_history_file, 'r+') as f:
+                sh = json.load(f)
+                return {'data': sh[:self.limit]}
+        else:
+            return {'data': []}
 
     def create_new_search_element(self):
         return {'id': 'newsearch',
@@ -64,7 +64,7 @@ class Search(pages.Page):
                 'is_new': "true"}
 
     def save_to_history(self, keyword):
-        sh = self.load_from_history()
+        sh = self.get_data_query().get('data',[])
         pos = next((i for i, item in enumerate(sh) if item['title'] == keyword), -1)
         if pos < 0:
             index = sh[0]['id'] + 1 if len(sh) > 0 else 1
@@ -77,15 +77,6 @@ class Search(pages.Page):
 
         with open(self.search_history_file, 'w+') as f:
             json.dump(sh, f)
-
-    def load_from_history(self):
-        if os.path.exists(self.search_history_file):
-            self.limit = self.get_limit_setting()
-            with open(self.search_history_file, 'r+') as f:
-                sh = json.load(f)
-                return sh[:self.limit]
-        else:
-            return []
 
     def get_nav_url(self, offset=0):
         return get_url(self.site.url, action="load", context="searches", url=self.site.url)

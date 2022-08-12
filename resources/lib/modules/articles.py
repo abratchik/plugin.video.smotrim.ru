@@ -18,15 +18,9 @@ import xbmcgui
 class Article(pages.Page):
 
     def create_root_li(self):
-        return {'id': "articles",
-                'label': "[COLOR=FF00FF00][B]%s[/B][/COLOR]" % self.site.language(30301),
-                'is_folder': True,
-                'is_playable': False,
-                'url': get_url(self.site.url, action="load", context="articles", url=self.site.url),
-                'info': {'plot': self.site.language(30301)},
-                'art': {'icon': self.site.get_media("news.png"),
-                        'fanart': self.site.get_media("background.jpg")}
-                }
+        return self.create_menu_li("news", 30301, is_folder=True, is_playable=False,
+                                   url=get_url(self.site.url, action="load", context="articles", url=self.site.url),
+                                   info={'plot': self.site.language(30301)})
 
     def set_context_title(self):
         self.site.context_title = self.site.language(30301)

@@ -42,15 +42,9 @@ class History(pages.Page):
         return elements
 
     def create_root_li(self):
-        return {'id': "history",
-                'label': "[COLOR=FF00FF00][B]%s[/B][/COLOR]" % self.site.language(30050),
-                'is_folder': True,
-                'is_playable': False,
-                'url': get_url(self.site.url, action="load", context="history", url=self.site.url),
-                'info': {'plot': self.site.language(30051)},
-                'art': {'icon': self.site.get_media("history.png"),
-                        'fanart': self.site.get_media("background.jpg")}
-                }
+        return self.create_menu_li("history", 30050, is_folder=True, is_playable=False,
+                                   url=get_url(self.site.url, action="load", context="history", url=self.site.url),
+                                   info={'plot': self.site.language(30051)})
 
     def set_context_title(self):
         self.site.context_title = self.site.language(30050)

@@ -53,6 +53,12 @@ class UsersTestCase(unittest.TestCase):
     def test_041_channels(self):
         self.run_plugin()
 
+    @mock.patch('sys.argv',
+                ["", "14", "?action=load&cache_expire=86400&content=albums&context=podcasts&" +
+                           "url=plugin%3a%2f%2fplugin.video.smotrim.ru%2f"])
+    def test_042_podcasts(self):
+        self.run_plugin()
+
     @mock.patch('sys.argv', ["", "2", "?action=search_by_tag&cache_expire=86400&content=files&context=brands&" +
                              "has_children=True&tagname=Documentary&tags=10000002&" +
                              "url=plugin%3a%2f%2fplugin.video.smotrim.ru%2f"])

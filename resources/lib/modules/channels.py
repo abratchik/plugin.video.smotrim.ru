@@ -18,17 +18,13 @@ class Channel(pages.Page):
 
     def preload(self):
         if self.site.addon.getSettingBool("iptv.enabled"):
-            self.list_items.append({'id': "livetv",
-                                    'label': "[COLOR=FF00FF00][B]%s[/B][/COLOR]" % self.site.language(30410),
-                                    'is_folder': False,
-                                    'is_playable': False,
-                                    'url': get_url(self.site.url,
-                                                   action="tvguide",
-                                                   context="channels",
-                                                   url=self.site.url),
-                                    'info': {'plot': self.site.language(30410)},
-                                    'art': {'icon': self.site.get_media("lives.png")}
-                                    })
+            self.list_items.append(self.create_menu_li("lives", 30410, is_folder=False, is_playable=False,
+                                                       url=get_url(self.site.url,
+                                                                   action="tvguide",
+                                                                   context="channels",
+                                                                   url=self.site.url),
+                                                       info={'plot': self.site.language(30224)}))
+
         self.cache_expire = 0
 
     def tvguide(self):
@@ -47,19 +43,13 @@ class Channel(pages.Page):
                     'data': geo['data'].get('channels', [])}
 
     def create_root_li(self):
-        return {'id': "channels",
-                'label': "[COLOR=FF00FF00][B]%s[/B][/COLOR]" % self.site.language(30400),
-                'is_folder': True,
-                'is_playable': False,
-                'url': get_url(self.site.url, action="load",
-                               context="channels",
-                               content="files",
-                               cache_expire="0",
-                               url=self.site.url),
-                'info': {'plot': self.site.language(30400)},
-                'art': {'icon': self.site.get_media("channels.png"),
-                        'fanart': self.site.get_media("background.jpg")}
-                }
+        return self.create_menu_li("channels", 30400, is_folder=True, is_playable=True,
+                                   url=get_url(self.site.url, action="load",
+                                               context="channels",
+                                               content="files",
+                                               cache_expire="0",
+                                               url=self.site.url),
+                                   info={'plot': self.site.language(30400)})
 
     def create_element_li(self, element):
         return {'id': element['id'],

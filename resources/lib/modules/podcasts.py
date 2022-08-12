@@ -14,20 +14,14 @@ class Podcast(pages.Page):
         self.cache_enabled = True
 
     def create_root_li(self):
-        return {'id': "podcasts",
-                'label': "[COLOR=FF00FF00][B]%s[/B][/COLOR]" % self.site.language(30070),
-                'is_folder': True,
-                'is_playable': False,
-                'url': get_url(self.site.url,
-                               action="load",
-                               context="podcasts",
-                               content="albums",
-                               cache_expire="86400",
-                               url=self.site.url),
-                'info': {'plot': self.site.language(30070)},
-                'art': {'icon': self.site.get_media("podcasts.png"),
-                        'fanart': self.site.get_media("background.jpg")}
-                }
+        return self.create_menu_li("podcasts", 30070, is_folder=True, is_playable=False,
+                                   url=get_url(self.site.url,
+                                               action="load",
+                                               context="podcasts",
+                                               content="albums",
+                                               cache_expire="86400",
+                                               url=self.site.url),
+                                   info={'plot': self.site.language(30070)})
 
     def set_context_title(self):
         self.site.context_title = self.site.language(30070)

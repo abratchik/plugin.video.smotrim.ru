@@ -3,9 +3,6 @@
 # Author: Alex Bratchik
 # Created on: 03.04.2021
 # License: GPL v.3 https://www.gnu.org/copyleft/gpl.html
-import json
-import os
-import sys
 
 import xbmc
 
@@ -23,26 +20,17 @@ class ChannelMenu(pages.Page):
         self.brand = brands.Brand(site)
         self.cache_enabled = True
 
-        # self.vitrina_url = "https://media.mediavitrina.ru"
-        # with open(os.path.join(self.site.path, "resources/data/vitrina.json"), "r+") as f:
-        #     self.VITRINA = json.load(f)
-
     def preload(self):
         spath = self.get_stream_url_from_double(self.params['channels'])
         if spath:
-            self.list_items.append({'id': "livetv",
-                                    'label': "[COLOR=FF00FF00][B]%s[/B][/COLOR]" % self.site.language(30410),
-                                    'is_folder': False,
-                                    'is_playable': True,
-                                    'url': get_url(self.site.url,
-                                                   action="play",
-                                                   context="channelmenus",
-                                                   channels=self.params['channels'],
-                                                   url=self.site.url),
-                                    'info': {'plot': self.site.language(30410)},
-                                    'art': {'icon': self.site.get_media("lives.png")}
-                                    })
-        return
+            if self.site.addon.getSettingBool("iptv.enabled"):
+                self.list_items.append(self.create_menu_li("lives", 30410, is_folder=False, is_playable=True,
+                                                           url=get_url(self.site.url,
+                                                                       action="play",
+                                                                       context="channelmenus",
+                                                                       channels=self.params['channels'],
+                                                                       url=self.site.url),
+                                                           info={'plot': self.site.language(30224)}))
 
     def get_load_url(self):
         return self.get_load_url_ext(self.params['channels'], self.limit, self.offset)

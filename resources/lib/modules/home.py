@@ -42,15 +42,9 @@ class Home(pages.Page):
         self.site.context_title = self.site.language(30300)
 
     def create_fav_li(self):
-        return {'id': "favorites",
-                'label': "[COLOR=FF00FF00][B]%s[/B][/COLOR]" % self.site.language(30023),
-                'is_folder': False,
-                'is_playable': False,
-                'url': get_url(self.site.url, action="favorites", context="home", url=self.site.url),
-                'info': {'plot': self.site.language(30023)},
-                'art': {'icon': self.site.get_media("favorites.png"),
-                        'fanart': self.site.get_media("background.jpg")}
-                }
+        return self.create_menu_li("favorites", 30023, is_folder=False, is_playable=False,
+                                   url=get_url(self.site.url, action="favorites", context="home", url=self.site.url),
+                                   info={'plot': self.site.language(30023)})
 
     def favorites(self):
         xbmc.executebuiltin("ActivateWindow(Favourites)")

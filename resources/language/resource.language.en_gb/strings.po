@@ -45,12 +45,24 @@ msgid "Favorites"
 msgstr "Favorites"
 
 msgctxt "#30030"
-msgid "Next page"
-msgstr "Next page"
+msgid "Next"
+msgstr "Next"
 
 msgctxt "#30031"
 msgid "Page %s of %s"
 msgstr "Page %s of %s"
+
+msgctxt "#30032"
+msgid "Previous"
+msgstr "Previous"
+
+msgctxt "#30033"
+msgid "First"
+msgstr "First"
+
+msgctxt "#30034"
+msgid "Last"
+msgstr "Last"
 
 msgctxt "#30040"
 msgid "Episodes"
