@@ -24,13 +24,20 @@ class ChannelMenu(pages.Page):
         spath = self.get_stream_url_from_double(self.params['channels'])
         if spath:
             if self.site.addon.getSettingBool("iptv.enabled"):
-                self.list_items.append(self.create_menu_li("lives", 30410, is_folder=False, is_playable=True,
+                ch = self.lookup_channel(self.params['channels'])
+                self.list_items.append(self.create_menu_li("lives", self.site.params['title'],
+                                                           is_folder=False,
+                                                           is_playable=True,
                                                            url=get_url(self.site.url,
                                                                        action="play",
                                                                        context="channelmenus",
                                                                        channels=self.params['channels'],
                                                                        url=self.site.url),
-                                                           info={'plot': self.site.language(30224)}))
+                                                           info={'plot': ch['title']},
+                                                           art={'thumb': self.get_pic_from_id(ch['picId'], "lw"),
+                                                                'icon': self.get_pic_from_id(ch['picId'], "lw"),
+                                                                'fanart': self.get_pic_from_id(ch['picId'], "hd"),
+                                                                'poster': self.get_pic_from_id(ch['picId'], "it")}))
 
     def get_load_url(self):
         return self.get_load_url_ext(self.params['channels'], self.limit, self.offset)
@@ -91,50 +98,53 @@ class ChannelMenu(pages.Page):
             xbmc.log("Error in finding live stream for the channel %s" % channel_id, xbmc.LOGERROR)
             return ""
 
+    def lookup_channel(self, channel_id):
+        chls = channels.Channel(self.site).get_data_query()
+        ch_lookup = []
+        if 'data' in chls:
+            ch_lookup = list(filter(lambda ch: str(ch['id']) == str(channel_id), chls['data']))
+        return ch_lookup[0] if ch_lookup else {}
+
     def get_channel_live_double(self, channel_id):
 
         doublemap = {'channel_id': str(channel_id)}
 
-        chls = channels.Channel(self.site).get_data_query()
+        ch = self.lookup_channel(channel_id)
 
-        if 'data' in chls:
-            ch_lookup = list(filter(lambda ch: str(ch['id']) == str(channel_id), chls['data']))
-            if ch_lookup:
-                doublemap['double_id'] = ch_lookup[0].get('doubleId')
-                doublemap['live_id'] = ch_lookup[0].get('liveId')
+        if ch:
+            doublemap['double_id'] = ch.get('doubleId')
+            doublemap['live_id'] = ch.get('liveId')
 
-                headers = self.site.user.get_headers().copy()
+            headers = self.site.user.get_headers().copy()
 
-                headers['Sec-Fetch-Site'] = "cross-site"
+            headers['Sec-Fetch-Site'] = "cross-site"
 
-                if ch_lookup[0].get('type') == "vitrina":
-                    xbmc.log("Getting live stream for channel %s from Vitrina TV" % ch_lookup[0].get('title', ''),
-                             xbmc.LOGDEBUG)
-                    return doublemap, self.get_vitrina_live_url(ch_lookup[0], headers)
-                elif ch_lookup[0].get('type') == "video":
-                    xbmc.log("Getting live stream for channel %s from Smotrim.ru" % ch_lookup[0].get('title', ''),
-                             xbmc.LOGDEBUG)
-                    if doublemap.get('live_id'):
-                        try:
-                            headers['Host'] = self.site.liveapi_host
-                            headers['Sec-Fetch-Site'] = "none"
-                            datalive = self.site.request('https://%s/iframe/datalive/id/%s/' % (self.site.liveapi_host,
-                                                                                                doublemap['live_id']),
-                                                         output="json", headers=headers)
-                            # xbmc.log(json.dumps(datalive), xbmc.LOGDEBUG)
-                            medialist = datalive['data']['playlist']['medialist'][0]
-                            return doublemap, self.get_video_url(medialist.get('sources'))
-                        except KeyError:
-                            xbmc.log("Getting live stream from Smotrim.ru failed", xbmc.LOGDEBUG)
-                            return doublemap, ""
-                elif ch_lookup[0].get('type') == "audio":
-                    xbmc.log("Getting live stream for radio %s from Smotrim.ru" % ch_lookup[0].get('title', ''),
-                             xbmc.LOGDEBUG)
-                    return doublemap, ch_lookup[0].get('streamUrl')
-            else:
-                xbmc.log("Channel id %s not found in channel data" % channel_id, xbmc.LOGDEBUG)
+            if ch.get('type') == "vitrina":
+                xbmc.log("Getting live stream for channel %s from Vitrina TV" % ch.get('title', ''),
+                         xbmc.LOGDEBUG)
+                return doublemap, self.get_vitrina_live_url(ch, headers)
+            elif ch.get('type') == "video":
+                xbmc.log("Getting live stream for channel %s from Smotrim.ru" % ch.get('title', ''),
+                         xbmc.LOGDEBUG)
+                if doublemap.get('live_id'):
+                    try:
+                        headers['Host'] = self.site.liveapi_host
+                        headers['Sec-Fetch-Site'] = "none"
+                        datalive = self.site.request('https://%s/iframe/datalive/id/%s/' % (self.site.liveapi_host,
+                                                                                            doublemap['live_id']),
+                                                     output="json", headers=headers)
+                        # xbmc.log(json.dumps(datalive), xbmc.LOGDEBUG)
+                        medialist = datalive['data']['playlist']['medialist'][0]
+                        return doublemap, self.get_video_url(medialist.get('sources'))
+                    except KeyError:
+                        xbmc.log("Getting live stream from Smotrim.ru failed", xbmc.LOGDEBUG)
+                        return doublemap, ""
+            elif ch.get('type') == "audio":
+                xbmc.log("Getting live stream for radio %s from Smotrim.ru" % ch.get('title', ''),
+                         xbmc.LOGDEBUG)
+                return doublemap, ch.get('streamUrl')
         else:
-            xbmc.log("Getting channel data failed", xbmc.LOGDEBUG)
+            xbmc.log("Channel id %s not found in channel data" % channel_id, xbmc.LOGDEBUG)
 
         return doublemap, ""
 
