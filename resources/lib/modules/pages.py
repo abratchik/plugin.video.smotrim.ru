@@ -306,7 +306,7 @@ class Page(object):
 
     def create_menu_li(self, label_id, label, is_folder, is_playable, url,
                        info=None, art=None,
-                       lbl_format="[COLOR=FF00FF00][B]%s[/B][/COLOR]"):
+                       lbl_format="[B][COLOR=FF00FF00]%s[/COLOR][/B]"):
         label_text = label if type(label) == str else self.site.language(label)
         return {'id': label_id, 'label': lbl_format % label_text, 'is_folder': is_folder, 'is_playable': is_playable,
                 'url': url,

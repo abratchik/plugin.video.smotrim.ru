@@ -294,7 +294,7 @@ msgstr "Поиск эфира на канале %s"
 
 msgctxt "#30410"
 msgid "Live TV"
-msgstr "Эфир"
+msgstr "Эфирное ТВ"
 
 msgctxt "#30415"
 msgid "Install IPTV Manager add-on"

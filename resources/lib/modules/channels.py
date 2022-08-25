@@ -28,7 +28,7 @@ class Channel(pages.Page):
         self.cache_expire = 0
 
     def tvguide(self):
-        xbmc.executebuiltin("ActivateWindow(TVGuide)")
+        xbmc.executebuiltin("ActivateWindow(TVGuide,,'%s')" % self.site.url)
 
     def get_load_url(self):
         return get_url(self.site.api_url + '/geo')
