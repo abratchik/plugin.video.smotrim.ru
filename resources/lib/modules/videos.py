@@ -16,6 +16,7 @@ class Video(pages.Page):
     def __init__(self, site):
         super(Video, self).__init__(site)
         self.cache_enabled = True
+        self.context = "videos"
 
     def get_load_url(self):
         return get_url(self.site.api_url + '/videos/',

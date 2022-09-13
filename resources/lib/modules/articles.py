@@ -16,6 +16,9 @@ import xbmcgui
 
 
 class Article(pages.Page):
+    def __init__(self, site):
+        super(Article, self).__init__(site)
+        self.context = "articles"
 
     def create_root_li(self):
         return self.create_menu_li("news", 30301, is_folder=True, is_playable=False,

@@ -21,6 +21,7 @@ class Brand(pages.Page):
         self.search_person = ""
         super(Brand, self).__init__(site)
         self.TAGS = []
+        self.context = "brands"
         with open(os.path.join(self.site.path, "resources/data/tags.json"), "r+") as f:
             self.TAGS = json.load(f)
 
@@ -155,8 +156,8 @@ class Brand(pages.Page):
                 brands = {'data': []}
                 if roles:
                     for r in roles:
-                        brand = self.site.request(get_url(self.site.api_url + '/brands/' + str(r['id'])), "json")
-                        brands['data'].append(brand['data'])
+                        brand = self.get_element_by_id(r['id'])
+                        brands['data'].append(brand)
 
                 return brands
         return super(Brand, self).get_data_query()
@@ -250,7 +251,7 @@ class Brand(pages.Page):
                              'genre': element.get('genre'),
                              'mediatype': "tvshow" if is_folder else "movie",
                              'year': element.get('productionYearStart'),
-                             'country': self.get_country(element.get('countries')),
+                             'country': self.get_country(element.get('countries', [])),
                              'mpaa': self.get_mpaa(element.get('ageRestrictions')),
                              'plot': bp.get('plot', element.get('anons')),
                              'artist': bp.get('cast', []),

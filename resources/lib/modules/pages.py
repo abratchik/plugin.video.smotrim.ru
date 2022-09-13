@@ -94,11 +94,11 @@ class Page(object):
                 self.list_items.append(self.create_menu_li("last", label=30034, is_folder=True, is_playable=False,
                                                            url=self.get_nav_url(offset=self.pages - 1),
                                                            info={'plot': self.site.language(30031) % (
-                                                           self.offset + 1, self.pages)}))
+                                                               self.offset + 1, self.pages)}))
                 self.list_items.append(self.create_menu_li("next", label=30030, is_folder=True, is_playable=False,
                                                            url=self.get_nav_url(offset=self.offset + 1),
                                                            info={'plot': self.site.language(30031) % (
-                                                           self.offset + 1, self.pages)}))
+                                                               self.offset + 1, self.pages)}))
 
         self.postload()
 
@@ -288,8 +288,14 @@ class Page(object):
                        context=self.site.context,
                        limit=self.limit, offset=offset, url=self.site.url)
 
+    def get_element_by_id(self, id):
+        response = self.site.request(get_url("%s/%s/%s" % (self.site.api_url, self.context, str(id))), "json")
+        return response.get('data', {})
+
     def append_li_for_element(self, element):
-        self.list_items.append(self.create_element_li(element))
+        li = self.create_element_li(element)
+        if li:
+            self.list_items.append(li)
 
     def get_limit_setting(self):
         return (self.site.addon.getSettingInt('itemsperpage') + 1) * 10
@@ -348,10 +354,14 @@ class Page(object):
 
     @staticmethod
     def get_country(countries):
-        if type(countries) is list and len(countries) > 0:
-            return countries[0]['title']
-        else:
-            return ""
+        if countries:
+            if type(countries) is list and len(countries) > 0:
+                if type(countries[0]) is dict:
+                    return countries[0].get('title')
+                else:
+                    return countries[0]
+
+        return ""
 
     @staticmethod
     def get_logo(ch, res="xxl"):
