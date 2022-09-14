@@ -12,6 +12,7 @@ import resources.lib.modules.brands as brands
 import resources.lib.modules.videos as videos
 import resources.lib.modules.audios as audios
 import resources.lib.modules.articles as articles
+import resources.lib.modules.podcasts as podcasts
 
 
 class Box(pages.Page):
@@ -25,6 +26,8 @@ class Box(pages.Page):
         self.video.cache_expire = 86400
         self.audio = audios.Audio(site)
         self.audio.cache_expire = 86400
+        self.podcast = podcasts.Podcast(site)
+        self.podcast.cache_expire = 86400
         self.article = articles.Article(site)
         self.article.cache_expire = 1800
 
@@ -72,6 +75,8 @@ class Box(pages.Page):
                     c['data'] = self.audio.get_element_by_id(c.get('id'))
                 elif c.get('type') == "article":
                     c['data'] = self.article.get_element_by_id(c.get('id'))
+                elif c.get('type') == "podcast":
+                    c['data'] = self.podcast.get_element_by_id(c.get('id'))
 
             return data
 
@@ -91,6 +96,10 @@ class Box(pages.Page):
 
         if element.get('type') == "article":
             return self.article.create_element_li(element.get('data'))
+
+        if element.get('type') == "podcast":
+            return self.podcast.create_element_li(element.get('data'))
+
 
         picId = 0
         if element.get('pictures', []):
