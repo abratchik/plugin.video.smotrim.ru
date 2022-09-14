@@ -84,6 +84,14 @@ msgctxt "#30070"
 msgid "Podcasts"
 msgstr "Подкасты"
 
+msgctxt "#30080"
+msgid "Collections"
+msgstr "Подборки"
+
+msgctxt "#30081"
+msgid "Hot topic collections"
+msgstr "Подборки по наиболее актуальным темам"
+
 msgctxt "#30100"
 msgid "Account"
 msgstr "Профиль"

@@ -12,6 +12,7 @@ class Audio(pages.Page):
     def __init__(self, site):
         super(Audio, self).__init__(site)
         self.cache_enabled = True
+        self.context = "audios"
 
     def get_load_url(self):
         if 'brands' in self.params:

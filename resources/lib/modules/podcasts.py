@@ -12,6 +12,7 @@ class Podcast(pages.Page):
     def __init__(self, site):
         super(Podcast, self).__init__(site)
         self.cache_enabled = True
+        self.context = "podcasts"
 
     def create_root_li(self):
         return self.create_menu_li("podcasts", 30070, is_folder=True, is_playable=False,
@@ -60,6 +61,10 @@ class Podcast(pages.Page):
                         'poster': pages.get_pic_from_element(element, "it")
                         }
                 }
+
+    def get_element_by_id(self, id):
+        response = self.site.request(get_url("%s/rubrics/%s" % (self.site.api_url, str(id))), "json")
+        return response.get('data', {})
 
     def get_nav_url(self, offset=0):
         return get_url(self.site.url,
