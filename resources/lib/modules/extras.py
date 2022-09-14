@@ -158,23 +158,23 @@ class Extra:
                 try:
                     pdesc = ""
                     if p['brand']:
-                        ptitle = p['brand'].get('title' "")
-                        pdesc = p['brand'].get('anons', "")
+                        ptitle = p['brand'].get('title').encode('utf-8')
+                        pdesc = p['brand'].get('anons').encode('utf-8')
                     else:
-                        ptitle = p['title']
+                        ptitle = p['title'].encode('utf-8')
 
                     epgs[ch['id']].append({'start': self.__format_date(p['realDateStart']),
                                            'stop': self.__format_date(p['realDateEnd']),
-                                           'title': str(ptitle),
-                                           'description': str(pdesc),
+                                           'title': ptitle,
+                                           'description': pdesc,
                                            'image': pages.get_pic_from_element(p, "lw"),
                                            'subtitle': p['episode']['title'] if p['episode'] else ""
                                            })
 
 
                 except Exception as e:
-                    xbmc.log("Program [%s] ignored due to unexpected data format returned by server" %
-                             ptitle.encode('utf-8', 'ignore'), xbmc.LOGDEBUG)
+                    xbmc.log("Program [%s] ignored due to unexpected data format returned by server - %s" %
+                             (ptitle.encode('utf-8', 'ignore'), e.message), xbmc.LOGDEBUG)
 
             if monitor.waitForAbort(1):
                 break
@@ -199,7 +199,10 @@ class Extra:
     #         return self.site.request(self.channel.get_load_url(), output="json")
 
     def __format_date(self, s):
-        return "%s-%s-%sT%s:%s:%s+03:00" % (s[6:10], s[3:5], s[0:2], s[11:13], s[14:16], s[17:19])
+        if s:
+            return "%s-%s-%sT%s:%s:%s+03:00" % (s[6:10], s[3:5], s[0:2], s[11:13], s[14:16], s[17:19])
+        else:
+            return ""
 
     def send_channels(self):
         if 'port' in self.site.params:
