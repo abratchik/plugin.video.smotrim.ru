@@ -158,15 +158,15 @@ class Extra:
                 try:
                     pdesc = ""
                     if p['brand']:
-                        ptitle = p['brand'].get('title' "")
-                        pdesc = p['brand'].get('anons', "")
+                        ptitle = p['brand'].get('title')
+                        pdesc = p['brand'].get('anons')
                     else:
                         ptitle = p['title']
 
                     epgs[ch['id']].append({'start': self.__format_date(p['realDateStart']),
                                            'stop': self.__format_date(p['realDateEnd']),
-                                           'title': str(ptitle),
-                                           'description': str(pdesc),
+                                           'title': ptitle,
+                                           'description': pdesc,
                                            'image': pages.get_pic_from_element(p, "lw"),
                                            'subtitle': p['episode']['title'] if p['episode'] else ""
                                            })
@@ -174,7 +174,7 @@ class Extra:
 
                 except Exception as e:
                     xbmc.log("Program [%s] ignored due to unexpected data format returned by server" %
-                             ptitle.encode('utf-8', 'ignore'), xbmc.LOGDEBUG)
+                             ptitle, xbmc.LOGDEBUG)
 
             if monitor.waitForAbort(1):
                 break
