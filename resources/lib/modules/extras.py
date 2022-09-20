@@ -163,13 +163,17 @@ class Extra:
                     else:
                         ptitle = p['title']
 
-                    epgs[ch['id']].append({'start': self.__format_date(p['realDateStart']),
-                                           'stop': self.__format_date(p['realDateEnd']),
-                                           'title': ptitle,
-                                           'description': pdesc,
-                                           'image': pages.get_pic_from_element(p, "lw"),
-                                           'subtitle': p['episode']['title'] if p['episode'] else ""
-                                           })
+                    startdate = self.__format_date(p['realDateStart'])
+                    enddate = self.__format_date(p['realDateEnd'])
+
+                    if startdate and enddate:
+                        epgs[ch['id']].append({'start': self.__format_date(p['realDateStart']),
+                                               'stop': self.__format_date(p['realDateEnd']),
+                                               'title': str(ptitle),
+                                               'description': str(pdesc),
+                                               'image': pages.get_pic_from_element(p, "lw"),
+                                               'subtitle': p['episode']['title'] if p['episode'] else ""
+                                               })
 
 
                 except Exception as e:
@@ -199,7 +203,10 @@ class Extra:
     #         return self.site.request(self.channel.get_load_url(), output="json")
 
     def __format_date(self, s):
-        return "%s-%s-%sT%s:%s:%s+03:00" % (s[6:10], s[3:5], s[0:2], s[11:13], s[14:16], s[17:19])
+        if s:
+            return "%s-%s-%sT%s:%s:%s+03:00" % (s[6:10], s[3:5], s[0:2], s[11:13], s[14:16], s[17:19])
+        else:
+            return ""
 
     def send_channels(self):
         if 'port' in self.site.params:
