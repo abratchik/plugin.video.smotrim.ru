@@ -162,6 +162,7 @@ class ChannelMenu(pages.Page):
 
             xbmc.log("Vitrina TV SDK API version %s" % sdk['result']['sdk_config']['api_version'], xbmc.LOGDEBUG)
 
+            headers['Host'] = "media.mediavitrina.ru"            
             vitrinalive = self.site.request(sdk['result']['sdk_config']['streams_api_url'],
                                             output="json",
                                             headers=headers)
