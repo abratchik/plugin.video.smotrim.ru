@@ -46,7 +46,7 @@ class RSSBuilder():
         return it
 
     def add_news_to_rss(self, site, feed):
-        rssfeeds = os.path.join(xbmc.translatePath("special://userdata"), RSSFEEDS)
+        rssfeeds = os.path.join(xbmcvfs.translatePath("special://userdata"), RSSFEEDS)
         rssurl = "http://%s:%s/articles" % (SERVER_ADDR, site.server_port)
         rssfeedsxml = self._load_xml_from_file(rssfeeds)
 
